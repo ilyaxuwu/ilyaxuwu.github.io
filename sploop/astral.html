@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Astral Script</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --background-color: #101010;
+            --card-background: rgba(28, 28, 30, 0.7);
+            --text-primary: #f2f2f7;
+            --text-secondary: #8e8e93;
+            --accent-blue: #0A84FF;
+            --accent-blue-hover: #0060b8;
+            --border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-primary);
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: radial-gradient(circle at 15% 20%, hsla(210, 100%, 70%, 0.15), transparent 40%),
+                        radial-gradient(circle at 85% 70%, hsla(280, 100%, 70%, 0.15), transparent 40%);
+            z-index: -1;
+            animation: background-pan 25s ease-in-out infinite alternate;
+        }
+
+        @keyframes background-pan {
+            from { transform: translate(-10%, -10%) scale(1.2); }
+            to { transform: translate(10%, 10%) scale(1.2); }
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            letter-spacing: -1px;
+            background: linear-gradient(90deg, #ffffff, #bbbbbb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        header p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-top: 10px;
+        }
+
+        section {
+            margin-bottom: 80px;
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 40px;
+            color: var(--text-primary);
+        }
+
+        .download-button {
+            display: block;
+            width: fit-content;
+            margin: 0 auto;
+            padding: 14px 40px;
+            background-color: var(--accent-blue);
+            color: white;
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+            box-shadow: 0 8px 25px rgba(10, 132, 255, 0.3);
+        }
+
+        .download-button:hover {
+            transform: translateY(-3px);
+            background-color: var(--accent-blue-hover);
+            box-shadow: 0 12px 30px rgba(10, 132, 255, 0.4);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .feature-card {
+            background: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 25px;
+            backdrop-filter: blur(15px) saturate(180%);
+            -webkit-backdrop-filter: blur(15px) saturate(180%);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        }
+
+        .feature-card h3 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .changelog-list {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .changelog-version {
+            background: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 25px;
+            backdrop-filter: blur(15px) saturate(180%);
+            -webkit-backdrop-filter: blur(15px) saturate(180%);
+            margin-bottom: 25px;
+        }
+
+        .changelog-version h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+
+        .changelog-version ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .changelog-version li {
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .changelog-version li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--accent-blue);
+            font-weight: 700;
+        }
+        
+        .hidden {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .feature-card, .changelog-version {
+            transition-delay: var(--delay, 0s);
+        }
+        
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Astral</h1>
+            <p>The ultimate utility script for Sploop.io</p>
+        </header>
+
+        <section id="download">
+            <a href="#" class="download-button">Download SOON</a>
+        </section>
+
+        <section id="features">
+            <h2 class="hidden">Features</h2>
+            <div class="features-grid">
+                <!-- By JavaScript -->
+            </div>
+        </section>
+
+        <section id="changelog">
+            <h2 class="hidden">Changelog</h2>
+            <div class="changelog-list">
+                <!-- By JavaScript -->
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const features = {
+                'Auto Heal': 'Automatically starts healing when your health is below 100.',
+                'Auto Placer': 'Places an object automatically to counter enemies.',
+                'Auto Break': 'Starts breaking the trap you are stuck in.',
+                'Naginata Sync': 'Initiates a synchronized attack with the Naginata at a specific health threshold.',
+                'Musket Sync': 'Initiates a synchronized attack with the Musket at a specific health threshold.',
+                'Auto Push': 'Pushes the enemy towards a nearby spike if they are trapped.',
+                'Auto Break Spike': 'Before auto-breaking a trap, it checks for and destroys dangerous nearby spikes first.',
+                'Left Click Combat': 'Equips Berserker gear and spams attacks while holding left-click.',
+                'Right Click Combat': 'Equips Demolitionist gear and breaks objects while holding right-click.',
+                'Auto Hat': 'Automatically equips the best hat based on your location (Winter, Sea, etc.) or combat situation.',
+                'Kill Chat': 'Sends a message about Astral to a player right after you kill them.',
+                'Packgod': 'Automatically roasts players who threaten to call a moderator.',
+                'Auto Replace': 'Automatically replaces objects broken by the enemy in the same position.',
+                'Repeater': 'Enables rapid-fire placement of items with key holds.',
+                'Always Immunity': 'Prioritizes wearing the immunity gear for constant defense.'
+            };
+
+            const featuresGrid = document.querySelector('.features-grid');
+            let featureDelay = 0;
+            for (const name in features) {
+                const card = document.createElement('div');
+                card.className = 'feature-card hidden';
+                card.style.setProperty('--delay', `${featureDelay}s`);
+                card.innerHTML = `<h3>${name}</h3><p>${features[name]}</p>`;
+                featuresGrid.appendChild(card);
+                featureDelay += 0.05;
+            }
+
+            const changelog = {
+                "5.0.0": [
+                    "Skinned from iPhone UI", "Stronger Autoplace", "Stronger Autoheal",
+                    "New Menu", "Auto Roast", "Kill Chat", "New Notification System",
+                    "Decreased Packet Usage", "Show Player List", "Show Servers Where You Are Banned",
+                    "Keep Immunity Hat Fix"
+                ],
+                "3.5.4": [
+                    "Auto break own objects", "Stronger Auto place", "UI Changes",
+                    "Auto break Bug fixes", "Song Lyrics", "Config System"
+                ],
+                "2.0.7": [
+                    "Translation System", "Auto Push", "Dynamic notification"
+                ],
+                "1.0.4": [
+                    "Aly AI", "Astral Intelligence Autoplace", "Naginata & Musket Sync",
+                    "10x Strongest Autoheal ever."
+                ],
+                "1.0.3": [
+                    "Basic Autoheal, Macros, and Hat macro"
+                ]
+            };
+            
+            const changelogList = document.querySelector('.changelog-list');
+            let changelogDelay = 0;
+            for (const version in changelog) {
+                const versionDiv = document.createElement('div');
+                versionDiv.className = 'changelog-version hidden';
+                versionDiv.style.setProperty('--delay', `${changelogDelay}s`);
+                const changes = changelog[version].map(item => `<li>${item}</li>`).join('');
+                versionDiv.innerHTML = `<h3>Version ${version}</h3><ul>${changes}</ul>`;
+                changelogList.appendChild(versionDiv);
+                changelogDelay += 0.1;
+            }
+
+            // --- Scroll Animation Observer ---
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, {
+                threshold: 0.1
+            });
+
+            document.querySelectorAll('.hidden').forEach(el => observer.observe(el));
+        });
+    </script>
+</body>
+</html>
