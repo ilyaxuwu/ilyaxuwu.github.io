@@ -10,18 +10,23 @@
     <style>
         :root {
             --background-color: #101010;
-            --card-background: rgba(28, 28, 30, 0.7);
+            --card-background: rgba(28, 28, 30, 0.75);
             --text-primary: #f2f2f7;
             --text-secondary: #8e8e93;
             --accent-blue: #0A84FF;
             --accent-blue-hover: #0060b8;
             --border-color: rgba(255, 255, 255, 0.1);
+            --border-hover-color: rgba(255, 255, 255, 0.25);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
         }
 
         body {
@@ -61,12 +66,18 @@
         }
 
         h1 {
-            font-size: 3.5rem;
+            font-size: 3.8rem;
             font-weight: 700;
-            letter-spacing: -1px;
-            background: linear-gradient(90deg, #ffffff, #bbbbbb);
+            letter-spacing: -1.5px;
+            background: linear-gradient(90deg, #ffffff, #c7c7c7);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            animation: text-glow 4s ease-in-out infinite;
+        }
+        
+        @keyframes text-glow {
+            0%, 100% { text-shadow: 0 0 10px rgba(255,255,255,0.2); }
+            50% { text-shadow: 0 0 25px rgba(255,255,255,0.4); }
         }
 
         header p {
@@ -107,28 +118,51 @@
             background-color: var(--accent-blue-hover);
             box-shadow: 0 12px 30px rgba(10, 132, 255, 0.4);
         }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
+        
+        .download-button:active {
+            transform: translateY(-1px) scale(0.98);
         }
 
-        .feature-card {
+        .ios-card {
             background: var(--card-background);
             border: 1px solid var(--border-color);
             border-radius: 20px;
             padding: 25px;
             backdrop-filter: blur(15px) saturate(180%);
             -webkit-backdrop-filter: blur(15px) saturate(180%);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
 
-        .feature-card:hover {
+        .ios-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+            border-color: var(--border-hover-color);
+        }
+        
+        .ios-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 75%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+            transform: skewX(-30deg);
+            transition: left 0.6s ease;
+        }
+        
+        .ios-card:hover::before {
+            left: 150%;
         }
 
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+        }
+        
         .feature-card h3 {
             font-size: 1.4rem;
             font-weight: 600;
@@ -144,16 +178,9 @@
         .changelog-list {
             max-width: 700px;
             margin: 0 auto;
-        }
-
-        .changelog-version {
-            background: var(--card-background);
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            padding: 25px;
-            backdrop-filter: blur(15px) saturate(180%);
-            -webkit-backdrop-filter: blur(15px) saturate(180%);
-            margin-bottom: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
         }
 
         .changelog-version h3 {
@@ -164,46 +191,53 @@
             margin-bottom: 15px;
         }
 
-        .changelog-version ul {
-            list-style: none;
-            padding-left: 0;
-        }
-
+        .changelog-version ul { list-style: none; }
         .changelog-version li {
-            color: var(--text-secondary);
-            margin-bottom: 8px;
-            position: relative;
-            padding-left: 20px;
+            color: var(--text-secondary); margin-bottom: 8px; position: relative; padding-left: 20px;
         }
-
         .changelog-version li::before {
-            content: '✓';
-            position: absolute;
-            left: 0;
-            color: var(--accent-blue);
-            font-weight: 700;
+            content: '✓'; position: absolute; left: 0; color: var(--accent-blue); font-weight: 700;
         }
         
+        .credits-card {
+            max-width: 700px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        .credits-card .role {
+            color: var(--accent-blue);
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-top: 15px;
+        }
+        
+        .credits-card .names {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 30px 20px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--border-color);
+            margin-top: 40px;
+        }
+
         .hidden {
             opacity: 0;
             transform: translateY(30px);
             transition: opacity 0.6s ease-out, transform 0.6s ease-out;
         }
-
-        .visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        
-        .feature-card, .changelog-version {
-            transition-delay: var(--delay, 0s);
-        }
+        .visible { opacity: 1; transform: translateY(0); }
+        .ios-card, .changelog-version { transition-delay: var(--delay, 0s); }
         
         @keyframes fadeInDown {
             from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
         }
-
     </style>
 </head>
 <body>
@@ -221,17 +255,32 @@
         <section id="features">
             <h2 class="hidden">Features</h2>
             <div class="features-grid">
-                <!-- By JavaScript -->
+                <!-- Features will be here from JavaScript -->
             </div>
         </section>
 
         <section id="changelog">
             <h2 class="hidden">Changelog</h2>
             <div class="changelog-list">
-                <!-- By JavaScript -->
+                <!-- Changelog will be here from JavaScript -->
             </div>
         </section>
+        
+        <section id="credits">
+            <h2 class="hidden">Credits</h2>
+            <div class="credits-card ios-card hidden">
+                <p class="role">Lead Developer</p>
+                <p class="names">Ilyax</p>
+                <p class="role">Contributors</p>
+                <p class="names">Cubic Flex [CF], Jeanne Kusoi, Crygen</p>
+            </div>
+        </section>
+
     </div>
+    
+    <footer>
+        <p>&copy; 2024 Astral Script. All rights reserved.</p>
+    </footer>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -258,7 +307,7 @@
             let featureDelay = 0;
             for (const name in features) {
                 const card = document.createElement('div');
-                card.className = 'feature-card hidden';
+                card.className = 'feature-card ios-card hidden';
                 card.style.setProperty('--delay', `${featureDelay}s`);
                 card.innerHTML = `<h3>${name}</h3><p>${features[name]}</p>`;
                 featuresGrid.appendChild(card);
@@ -266,33 +315,18 @@
             }
 
             const changelog = {
-                "5.0.0": [
-                    "Skinned from iPhone UI", "Stronger Autoplace", "Stronger Autoheal",
-                    "New Menu", "Auto Roast", "Kill Chat", "New Notification System",
-                    "Decreased Packet Usage", "Show Player List", "Show Servers Where You Are Banned",
-                    "Keep Immunity Hat Fix"
-                ],
-                "3.5.4": [
-                    "Auto break own objects", "Stronger Auto place", "UI Changes",
-                    "Auto break Bug fixes", "Song Lyrics", "Config System"
-                ],
-                "2.0.7": [
-                    "Translation System", "Auto Push", "Dynamic notification"
-                ],
-                "1.0.4": [
-                    "Aly AI", "Astral Intelligence Autoplace", "Naginata & Musket Sync",
-                    "10x Strongest Autoheal ever."
-                ],
-                "1.0.3": [
-                    "Basic Autoheal, Macros, and Hat macro"
-                ]
+                "5.0.0": ["Skinned from iPhone UI", "Stronger Autoplace", "Stronger Autoheal", "New Menu", "Auto Roast", "Kill Chat", "New Notification System", "Decreased Packet Usage", "Show Player List", "Show Servers Where You Are Banned", "Keep Immunity Hat Fix"],
+                "3.5.4": ["Auto break own objects", "Stronger Auto place", "UI Changes", "Auto break Bug fixes", "Song Lyrics", "Config System"],
+                "2.0.7": ["Translation System", "Auto Push", "Dynamic notification"],
+                "1.0.4": ["Aly AI", "Astral Intelligence Autoplace", "Naginata & Musket Sync", "10x Strongest Autoheal ever."],
+                "1.0.3": ["Basic Autoheal, Macros, and Hat macro"]
             };
             
             const changelogList = document.querySelector('.changelog-list');
             let changelogDelay = 0;
             for (const version in changelog) {
                 const versionDiv = document.createElement('div');
-                versionDiv.className = 'changelog-version hidden';
+                versionDiv.className = 'changelog-version ios-card hidden';
                 versionDiv.style.setProperty('--delay', `${changelogDelay}s`);
                 const changes = changelog[version].map(item => `<li>${item}</li>`).join('');
                 versionDiv.innerHTML = `<h3>Version ${version}</h3><ul>${changes}</ul>`;
@@ -300,7 +334,6 @@
                 changelogDelay += 0.1;
             }
 
-            // --- Scroll Animation Observer ---
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
