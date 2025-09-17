@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quick acces my projects</title>
+    <title>Quick access my projects</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -158,6 +158,16 @@
         .btn-2 {
             border-top: 4px solid #4ecdc4;
         }
+        
+        /* YENİ BUTON İÇİN STİL */
+        .btn-3 {
+            border-top: 4px solid #8A2BE2; /* Mor renk */
+        }
+        .btn-3 i {
+            background: linear-gradient(90deg, #c797eb, #8A2BE2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
 
         footer {
             margin-top: 40px;
@@ -172,7 +182,7 @@
             color: #ff7e5f;
         }
 
-        @media (max-width: 650px) {
+        @media (max-width: 920px) { /* Genişletilmiş breakpoint */
             .buttons-container {
                 flex-direction: column;
                 align-items: center;
@@ -182,7 +192,9 @@
                 width: 100%;
                 max-width: 350px;
             }
-            
+        }
+        
+        @media (max-width: 650px) {
             h1 {
                 font-size: 2.2rem;
             }
@@ -214,6 +226,14 @@
                 <div class="btn-title">Script Analyzer</div>
                 <div class="btn-desc">A system that detects infected codes such as grabber.</div>
             </a>
+
+            <!-- YENİ EKLENEN BUTON -->
+            <a href="https://ilyaxuwu.github.io/sploop/astral.html" class="btn btn-3">
+                <i class="fas fa-star"></i> <!-- Astral temasına uygun yıldız ikonu -->
+                <div class="btn-title">Astral Script</div>
+                <div class="btn-desc">The ultimate utility script for Sploop.io.</div>
+            </a>
+            
         </div>
         
         <footer>
@@ -253,6 +273,3 @@
     </script>
 </body>
 </html>
-
-
-
