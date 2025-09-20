@@ -160,12 +160,21 @@
             border-top: 4px solid #4ecdc4;
         }
         
-        /* YENİ BUTON İÇİN STİL */
         .btn-3 {
-            border-top: 4px solid #8A2BE2; /* Mor renk */
+            border-top: 4px solid #8A2BE2;
         }
         .btn-3 i {
             background: linear-gradient(90deg, #c797eb, #8A2BE2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* YENİ BUTON İÇİN STİL */
+        .btn-4 {
+            border-top: 4px solid #3a7bd5;
+        }
+        .btn-4 i {
+            background: linear-gradient(90deg, #3a7bd5, #3a6073);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -183,7 +192,7 @@
             color: #ff7e5f;
         }
 
-        @media (max-width: 920px) { /* Genişletilmiş breakpoint */
+        @media (max-width: 920px) {
             .buttons-container {
                 flex-direction: column;
                 align-items: center;
@@ -229,13 +238,18 @@
                 <div class="btn-desc">A system that detects infected codes such as grabber.</div>
             </a>
 
-            <!-- YENİ EKLENEN BUTON -->
             <a href="https://ilyaxuwu.github.io/sploop/astral.html" class="btn btn-3">
-                <i class="fas fa-moon"></i> <!-- Astral temasına uygun yıldız ikonu -->
+                <i class="fas fa-moon"></i>
                 <div class="btn-title">Astral Script</div>
                 <div class="btn-desc">The ultimate utility script for Sploop.io.</div>
             </a>
             
+            <!-- YENİ EKLENEN BUTON -->
+            <a href="https://ilyaxuwu.github.io/mspaint/translation.html" class="btn btn-4">
+                <i class="fas fa-paint-brush"></i>
+                <div class="btn-title">Mspaint Translator</div>
+                <div class="btn-desc">Official Turkish translation for the mspaint.cc script.</div>
+            </a>
         </div>
         
         <footer>
@@ -275,5 +289,3 @@
     </script>
 </body>
 </html>
-
-
