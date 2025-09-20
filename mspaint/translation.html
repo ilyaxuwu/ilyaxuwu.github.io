@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>mspaint Translator</title>
+    <style>
+        :root {
+            --ios-bg: #000000;
+            --ios-panel-bg: #1c1c1e;
+            --ios-text-primary: #ffffff;
+            --ios-text-secondary: #8d8d92;
+            --ios-blue: #0a84ff;
+            --ios-blue-hover: #359aff;
+            --ios-separator: #38383a;
+            --ios-green: #30d158;
+            --ios-secondary-button-bg: #2c2c2e;
+            --ios-secondary-button-hover: #3a3a3c;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--ios-bg);
+            color: var(--ios-text-primary);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background-color: var(--ios-panel-bg);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            padding: 40px;
+            box-sizing: border-box;
+            text-align: center;
+            border: 1px solid var(--ios-separator);
+        }
+
+        h1 {
+            font-size: 34px;
+            font-weight: 700;
+            margin: 0;
+            margin-bottom: 15px;
+        }
+
+        .description {
+            font-size: 17px;
+            line-height: 1.6;
+            color: var(--ios-text-secondary);
+            margin-top: 0;
+            margin-bottom: 40px;
+        }
+
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .button {
+            background-color: var(--ios-blue);
+            color: white;
+            text-decoration: none;
+            padding: 16px 20px;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .button:hover {
+            background-color: var(--ios-blue-hover);
+            transform: scale(1.02);
+        }
+        
+        .button.secondary {
+            background-color: var(--ios-secondary-button-bg);
+        }
+        
+        .button.secondary:hover {
+            background-color: var(--ios-secondary-button-hover);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            z-index: 1000;
+        }
+
+        .modal-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background-color: var(--ios-panel-bg);
+            padding: 20px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 550px;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+        
+        .modal-overlay.visible .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--ios-separator);
+            padding-bottom: 15px;
+            margin-bottom: 5px;
+        }
+        
+        .modal-header h2 {
+            margin: 0;
+            font-size: 22px;
+        }
+        
+        .modal-stats {
+            font-size: 14px;
+            color: var(--ios-text-secondary);
+            text-align: center;
+            padding: 10px 0;
+            margin-bottom: 10px;
+        }
+
+        .modal-stats .completed { color: var(--ios-green); }
+
+        .close-button {
+            background-color: #333;
+            color: var(--ios-text-secondary);
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.2s ease;
+        }
+
+        .close-button:hover {
+            background-color: #555;
+        }
+        
+        .translations-container {
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .translation-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 5px;
+            border-bottom: 1px solid var(--ios-separator);
+            font-size: 15px;
+        }
+        .translation-item:last-child {
+            border-bottom: none;
+        }
+        .translation-original {
+            color: var(--ios-text-secondary);
+            flex-basis: 50%;
+            text-align: left;
+            padding-right: 10px;
+        }
+        .translation-translated {
+            color: var(--ios-text-primary);
+            flex-basis: 50%;
+            text-align: right;
+            font-weight: 500;
+        }
+
+        .translations-container::-webkit-scrollbar { width: 8px; }
+        .translations-container::-webkit-scrollbar-track { background: var(--ios-panel-bg); }
+        .translations-container::-webkit-scrollbar-thumb { background-color: #555; border-radius: 20px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Liyaa</h1>
+        <p class="description">
+            mspaint.cc Roblox script'inin resmi çevirmeniyim. Script'i İngilizce'den Türkçe'ye çevirerek daha fazla kullanıcıya ulaşmasını sağlıyorum.
+            <br><br>
+            I am the official translator for the mspaint.cc Roblox script. I translate the script from English to Turkish, making it accessible to more users.
+        </p>
+        <div class="button-group">
+            <button id="openModalBtn" class="button">Çeviri Durumu Gör / See my Translation</button>
+            <a href="https://mspaint.cc" target="_blank" rel="noopener noreferrer" class="button secondary">Go to (mspaint.cc)'ye Git</a>
+        </div>
+    </div>
+
+    <div id="translationsModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Yükleniyor/Loading...</h2>
+                <button id="closeModalBtn" class="close-button">&times;</button>
+            </div>
+            <div id="modalStats" class="modal-stats"></div>
+            <div id="translationsContainer" class="translations-container">
+                <p>Veriler alınıyor, lütfen bekleyin/Retrieving data, please wait...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const openModalBtn = document.getElementById('openModalBtn');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const modalOverlay = document.getElementById('translationsModal');
+        const translationsContainer = document.getElementById('translationsContainer');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalStats = document.getElementById('modalStats');
+
+        let trDataCache = null;
+
+        async function fetchAndDisplayTranslations() {
+            modalTitle.textContent = 'Türkçe Çeviriler/Turkish Translations';
+            
+            if (trDataCache) {
+                displayData();
+                return;
+            }
+
+            const tr_url = 'https://raw.githubusercontent.com/mspaint-cc/translations/refs/heads/main/translations/tr.json';
+
+            try {
+                const trResponse = await fetch(tr_url);
+                
+                if (!trResponse.ok) {
+                    throw new Error(`HTTP hatası! Durum/HTTP Error Code: ${trResponse.status}`);
+                }
+
+                trDataCache = await trResponse.json();
+                displayData();
+
+            } catch (error) {
+                console.error("Veri çekilemedi:", error);
+                modalStats.innerHTML = '';
+                translationsContainer.innerHTML = '<p style="color: #ff453a;">Çeviriler yüklenirken bir hata oluştu. Lütfen daha sonra tekrar deneyin./An error occurred while loading translations. Please try again later.</p>';
+                modalTitle.textContent = 'Hata';
+            }
+        }
+
+        function displayData() {
+            const trData = trDataCache;
+            const translatedKeys = Object.keys(trData).length;
+            
+            modalStats.innerHTML = `<span class="completed">✓ ${translatedKeys} Çeviri Tamamlandı / Has been Translated</span>`;
+
+            let htmlContent = '';
+            for (const key in trData) {
+                if (Object.hasOwnProperty.call(trData, key)) {
+                     htmlContent += `
+                        <div class="translation-item">
+                            <span class="translation-original">${key}</span>
+                            <span class="translation-translated">${trData[key]}</span>
+                        </div>
+                    `;
+                }
+            }
+            translationsContainer.innerHTML = htmlContent;
+        }
+
+        function openModal() {
+            modalOverlay.classList.add('visible');
+            fetchAndDisplayTranslations();
+        }
+
+        function closeModal() {
+            modalOverlay.classList.remove('visible');
+        }
+
+        openModalBtn.addEventListener('click', openModal);
+        closeModalBtn.addEventListener('click', closeModal);
+        modalOverlay.addEventListener('click', (event) => {
+            if (event.target === modalOverlay) {
+                closeModal();
+            }
+        });
+    </script>
+
+</body>
+</html>
