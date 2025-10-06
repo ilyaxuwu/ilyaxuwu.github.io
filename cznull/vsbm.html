@@ -22,10 +22,6 @@
     </style>
 </head>
 <body>
-    <div id="info-display">
-        FPS: 0<br>
-        Kalite: Yüksek
-    </div>
     <canvas id="c1"></canvas>
     <button id="btn-config">CONFIG</button>
     <div id="config-container">
@@ -35,21 +31,17 @@
     </div>
 
 <script>
-    alert("Adaptif kalite sistemi devrede!\nFPS düşerse kalite otomatik olarak düşürülür.\ncreated by cznull@bilibili");
-
-    // --- TEMEL DEĞİŞKENLER ---
+    alert("created by cznull@bilibili, Made fake one by ilyax aka liyaa");
     let canvas, gl, shaderProgram;
     let glPosition, glRight, glForward, glUp, glOrigin, glResolution, glLen;
     let ang1 = 2.8, ang2 = 0.4, len = 1.6, cenx = 0.0, ceny = 0.0, cenz = 0.0;
     let mouseX = 0, mouseY = 0, isMouseDownLeft = false, isMouseDownRight = false, hasMouseMoved = false;
-
-    // --- FPS SAYACI VE ADAPTİF KALİTE SİSTEMİ ---
     const infoDisplay = document.getElementById('info-display');
     let frameTimes = [];
     let currentFps = 0;
 
-    const TARGET_FPS_LOW = 25;  // Bu FPS'in altına düşünce kalite düşer
-    const TARGET_FPS_HIGH = 55; // Bu FPS'in üstüne çıkınca kalite artar
+    const TARGET_FPS_LOW = 25;
+    const TARGET_FPS_HIGH = 55;
 
     const qualityLevels = [
         { name: 'Ultra', steps: 200, size: 0.01, solver: 5 },
@@ -58,9 +50,7 @@
         { name: 'Düşük', steps: 50, size: 0.02, solver: 3 },
         { name: 'Patates', steps: 30, size: 0.025, solver: 2 }
     ];
-    let currentQualityIndex = 1; // Başlangıç kalitesi: Yüksek
-
-    // --- SHADER KODLARI ---
+    let currentQualityIndex = 1;
     let KERNEL = `
 float kernal(vec3 ver){
     vec3 a = ver;
@@ -91,9 +81,7 @@ void main() {
     dir = forward + right * screenPos.x + up * screenPos.y;
     gl_Position = vec4(position, 0.0, 1.0);
 }`;
-    
-    // Bu fonksiyon, kalite seviyesine göre Fragment Shader'ı oluşturur
-    function generateFragmentShaderSource(level) {
+        function generateFragmentShaderSource(level) {
         return `
 #version 100
 #define PI 3.14159265358979324
@@ -151,7 +139,6 @@ void main() {
 }`;
     }
 
-    // --- ANA FONKSİYONLAR ---
     function setup() {
         canvas = document.getElementById('c1');
         gl = canvas.getContext('webgl', { antialias: false }) || canvas.getContext('experimental-webgl');
@@ -164,7 +151,7 @@ void main() {
         window.onresize = onResize;
         onResize();
         
-        setInterval(adjustQuality, 1000); // Kaliteyi her saniye kontrol et
+        setInterval(adjustQuality, 1000);
         requestAnimationFrame(draw);
     }
 
@@ -178,7 +165,6 @@ void main() {
         currentFps = frameTimes.length;
         infoDisplay.innerHTML = `FPS: ${currentFps}<br>Kalite: ${qualityLevels[currentQualityIndex].name}`;
 
-        // Çizim
         gl.useProgram(shaderProgram);
         const camOrigin = [len * Math.cos(ang1) * Math.cos(ang2) + cenx, len * Math.sin(ang2) + ceny, len * Math.sin(ang1) * Math.cos(ang2) + cenz];
         const camRight = [Math.sin(ang1), 0, -Math.cos(ang1)];
@@ -196,27 +182,22 @@ void main() {
         requestAnimationFrame(draw);
     }
     
-    // Kaliteyi kontrol edip shader'ı yeniden derleyen ana mantık
     function adjustQuality() {
         const lastQualityIndex = currentQualityIndex;
 
-        // FPS çok düşükse kaliteyi düşür
         if (currentFps < TARGET_FPS_LOW && currentQualityIndex < qualityLevels.length - 1) {
             currentQualityIndex++;
         } 
-        // FPS çok yüksekse kaliteyi artır
         else if (currentFps > TARGET_FPS_HIGH && currentQualityIndex > 0) {
             currentQualityIndex--;
         }
 
-        // Kalite değiştiyse shader'ı yeniden derle
         if (lastQualityIndex !== currentQualityIndex) {
             console.log(`Kalite değişti: ${qualityLevels[lastQualityIndex].name} -> ${qualityLevels[currentQualityIndex].name}`);
             recompileShaders();
         }
     }
 
-    // Shader'ları yeniden derleyen fonksiyon
     function recompileShaders() {
         const quality = qualityLevels[currentQualityIndex];
         const fragSource = generateFragmentShaderSource(quality);
@@ -227,7 +208,6 @@ void main() {
 
         if (newProgram) {
             shaderProgram = newProgram;
-            // Uniform ve attribute konumlarını yeniden al
             glPosition = gl.getAttribLocation(shaderProgram, 'position');
             glRight = gl.getUniformLocation(shaderProgram, 'right');
             glForward = gl.getUniformLocation(shaderProgram, 'forward');
@@ -236,7 +216,6 @@ void main() {
             glResolution = gl.getUniformLocation(shaderProgram, 'resolution');
             glLen = gl.getUniformLocation(shaderProgram, 'len');
             
-            // Buffer'ları yeniden bağla
             const positions = [-1, -1, 1, -1, -1, 1, 1, 1];
             const buffer = gl.createBuffer();
             gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
@@ -248,7 +227,6 @@ void main() {
         }
     }
 
-    // --- YARDIMCI FONKSİYONLAR ---
     function createShader(gl, type, source) {
         const shader = gl.createShader(type);
         gl.shaderSource(shader, source);
@@ -279,10 +257,8 @@ void main() {
         gl.viewport(0, 0, canvas.width, canvas.height);
     }
     
-    function setupUI() { /* UI kodları değişmedi... */ }
-    function addEventListeners() { /* Event listener kodları değişmedi... */ }
-
-    // Önceki cevaptaki UI ve Event Listener fonksiyonlarını buraya ekleyelim
+    function setupUI() {}
+    function addEventListeners() {}
     setupUI = function() {
         document.getElementById("kernel").value = KERNEL;
         document.getElementById("btn-config").addEventListener("click", function() {
