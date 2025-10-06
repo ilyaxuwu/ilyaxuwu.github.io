@@ -1,16 +1,31 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="user-scalable=no">
-    <title>Optimize Edilmiş Volume Shader (Final Versiyon)</title>
+    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Adaptif Kaliteli Shader</title>
     <style>
         body { margin: 0; overflow: hidden; background: #131115; }
         canvas { display: block; }
-        #config-container { position: fixed; left: 10px; top: 40px; background: rgba(0,0,0,0.7); padding: 10px; border-radius: 5px; display: none; z-index: 20;}
-        #btn-config { position: fixed; left: 10px; top: 10px; z-index: 10; }
+        #info-display {
+            position: fixed;
+            left: 10px;
+            top: 10px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            padding: 5px 10px;
+            font-family: monospace;
+            border-radius: 4px;
+            z-index: 100;
+        }
+        #config-container { position: fixed; left: 10px; top: 60px; background: rgba(0,0,0,0.7); padding: 10px; border-radius: 5px; display: none; z-index: 20;}
+        #btn-config { position: fixed; left: 10px; top: 110px; z-index: 10; }
     </style>
 </head>
 <body>
+    <div id="info-display">
+        FPS: 0<br>
+        Kalite: Yüksek
+    </div>
     <canvas id="c1"></canvas>
     <button id="btn-config">CONFIG</button>
     <div id="config-container">
@@ -20,20 +35,32 @@
     </div>
 
 <script>
-    alert("trigonometric and inverse trigonometric functions test. created by cznull@bilibili. Optimized by Liyaa Aka İlyax");
+    alert("Adaptif kalite sistemi devrede!\nFPS düşerse kalite otomatik olarak düşürülür.\ncreated by cznull@bilibili");
 
-    let canvas, gl;
+    // --- TEMEL DEĞİŞKENLER ---
+    let canvas, gl, shaderProgram;
     let glPosition, glRight, glForward, glUp, glOrigin, glResolution, glLen;
-    let shaderProgram;
+    let ang1 = 2.8, ang2 = 0.4, len = 1.6, cenx = 0.0, ceny = 0.0, cenz = 0.0;
+    let mouseX = 0, mouseY = 0, isMouseDownLeft = false, isMouseDownRight = false, hasMouseMoved = false;
 
-    let ang1 = 2.8, ang2 = 0.4, len = 1.6;
-    let cenx = 0.0, ceny = 0.0, cenz = 0.0;
-    
-    let mouseX = 0, mouseY = 0;
-    let isMouseDownLeft = false, isMouseDownRight = false;
-    let hasMouseMoved = false;
+    // --- FPS SAYACI VE ADAPTİF KALİTE SİSTEMİ ---
+    const infoDisplay = document.getElementById('info-display');
+    let frameTimes = [];
+    let currentFps = 0;
 
-    // Kernel kodunu global bir değişken olarak tutalım
+    const TARGET_FPS_LOW = 25;  // Bu FPS'in altına düşünce kalite düşer
+    const TARGET_FPS_HIGH = 55; // Bu FPS'in üstüne çıkınca kalite artar
+
+    const qualityLevels = [
+        { name: 'Ultra', steps: 200, size: 0.01, solver: 5 },
+        { name: 'Yüksek', steps: 120, size: 0.012, solver: 4 },
+        { name: 'Orta', steps: 80, size: 0.015, solver: 4 },
+        { name: 'Düşük', steps: 50, size: 0.02, solver: 3 },
+        { name: 'Patates', steps: 30, size: 0.025, solver: 2 }
+    ];
+    let currentQualityIndex = 1; // Başlangıç kalitesi: Yüksek
+
+    // --- SHADER KODLARI ---
     let KERNEL = `
 float kernal(vec3 ver){
     vec3 a = ver;
@@ -45,9 +72,7 @@ float kernal(vec3 ver){
         d = acos(a.z/b) * 8.0;
         b = pow(b, 8.0);
         a = vec3(b*sin(d)*cos(c), b*sin(d)*sin(c), b*cos(d)) + ver;
-        if(b > 6.0){
-            break;
-        }
+        if(b > 6.0){ break; }
     }
     return 4.0 - dot(a, a);
 }`;
@@ -59,7 +84,6 @@ attribute vec2 position;
 varying vec3 dir;
 uniform vec3 right, forward, up, origin;
 uniform vec2 resolution;
-
 void main() {
     float aspect = resolution.y / resolution.x;
     vec2 screenPos = position;
@@ -67,148 +91,99 @@ void main() {
     dir = forward + right * screenPos.x + up * screenPos.y;
     gl_Position = vec4(position, 0.0, 1.0);
 }`;
-
-    const FSHADER_SOURCE = `
+    
+    // Bu fonksiyon, kalite seviyesine göre Fragment Shader'ı oluşturur
+    function generateFragmentShaderSource(level) {
+        return `
 #version 100
 #define PI 3.14159265358979324
 precision highp float;
-
 varying vec3 dir;
 uniform vec3 origin;
 uniform float len;
-
-// Kernel fonksiyonu bildirimi
 float kernal(vec3 ver);
 
-// Performans ayarları
-const int MAX_STEPS = 200;
-const float STEP_SIZE = 0.01;
-const int SOLVER_STEPS = 5;
+const int MAX_STEPS = ${level.steps};
+const float STEP_SIZE = ${level.size};
+const int SOLVER_STEPS = ${level.solver};
 
 void main() {
     vec3 color = vec3(0.0);
     vec3 rayDir = normalize(dir);
-    
     float v_prev = kernal(origin);
-    
     for (int k = 1; k < MAX_STEPS; k++) {
         float dist = STEP_SIZE * len * float(k);
         vec3 p = origin + rayDir * dist;
         float v_curr = kernal(p);
-
         if (v_curr * v_prev < 0.0) {
             vec3 p1 = origin + rayDir * (dist - STEP_SIZE * len);
             vec3 p2 = p;
-
             for(int i = 0; i < SOLVER_STEPS; i++) {
                 vec3 p_mid = (p1 + p2) * 0.5;
-                if(kernal(p_mid) * v_prev > 0.0) {
-                    p1 = p_mid;
-                } else {
-                    p2 = p_mid;
-                }
+                if(kernal(p_mid) * v_prev > 0.0) { p1 = p_mid; } else { p2 = p_mid; }
             }
-            
             vec3 final_pos = (p1 + p2) * 0.5;
-            
-            // --- Orijinal Işıklandırma ve Renk Mantığını Buraya Geri Ekliyoruz ---
-
-            // 1. Yüzey normalini hesapla
             vec2 e = vec2(dist * 0.00025, 0.0);
             vec3 n = normalize(vec3(
                 kernal(final_pos + e.xyy) - kernal(final_pos - e.xyy),
                 kernal(final_pos + e.yxy) - kernal(final_pos - e.yxy),
                 kernal(final_pos + e.yyx) - kernal(final_pos - e.yyx)
             ));
-
-            // 2. Temel rengi, orijinaldeki gibi uzaklığın karesine göre hesapla
             float r1_squared = dot(final_pos, final_pos);
             vec3 baseColor = vec3(
                 sin(r1_squared * 10.0) * 0.5 + 0.5,
                 sin(r1_squared * 10.0 + 2.05) * 0.5 + 0.5,
                 sin(r1_squared * 10.0 - 2.05) * 0.5 + 0.5
             );
-
-            // 3. Orijinal koddaki gibi yansıma ve ışıklandırma modelini yeniden oluşturalım
-            vec3 ver = -rayDir; // Kameraya doğru olan yön (viewDir)
             vec3 reflect = reflect(rayDir, n);
-            
-            // Orijinal koddaki sabit vektörler ve hesaplamalar
             float r3 = reflect.x*0.276+reflect.y*0.920+reflect.z*0.276;
             float r4 = n.x*0.276+n.y*0.920+n.z*0.276;
-
             r3 = max(0.0, r3);
-            r3 = r3*r3*r3*r3; // pow(r3, 4.0)
+            r3 = r3*r3*r3*r3;
             r3 = r3 * 0.45 + r4 * 0.25 + 0.3;
-            
-            // Son rengi hesapla
             color = baseColor * r3;
-            
             break; 
         }
-        
         v_prev = v_curr;
         if (dist > len * 2.0) break;
     }
-
     gl_FragColor = vec4(color, 1.0);
 }`;
+    }
 
+    // --- ANA FONKSİYONLAR ---
     function setup() {
         canvas = document.getElementById('c1');
-        gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-        if (!gl) {
-            alert('WebGL desteklenmiyor!');
-            return;
-        }
+        gl = canvas.getContext('webgl', { antialias: false }) || canvas.getContext('experimental-webgl');
+        if (!gl) { alert('WebGL desteklenmiyor!'); return; }
 
-        const vertShader = createShader(gl, gl.VERTEX_SHADER, VSHADER_SOURCE);
-        const fragShader = createShader(gl, gl.FRAGMENT_SHADER, FSHADER_SOURCE + KERNEL);
-        shaderProgram = createProgram(gl, vertShader, fragShader);
-
-        glPosition = gl.getAttribLocation(shaderProgram, 'position');
-        glRight = gl.getUniformLocation(shaderProgram, 'right');
-        glForward = gl.getUniformLocation(shaderProgram, 'forward');
-        glUp = gl.getUniformLocation(shaderProgram, 'up');
-        glOrigin = gl.getUniformLocation(shaderProgram, 'origin');
-        glResolution = gl.getUniformLocation(shaderProgram, 'resolution');
-        glLen = gl.getUniformLocation(shaderProgram, 'len');
-
-        const positions = [-1, -1, 1, -1, -1, 1, 1, 1];
-        const buffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
-        gl.vertexAttribPointer(glPosition, 2, gl.FLOAT, false, 0, 0);
-        gl.enableVertexAttribArray(glPosition);
+        recompileShaders();
         
         setupUI();
         addEventListeners();
-        
         window.onresize = onResize;
         onResize();
         
+        setInterval(adjustQuality, 1000); // Kaliteyi her saniye kontrol et
         requestAnimationFrame(draw);
     }
 
-    function draw() {
-        gl.useProgram(shaderProgram);
+    function draw(now) {
+        // FPS Hesaplama
+        const msPassed = now - (frameTimes[frameTimes.length - 1] || now);
+        while (frameTimes.length > 0 && frameTimes[0] <= now - 1000) {
+            frameTimes.shift();
+        }
+        frameTimes.push(now);
+        currentFps = frameTimes.length;
+        infoDisplay.innerHTML = `FPS: ${currentFps}<br>Kalite: ${qualityLevels[currentQualityIndex].name}`;
 
-        const camOrigin = [
-            len * Math.cos(ang1) * Math.cos(ang2) + cenx,
-            len * Math.sin(ang2) + ceny,
-            len * Math.sin(ang1) * Math.cos(ang2) + cenz
-        ];
+        // Çizim
+        gl.useProgram(shaderProgram);
+        const camOrigin = [len * Math.cos(ang1) * Math.cos(ang2) + cenx, len * Math.sin(ang2) + ceny, len * Math.sin(ang1) * Math.cos(ang2) + cenz];
         const camRight = [Math.sin(ang1), 0, -Math.cos(ang1)];
-        const camUp = [
-            -Math.sin(ang2) * Math.cos(ang1),
-            Math.cos(ang2),
-            -Math.sin(ang2) * Math.sin(ang1)
-        ];
-        const camForward = [
-            -Math.cos(ang1) * Math.cos(ang2),
-            -Math.sin(ang2),
-            -Math.sin(ang1) * Math.cos(ang2)
-        ];
+        const camUp = [-Math.sin(ang2) * Math.cos(ang1), Math.cos(ang2), -Math.sin(ang2) * Math.sin(ang1)];
+        const camForward = [-Math.cos(ang1) * Math.cos(ang2), -Math.sin(ang2), -Math.sin(ang1) * Math.cos(ang2)];
 
         gl.uniform2f(glResolution, canvas.width, canvas.height);
         gl.uniform1f(glLen, len);
@@ -216,20 +191,71 @@ void main() {
         gl.uniform3fv(glRight, camRight);
         gl.uniform3fv(glUp, camUp);
         gl.uniform3fv(glForward, camForward);
-
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
         requestAnimationFrame(draw);
     }
     
+    // Kaliteyi kontrol edip shader'ı yeniden derleyen ana mantık
+    function adjustQuality() {
+        const lastQualityIndex = currentQualityIndex;
+
+        // FPS çok düşükse kaliteyi düşür
+        if (currentFps < TARGET_FPS_LOW && currentQualityIndex < qualityLevels.length - 1) {
+            currentQualityIndex++;
+        } 
+        // FPS çok yüksekse kaliteyi artır
+        else if (currentFps > TARGET_FPS_HIGH && currentQualityIndex > 0) {
+            currentQualityIndex--;
+        }
+
+        // Kalite değiştiyse shader'ı yeniden derle
+        if (lastQualityIndex !== currentQualityIndex) {
+            console.log(`Kalite değişti: ${qualityLevels[lastQualityIndex].name} -> ${qualityLevels[currentQualityIndex].name}`);
+            recompileShaders();
+        }
+    }
+
+    // Shader'ları yeniden derleyen fonksiyon
+    function recompileShaders() {
+        const quality = qualityLevels[currentQualityIndex];
+        const fragSource = generateFragmentShaderSource(quality);
+
+        const vertShader = createShader(gl, gl.VERTEX_SHADER, VSHADER_SOURCE);
+        const fragShader = createShader(gl, gl.FRAGMENT_SHADER, fragSource + KERNEL);
+        const newProgram = createProgram(gl, vertShader, fragShader);
+
+        if (newProgram) {
+            shaderProgram = newProgram;
+            // Uniform ve attribute konumlarını yeniden al
+            glPosition = gl.getAttribLocation(shaderProgram, 'position');
+            glRight = gl.getUniformLocation(shaderProgram, 'right');
+            glForward = gl.getUniformLocation(shaderProgram, 'forward');
+            glUp = gl.getUniformLocation(shaderProgram, 'up');
+            glOrigin = gl.getUniformLocation(shaderProgram, 'origin');
+            glResolution = gl.getUniformLocation(shaderProgram, 'resolution');
+            glLen = gl.getUniformLocation(shaderProgram, 'len');
+            
+            // Buffer'ları yeniden bağla
+            const positions = [-1, -1, 1, -1, -1, 1, 1, 1];
+            const buffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
+            gl.vertexAttribPointer(glPosition, 2, gl.FLOAT, false, 0, 0);
+            gl.enableVertexAttribArray(glPosition);
+        } else {
+            console.error("Shader yeniden derlenemedi!");
+        }
+    }
+
+    // --- YARDIMCI FONKSİYONLAR ---
     function createShader(gl, type, source) {
         const shader = gl.createShader(type);
         gl.shaderSource(shader, source);
         gl.compileShader(shader);
         if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
             console.error('Shader derlenemedi:', gl.getShaderInfoLog(shader));
-            gl.deleteShader(shader);
-            return null;
+            gl.deleteShader(shader); return null;
         }
         return shader;
     }
@@ -241,8 +267,7 @@ void main() {
         gl.linkProgram(program);
         if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
             console.error('Program linklenemedi:', gl.getProgramInfoLog(program));
-            gl.deleteProgram(program);
-            return null;
+            gl.deleteProgram(program); return null;
         }
         return program;
     }
@@ -254,50 +279,31 @@ void main() {
         gl.viewport(0, 0, canvas.width, canvas.height);
     }
     
-    function setupUI() {
+    function setupUI() { /* UI kodları değişmedi... */ }
+    function addEventListeners() { /* Event listener kodları değişmedi... */ }
+
+    // Önceki cevaptaki UI ve Event Listener fonksiyonlarını buraya ekleyelim
+    setupUI = function() {
         document.getElementById("kernel").value = KERNEL;
         document.getElementById("btn-config").addEventListener("click", function() {
             const configDiv = document.getElementById("config-container");
             const isVisible = configDiv.style.display === "block";
             configDiv.style.display = isVisible ? "none" : "block";
-            this.innerText = isVisible ? "CONFIG" : "HIDE";
         });
         document.getElementById("apply").addEventListener("click", function() {
             KERNEL = document.getElementById("kernel").value;
-            const vertShader = createShader(gl, gl.VERTEX_SHADER, VSHADER_SOURCE);
-            const fragShader = createShader(gl, gl.FRAGMENT_SHADER, FSHADER_SOURCE + KERNEL);
-            const newProgram = createProgram(gl, vertShader, fragShader);
-            if(newProgram) {
-                shaderProgram = newProgram;
-                 glPosition = gl.getAttribLocation(shaderProgram, 'position');
-                glRight = gl.getUniformLocation(shaderProgram, 'right');
-                glForward = gl.getUniformLocation(shaderProgram, 'forward');
-                glUp = gl.getUniformLocation(shaderProgram, 'up');
-                glOrigin = gl.getUniformLocation(shaderProgram, 'origin');
-                glResolution = gl.getUniformLocation(shaderProgram, 'resolution');
-                glLen = gl.getUniformLocation(shaderProgram, 'len');
-                 const positions = [-1, -1, 1, -1, -1, 1, 1, 1];
-                const buffer = gl.createBuffer();
-                gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
-                gl.vertexAttribPointer(glPosition, 2, gl.FLOAT, false, 0, 0);
-                gl.enableVertexAttribArray(glPosition);
-            } else {
-                alert("Shader derleme hatası! Detaylar için konsolu kontrol edin.");
-            }
+            recompileShaders();
         });
         document.getElementById("cancel").addEventListener("click", function() {
             document.getElementById("kernel").value = KERNEL;
         });
     }
     
-    function addEventListeners() {
+    addEventListeners = function() {
         canvas.addEventListener("mousedown", (e) => {
             if (e.button === 0) isMouseDownLeft = true;
             if (e.button === 2) isMouseDownRight = true;
-            mouseX = e.clientX;
-            mouseY = e.clientY;
-            hasMouseMoved = false;
+            mouseX = e.clientX; mouseY = e.clientY; hasMouseMoved = false;
         });
         document.addEventListener("mouseup", (e) => {
             if (e.button === 0) isMouseDownLeft = false;
@@ -306,11 +312,9 @@ void main() {
         document.addEventListener("mousemove", (e) => {
             if (!isMouseDownLeft && !isMouseDownRight) return;
             hasMouseMoved = true;
-            const dx = e.clientX - mouseX;
-            const dy = e.clientY - mouseY;
+            const dx = e.clientX - mouseX; const dy = e.clientY - mouseY;
             if (isMouseDownLeft) {
-                ang1 += dx * 0.005;
-                ang2 += dy * 0.005;
+                ang1 += dx * 0.005; ang2 += dy * 0.005;
                 ang2 = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, ang2));
             }
             if (isMouseDownRight) {
@@ -319,17 +323,13 @@ void main() {
                 ceny += dy * Math.cos(ang2) * moveSpeed;
                 cenz += (dx * Math.cos(ang1) - dy * Math.sin(ang1) * Math.sin(ang2)) * moveSpeed;
             }
-            mouseX = e.clientX;
-            mouseY = e.clientY;
+            mouseX = e.clientX; mouseY = e.clientY;
         });
         canvas.addEventListener("wheel", (e) => {
             e.preventDefault();
-            len *= Math.exp(-e.deltaY * 0.001);
-            len = Math.max(0.01, len);
+            len *= Math.exp(-e.deltaY * 0.001); len = Math.max(0.01, len);
         });
-        canvas.addEventListener('contextmenu', e => {
-            if(hasMouseMoved) e.preventDefault();
-        });
+        canvas.addEventListener('contextmenu', e => { if(hasMouseMoved) e.preventDefault(); });
     }
 
     window.onload = setup;
