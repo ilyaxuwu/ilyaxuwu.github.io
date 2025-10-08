@@ -98,10 +98,25 @@
             color: var(--text-primary);
         }
 
+        .download-section {
+            text-align: center;
+        }
+
+        .download-title {
+            font-size: 1.5rem;
+            color: var(--text-primary);
+            margin-bottom: 25px;
+        }
+
+        .download-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
         .download-button {
-            display: block;
-            width: fit-content;
-            margin: 0 auto;
+            display: inline-block;
             padding: 14px 40px;
             background-color: var(--accent-blue);
             color: white;
@@ -111,6 +126,8 @@
             border-radius: 12px;
             transition: all 0.2s ease;
             box-shadow: 0 8px 25px rgba(10, 132, 255, 0.3);
+            border: none;
+            cursor: pointer;
         }
 
         .download-button:hover {
@@ -248,8 +265,12 @@
             <p>The ultimate utility script for Sploop.io</p>
         </header>
 
-        <section id="download">
-            <a href="#" class="download-button">Install from GreasyFork [SOON]</a>
+        <section id="download" class="download-section">
+            <h2 class="download-title">Select version of Astral</h2>
+            <div class="download-buttons">
+                <button class="download-button" id="liteVersionBtn">Lite Version</button>
+                <button class="download-button" id="fullVersionBtn">5.0.0 Version</button>
+            </div>
         </section>
 
         <section id="features">
@@ -284,6 +305,14 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+
+            document.getElementById('fullVersionBtn').addEventListener('click', () => {
+                window.location.href = "https://greasyfork.org/tr/scripts/551959-astral-without-ai/code";
+            });
+
+            document.getElementById('liteVersionBtn').addEventListener('click', () => {
+                window.location.href = "https://greasyfork.org/tr/scripts/551961-astral-lite";
+            });
 
             const features = {
                 'Auto Heal': 'Automatically starts healing when your health is below 100.',
