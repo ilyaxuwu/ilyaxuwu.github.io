@@ -1,0 +1,159 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>iOS-Inspired Script Installer</title>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(180deg, #f7f8fa 0%, #eaf0fa 100%);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #222;
+      min-height: 100vh;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(180deg, #f7f8fa 0%, #eaf0fa 100%);
+    }
+    main {
+      background: rgba(255,255,255,0.85);
+      -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(16px);
+      box-shadow: 0 4px 32px rgba(128,140,160,0.10);
+      border-radius: 28px;
+      padding: 2.5rem 2.25rem 2rem 2.25rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 410px;
+      width: 94vw;
+      margin: 2.5rem 0;
+      animation: fadeIn .8s cubic-bezier(.2, .7, .5, 1.1) 1;
+      transition: box-shadow .3s cubic-bezier(.4,0,.2,1);
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(24px);}
+      to { opacity: 1;   transform: translateY(0);}
+    }
+    h1 {
+      font-size: 2rem;
+      font-weight: 600;
+      margin: 0 0 1.5rem 0;
+      letter-spacing: -0.4px;
+      text-align: center;
+      color: #222b45;
+    }
+    #download-btn {
+      display: inline-block;
+      background: linear-gradient(90deg, #6ac0ff 0%, #389dff 100%);
+      color: #fff;
+      font-weight: 600;
+      font-size: 1.12rem;
+      padding: 0.95em 2.1em;
+      border: none;
+      border-radius: 2.1em;
+      box-shadow: 0 2px 8px rgba(51,125,255,0.14);
+      letter-spacing: 0.01em;
+      margin-bottom: 2.2rem;
+      margin-top: 0.2rem;
+      min-width: 160px;
+      cursor: pointer;
+      transition: background .22s cubic-bezier(.4,0,.2,1), box-shadow .2s cubic-bezier(.4,0,.2,1), transform .13s cubic-bezier(.4,0,.2,1);
+      outline: none;
+    }
+    #download-btn:focus-visible {
+      outline: 3px solid #389dff;
+      outline-offset: 2px;
+    }
+    #download-btn:hover, #download-btn:active {
+      background: linear-gradient(90deg, #389dff 0%, #196eff 100%);
+      box-shadow: 0 6px 18px rgba(51,125,255,0.22), 0 1.5px 3.5px #aecffb33;
+      transform: scale(0.965);
+    }
+    section {
+      width: 100%;
+      max-width: 340px;
+      margin: 0 auto;
+      background: none;
+      border-radius: 20px;
+      padding: 0.8em 0 0.1em 0;
+      box-sizing: border-box;
+      animation: popIn .72s .22s cubic-bezier(.4,0,.2,1) backwards;
+    }
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(.98) translateY(24px);}
+      to { opacity: 1;   transform: scale(1)   translateY(0);}
+    }
+    h2 {
+      font-size: 1.19rem;
+      font-weight: 600;
+      color: #247bea;
+      margin: 0 0 0.62rem 0;
+      letter-spacing: -0.2px;
+    }
+    ol {
+      margin: 0 0 0 1.2em;
+      padding: 0;
+      font-size: 1.01rem;
+      line-height: 1.6;
+      color: #38475d;
+    }
+    ol li {
+      margin-bottom: 0.7em;
+    }
+    @media (max-width: 600px) {
+      main {
+        max-width: 97vw;
+        padding: 8vw 3vw;
+        border-radius: 11vw;
+      }
+      h1 {
+        font-size: 1.27rem;
+      }
+      h2 {
+        font-size: 1.03rem;
+      }
+      #download-btn {
+        font-size: 1rem;
+        min-width: calc(38vw + 28px);
+      }
+      section {
+        max-width: 98vw;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Astral S Stream Sniper<br>iOS-Inspired Installer</h1>
+    <button id="download-btn" type="button">Download</button>
+    <section>
+      <h2>How to use it</h2>
+      <ol>
+        <li><b>Install Tampermonkey</b>:<br>
+          Go to your browser’s extension store (Chrome Web Store, Firefox Add-ons, Edge Add-ons) or visit <a href="https://www.tampermonkey.net/" target="_blank" rel="noopener" style="color:#389dff;text-decoration:underline;">tampermonkey.net</a>. Add Tampermonkey to your browser and activate it.
+        </li>
+        <li><b>Download the script</b>:<br>
+          Click the <b>Download</b> button above. You will be redirected to the GreasyFork script page.
+        </li>
+        <li><b>Install</b>:<br>
+          On GreasyFork, select “Install this script”. Tampermonkey will prompt you to confirm—choose <b>Install</b> again.
+        </li>
+      </ol>
+    </section>
+  </main>
+  <script>
+    document.getElementById('download-btn').addEventListener('click', function() {
+      window.location.href = "https://greasyfork.org/tr/scripts/553010-astral-s-stream-sniper";
+    });
+  </script>
+</body>
+</html>
