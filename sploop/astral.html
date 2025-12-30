@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Astral Script</title>
+    <title>Astral Script - The Ultimate Utility</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -15,6 +15,7 @@
             --text-secondary: #8e8e93;
             --accent-blue: #0A84FF;
             --accent-blue-hover: #0060b8;
+            --accent-gold: #FFD700;
             --border-color: rgba(255, 255, 255, 0.1);
             --border-hover-color: rgba(255, 255, 255, 0.25);
         }
@@ -61,8 +62,28 @@
 
         header {
             text-align: center;
-            margin-bottom: 60px;
+            margin-bottom: 40px;
             animation: fadeInDown 1s ease-out;
+        }
+
+        /* Navigasyon Linkleri */
+        nav {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        nav a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+            font-size: 0.95rem;
+        }
+
+        nav a:hover {
+            color: var(--accent-blue);
         }
 
         h1 {
@@ -73,6 +94,7 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             animation: text-glow 4s ease-in-out infinite;
+            margin-bottom: 10px;
         }
         
         @keyframes text-glow {
@@ -83,11 +105,12 @@
         header p {
             font-size: 1.2rem;
             color: var(--text-secondary);
-            margin-top: 10px;
         }
 
+        /* Scroll margin: Linke tıklandığında başlığın ekranın en tepesine yapışmasını engeller */
         section {
             margin-bottom: 80px;
+            scroll-margin-top: 60px; 
         }
 
         h2 {
@@ -130,9 +153,17 @@
             cursor: pointer;
         }
 
+        .download-button.lite {
+            background-color: transparent;
+            border: 2px solid var(--accent-blue);
+            color: var(--accent-blue);
+            box-shadow: none;
+        }
+
         .download-button:hover {
             transform: translateY(-3px);
             background-color: var(--accent-blue-hover);
+            color: white;
             box-shadow: 0 12px 30px rgba(10, 132, 255, 0.4);
         }
         
@@ -206,14 +237,27 @@
             border-bottom: 1px solid var(--border-color);
             padding-bottom: 15px;
             margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .latest-tag {
+            background-color: var(--accent-blue);
+            color: white;
+            font-size: 0.8rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            font-weight: 700;
         }
 
         .changelog-version ul { list-style: none; }
         .changelog-version li {
-            color: var(--text-secondary); margin-bottom: 8px; position: relative; padding-left: 20px;
+            color: var(--text-secondary); margin-bottom: 8px; position: relative; padding-left: 25px;
         }
         .changelog-version li::before {
-            content: '✓'; position: absolute; left: 0; color: var(--accent-blue); font-weight: 700;
+            content: '➤'; position: absolute; left: 0; color: var(--accent-blue); font-weight: 700; font-size: 0.8rem; top: 4px;
         }
         
         .credits-card {
@@ -263,18 +307,24 @@
         <header>
             <h1>Astral</h1>
             <p>The ultimate utility script for Sploop.io</p>
+            <nav>
+                <a href="#download">Download</a>
+                <a href="#features">Features</a>
+                <a href="#changelog">Changelog</a>
+                <a href="#credits">Credits</a>
+            </nav>
         </header>
 
         <section id="download" class="download-section">
-            <h2 class="download-title">Select version of Astral</h2>
+            <h2 class="download-title">Download Astral</h2>
             <div class="download-buttons">
-                <button class="download-button" id="liteVersionBtn">Lite Version</button>
-                <button class="download-button" id="fullVersionBtn">5.0.0 Version</button>
+                <button class="download-button lite" id="liteVersionBtn">Lite Version</button>
+                <button class="download-button" id="fullVersionBtn">v5.1.0 (Latest)</button>
             </div>
         </section>
 
         <section id="features">
-            <h2 class="hidden">Features</h2>
+            <h2 class="hidden">Key Features</h2>
             <div class="features-grid">
                 <!-- Features will be here from JavaScript -->
             </div>
@@ -300,7 +350,7 @@
     </div>
     
     <footer>
-        <p>&copy; 2025 Astral Script. All rights reserved.</p>
+        <p>&copy; 2025 Astral Script. Optimized for the latest Sploop.io update.</p>
     </footer>
 
     <script>
@@ -315,21 +365,17 @@
             });
 
             const features = {
-                'Auto Heal': 'Automatically starts healing when your health is below 100.',
-                'Auto Placer': 'Places an object automatically to counter enemies.',
-                'Auto Break': 'Starts breaking the trap you are stuck in.',
-                'Naginata Sync': 'Initiates a synchronized attack with the Naginata at a specific health threshold.',
-                'Musket Sync': 'Initiates a synchronized attack with the Musket at a specific health threshold.',
-                'Auto Push': 'Pushes the enemy towards a nearby spike if they are trapped.',
-                'Auto Break Spike': 'Before auto-breaking a trap, it checks for and destroys dangerous nearby spikes first.',
-                'Left Click Combat': 'Equips Berserker gear and spams attacks while holding left-click.',
-                'Right Click Combat': 'Equips Demolitionist gear and breaks objects while holding right-click.',
-                'Auto Hat': 'Automatically equips the best hat based on your location (Winter, Sea, etc.) or combat situation.',
-                'Kill Chat': 'Sends a message about Astral to a player right after you kill them.',
-                'Packgod': 'Automatically roasts players who threaten to call a moderator.',
-                'Auto Replace': 'Automatically replaces objects broken by the enemy in the same position.',
-                'Repeater': 'Enables rapid-fire placement of items with key holds.',
-                'Always Immunity': 'Prioritizes wearing the immunity gear for constant defense.'
+                'Ruby Tier Support': 'Full support for new Ruby weapons (Spear, Naginata, Axe) including accurate damage calculations.',
+                'Auto Heal': 'Heals when your health is below 100, Optimized for non-clown.',
+                'Smart Auto Place': 'Automatically places objects to counter enemies, updated for new hitboxes.',
+                'Auto Break': 'Optimized for the new update. Prioritizes traps, turrets, and windmills with increased hammer damage.',
+                'Naginata Sync': 'Synchronized attacks with Naginata at specific health thresholds for maximum burst.',
+                'Musket Sync': 'Automatically fires secondary weapon (Musket/Turret) for instant kill combos.',
+                'Auto Push': 'Calibrated for v0.4.0 knockback changes. Pushes enemies into spikes efficiently.',
+                'Left/Right Click Combat': 'Spam attacks or break buildings automatically by holding mouse buttons.',
+                'Auto Hat': 'Equips the best gear for the situation (Snow, Sea, Combat) automatically.',
+                'Packgod & Kill Chat': 'Automatically roasts players in chat when they die or threaten you.',
+                'Ban Check': 'See which servers you are banned from directly in the menu.'
             };
 
             const featuresGrid = document.querySelector('.features-grid');
@@ -344,11 +390,36 @@
             }
 
             const changelog = {
-                "5.0.0": ["Skinned from iPhone UI", "Stronger Autoplace", "Stronger Autoheal", "New Menu", "Auto Roast", "Kill Chat", "New Notification System", "Decreased Packet Usage", "Show Player List", "Show Servers Where You Are Banned", "Keep Immunity Hat Fix"],
-                "3.5.4": ["Auto break own objects", "Stronger Auto place", "UI Changes", "Auto break Bug fixes", "Song Lyrics", "Config System"],
-                "2.0.7": ["Translation System", "Auto Push", "Dynamic notification"],
-                "1.0.4": ["Aly AI", "Astral Intelligence Autoplace", "Naginata & Musket Sync", "10x Strongest Autoheal ever."],
-                "1.0.3": ["Basic Autoheal, Macros, and Hat macro"]
+                "5.1.0": [
+                    "<b>CRITICAL:</b> Optimized for Sploop.io v0.4.0 update.",
+                    "Added support for <b>Ruby Weapons</b> (Spear, Naginata, Axe, Sword).",
+                    "Made <b>Shame bar</b> %100 accurate.",
+                    "Adjusted Auto Push distance due to reduced knockback physics.",
+                    "Updated Auto Break to target new structures (Windmills, Turrets).",
+                    "Added detection for 'Skid Hat' and 'Pumpking's Curse'.",
+                    "Updated weapon damage values for accurate prediction."
+                ],
+                "5.0.0": [
+                    "Skinned with iOS-style UI.", 
+                    "Stronger Autoplace & Autoheal.", 
+                    "Added Auto Roast & Kill Chat.", 
+                    "New Notification System.", 
+                    "Decreased Packet Usage.", 
+                    "Show Player List & Banned Servers.", 
+                    "Fixed Immunity Hat logic."
+                ],
+                "3.5.4": [
+                    "Auto break own objects.", 
+                    "Stronger Auto place.", 
+                    "UI Overhaul.", 
+                    "Bug fixes for Auto Break.", 
+                    "Added Song Lyrics."
+                ],
+                "2.0.7": [
+                    "Translation System.", 
+                    "Auto Push implementation.", 
+                    "Dynamic notification system."
+                ]
             };
             
             const changelogList = document.querySelector('.changelog-list');
@@ -357,12 +428,17 @@
                 const versionDiv = document.createElement('div');
                 versionDiv.className = 'changelog-version ios-card hidden';
                 versionDiv.style.setProperty('--delay', `${changelogDelay}s`);
+                
+                const isLatest = version === "5.1.0";
+                const badge = isLatest ? '<span class="latest-tag">Latest</span>' : '';
+                
                 const changes = changelog[version].map(item => `<li>${item}</li>`).join('');
-                versionDiv.innerHTML = `<h3>Version ${version}</h3><ul>${changes}</ul>`;
+                versionDiv.innerHTML = `<h3>Version ${version} ${badge}</h3><ul>${changes}</ul>`;
                 changelogList.appendChild(versionDiv);
                 changelogDelay += 0.1;
             }
 
+            // Intersection Observer for Animation
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
@@ -375,6 +451,16 @@
             });
 
             document.querySelectorAll('.hidden').forEach(el => observer.observe(el));
+g
+            if (window.location.hash) {
+                const targetId = window.location.hash;
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    setTimeout(() => {
+                        targetElement.scrollIntoView({ behavior: 'smooth' });
+                    }, 300);
+                }
+            }
         });
     </script>
 </body>
