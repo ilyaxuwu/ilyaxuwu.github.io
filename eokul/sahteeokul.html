@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sahte e-okul notları</title>
+    <style>
+        :root {
+            --primary-blue: #283593;
+            --text-dark: #333;
+            --text-light: #777;
+            --score-green: #00bfa5;
+            --bg-color: #f5f5f5;
+            --border-color: #eee;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+            padding-bottom: 120px;
+            color: var(--text-dark);
+        }
+
+        .control-panel {
+            background: white;
+            padding: 10px 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            gap: 10px;
+        }
+
+        .add-group {
+            display: flex;
+            gap: 5px;
+            flex: 1;
+        }
+
+        .control-input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            width: 100%;
+        }
+
+        #newCourseHours {
+            max-width: 50px;
+            text-align: center;
+        }
+
+        .add-btn {
+            background-color: var(--primary-blue);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        .toggle-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-left: 1px solid #eee;
+            padding-left: 10px;
+        }
+
+        .toggle-label-text {
+            font-size: 10px;
+            color: #999;
+            margin-bottom: 2px;
+            font-weight: 600;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 36px;
+            height: 20px;
+        }
+
+        .switch input { 
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #ff5252; 
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(16px);
+        }
+
+        .course-list {
+            padding: 10px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .course-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+            overflow: hidden;
+            position: relative;
+            transition: transform 0.2s;
+        }
+
+        .card-header {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 25px; 
+        }
+
+        .course-title {
+            font-weight: 700;
+            font-size: 15px;
+            color: #222;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .delete-btn {
+            background: #ff5252;
+            color: white;
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            display: none; 
+            align-items: center;
+            justify-content: center;
+            margin-left: 10px;
+        }
+
+        .course-list.edit-mode .delete-btn {
+            display: flex;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0); }
+            100% { transform: scale(1); }
+        }
+
+        .score-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .score-table th {
+            background-color: #f9fbfd;
+            color: var(--text-light);
+            font-weight: 500;
+            font-size: 13px;
+            padding: 8px;
+            border-bottom: 1px solid var(--border-color);
+            border-right: 1px solid var(--border-color);
+        }
+
+        .score-table th:last-child { border-right: none; }
+        
+        .score-table td:first-child, .score-table th:first-child {
+            width: 25%;
+            text-align: left;
+            padding-left: 15px;
+            font-weight: 700;
+            color: #546e7a;
+            font-size: 13px;
+        }
+
+        .score-table td {
+            border-right: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0;
+            height: 40px;
+        }
+
+        .score-table td:last-child { border-right: none; }
+
+        .score-input {
+            width: 100%;
+            height: 100%;
+            border: none;
+            text-align: center;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--primary-blue);
+            background: transparent;
+            outline: none;
+        }
+
+        .score-input:focus { background-color: #e8eaf6; }
+        .score-input::placeholder { color: #e0e0e0; font-weight: normal; }
+
+        .puan-row td {
+            border-bottom: none;
+            background-color: #fafafa;
+        }
+
+        .puan-label {
+            text-align: right !important;
+            padding-right: 10px !important;
+            color: var(--text-light) !important;
+            font-weight: normal !important;
+            font-size: 13px !important;
+        }
+
+        .course-average {
+            text-align: center;
+            font-weight: 700;
+            color: var(--score-green);
+            font-size: 15px;
+        }
+
+        .bottom-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid #ddd;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            max-width: 600px;
+            margin: 0 auto;
+            z-index: 99;
+        }
+
+        .bar-info { display: flex; align-items: center; gap: 10px; }
+        
+        .chart-icon {
+            width: 24px;
+            height: 24px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23283593' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='20' x2='18' y2='10'%3E%3C/line%3E%3Cline x1='12' y1='20' x2='12' y2='4'%3E%3C/line%3E%3Cline x1='6' y1='20' x2='6' y2='14'%3E%3C/line%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        .bar-text h4 { margin: 0; font-size: 14px; color: #555; font-weight: 500; }
+        .bar-text p { margin: 0; font-size: 11px; color: #999; }
+        .general-average { font-size: 18px; font-weight: 700; color: var(--score-green); }
+
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    </style>
+</head>
+<body>
+
+    <!-- Kontrol Paneli -->
+    <div class="control-panel">
+        <div class="add-group">
+            <input type="text" id="newCourseName" placeholder="Ders Adı" class="control-input">
+            <input type="number" id="newCourseHours" placeholder="Saat" class="control-input">
+            <button class="add-btn" onclick="addNewCourse()">EKLE</button>
+        </div>
+        
+        <div class="toggle-group">
+            <span class="toggle-label-text">DÜZENLE</span>
+            <label class="switch">
+                <input type="checkbox" id="editModeToggle">
+                <span class="slider round"></span>
+            </label>
+        </div>
+    </div>
+
+    <div id="course-list" class="course-list">
+    </div>
+
+    <div class="bottom-bar">
+        <div class="bar-info">
+            <div class="chart-icon"></div>
+            <div class="bar-text">
+                <h4>1. Dönem Not Ortalaması</h4>
+                <p>Ders saati ağırlığına göre</p>
+            </div>
+        </div>
+        <div class="general-average" id="generalAverage">-</div>
+    </div>
+
+    <script>
+        let cardCounter = 0;
+
+        window.onload = function() {
+            addCourseCard("Seçmeli Türk Dili Ve Edebiyatı", 3, [48.75, 38.35], [70, 70]);
+            addCourseCard("Tarih", 2, [5, 20], [85, 90]);
+            addCourseCard("Türk Dili Ve Edebiyatı", 5, [34.65, 72.5], [60, 60]);
+            addCourseCard("Yabancı Dil", 4, [79, 87.5], [80, 95]);
+
+            const toggle = document.getElementById('editModeToggle');
+            const courseList = document.getElementById('course-list');
+
+            toggle.addEventListener('change', function() {
+                if(this.checked) {
+                    courseList.classList.add('edit-mode');
+                } else {
+                    courseList.classList.remove('edit-mode');
+                }
+            });
+        };
+
+        function addNewCourse() {
+            const name = document.getElementById('newCourseName').value;
+            const hours = document.getElementById('newCourseHours').value;
+
+            if (name && hours) {
+                addCourseCard(name, hours);
+                document.getElementById('newCourseName').value = '';
+                document.getElementById('newCourseHours').value = '';
+            } else {
+                alert("Lütfen ders adı ve saatini giriniz.");
+            }
+        }
+
+        function addCourseCard(courseName, hours, initialExam = [], initialOral = []) {
+            cardCounter++;
+            const cardId = cardCounter;
+            const courseList = document.getElementById('course-list');
+            const getVal = (arr, index) => arr[index] !== undefined ? arr[index] : "";
+
+            const cardHTML = `
+            <div class="course-card" id="card-${cardId}" data-hours="${hours}">
+                <div class="card-header">
+                    <span class="course-title">${courseName} (${hours} Saat)</span>
+                    <button class="delete-btn" onclick="removeCard(${cardId})">✕</button>
+                </div>
+                <table class="score-table">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>1.</th>
+                            <th>2.</th>
+                            <th>3.</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Sınav</td>
+                            <td><input type="number" step="0.01" class="score-input" oninput="calculateCard(${cardId})" value="${getVal(initialExam, 0)}" placeholder="-"></td>
+                            <td><input type="number" step="0.01" class="score-input" oninput="calculateCard(${cardId})" value="${getVal(initialExam, 1)}" placeholder="-"></td>
+                            <td><input type="number" step="0.01" class="score-input" oninput="calculateCard(${cardId})" value="${getVal(initialExam, 2)}" placeholder="-"></td>
+                        </tr>
+                        <tr>
+                            <td>Sözlü</td>
+                            <td><input type="number" step="0.01" class="score-input" oninput="calculateCard(${cardId})" value="${getVal(initialOral, 0)}" placeholder="-"></td>
+                            <td><input type="number" step="0.01" class="score-input" oninput="calculateCard(${cardId})" value="${getVal(initialOral, 1)}" placeholder="-"></td>
+                            <td><input type="number" step="0.01" class="score-input" oninput="calculateCard(${cardId})" value="${getVal(initialOral, 2)}" placeholder="-"></td>
+                        </tr>
+                        <tr class="puan-row">
+                            <td colspan="3" class="puan-label">Puanı</td>
+                            <td class="course-average" id="avg-${cardId}">-</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            `;
+            
+            courseList.insertAdjacentHTML('beforeend', cardHTML);
+            calculateCard(cardId);
+        }
+
+        function removeCard(id) {
+            const card = document.getElementById(`card-${id}`);
+            card.remove();
+            calculateGeneralAverage();
+        }
+
+        function calculateCard(id) {
+            const card = document.getElementById(`card-${id}`);
+            if(!card) return; 
+
+            const inputs = card.querySelectorAll('.score-input');
+            let sum = 0;
+            let count = 0;
+
+            inputs.forEach(input => {
+                const val = parseFloat(input.value);
+                if (!isNaN(val)) {
+                    sum += val;
+                    count++;
+                }
+            });
+
+            const avgElement = document.getElementById(`avg-${id}`);
+            
+            if (count > 0) {
+                let average = sum / count;
+                avgElement.innerText = formatNumber(average);
+            } else {
+                avgElement.innerText = "-";
+            }
+
+            calculateGeneralAverage();
+        }
+
+        function calculateGeneralAverage() {
+            const cards = document.querySelectorAll('.course-card');
+            let totalWeightedScore = 0;
+            let totalHours = 0;
+
+            cards.forEach(card => {
+                const hours = parseFloat(card.dataset.hours);
+                const avgText = card.querySelector('.course-average').innerText;
+                
+                if (avgText !== "-") {
+                    const avg = parseFloat(avgText);
+                    totalWeightedScore += (avg * hours);
+                    totalHours += hours;
+                }
+            });
+
+            const generalAverageEl = document.getElementById('generalAverage');
+
+            if (totalHours > 0) {
+                generalAverageEl.innerText = formatNumber(totalWeightedScore / totalHours);
+            } else {
+                generalAverageEl.innerText = "-";
+            }
+        }
+
+        function formatNumber(num) {
+            return parseFloat(num.toFixed(4));
+        }
+    </script>
+</body>
+</html>
