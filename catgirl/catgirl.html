@@ -1,0 +1,243 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catgirl Translator</title>
+    <style>
+        body { background: #ffdde9; font-family: 'Comic Sans MS', cursive, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 20px; background-image: url("data:image/svg+xml,%3Csvg width='52' height='26' viewBox='0 0 52' 26' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ff9fce' fill-opacity='0.2'%3E%3Cpath d='M10 10c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6zm25.464-1.95l8.486 8.486-1.414 1.414-8.486-8.486 1.414-1.414z' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); }
+        .container { background: white; padding: 2rem; border-radius: 20px; box-shadow: 0 0 20px rgba(255, 100, 200, 0.3); max-width: 600px; width: 90%; margin: 20px; border: 4px solid #ff99cc; display: flex; flex-direction: column; }
+        h1 { color: #ff69b4; text-align: center; font-size: 2.5em; margin: 0 0 1rem; text-shadow: 2px 2px 0px #fff; }
+        .translator-box { display: flex; flex-direction: column; gap: 1rem; }
+        textarea { resize: vertical; min-height: 100px; padding: 15px; border: 3px solid #ff99cc; border-radius: 15px; font-size: 1.1em; background: #fff9fc; }
+        button { background: #ff77aa; color: white; border: none; padding: 15px 30px; border-radius: 25px; font-size: 1.2em; cursor: pointer; transition: transform 0.2s, background 0.2s; }
+        button:hover { background: #ff5599; transform: scale(1.05) rotate(-2deg); }
+        button:active { transform: scale(0.95) rotate(2deg); }
+        #output { background: #fff9fc; padding: 20px; border-radius: 15px; border: 3px dashed #ff99cc; min-height: 100px; font-size: 1.2em; line-height: 1.4; color: #ff69b4; }
+        .controls { display: flex; gap: 1rem; align-items: center; margin: 10px 0; }
+        .checkbox-container { position: relative; display: flex; align-items: center; gap: 0.8rem; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 30px; background: #fff5f9; transition: all 0.3s ease; border: 2px solid #ff99cc; }
+        .checkbox-container:hover { transform: scale(1.05); box-shadow: 0 0 10px rgba(255, 153, 204, 0.3); }
+        .checkbox-container input { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; }
+        .checkmark { position: relative; height: 24px; width: 24px; background-color: #fff; border: 2px solid #ff77aa; border-radius: 6px; transition: all 0.3s ease; }
+        .checkbox-container input:checked ~ .checkmark { background-color: #ff77aa; border-color: #ff5599; }
+        .checkmark:after { content: "✓"; position: absolute; display: none; left: 50%; top: 45%; transform: translate(-50%, -50%); color: white; font-size: 16px; font-weight: bold; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+        .checkbox-container input:checked ~ .checkmark:after { display: block; }
+        .checkbox-label { color: #ff69b4; font-size: 1.1em; font-weight: bold; text-shadow: 1px 1px 0px rgba(255,255,255,0.5); }
+        .output-container { position: relative; }
+        .copy-btn { position: absolute; right: 10px; bottom: 10px; background: #ff99cc; padding: 8px 15px; font-size: 0.9em; }
+        .copy-btn:hover { background: #ff77aa; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @media (max-width: 480px) { .container { padding: 1rem; } h1 { font-size: 2em; } .controls { flex-direction: column; align-items: stretch; } .copy-btn { position: static; margin-top: 10px; width: fit-content; } .checkbox-container { padding: 6px 10px; } }
+    
+        .credit {
+            margin-top: 2rem;
+            padding-bottom: 1rem;
+            text-align: center;
+            color: #ff69b4; 
+            font-size: 1em;
+            text-shadow: 1px 1px 0px rgba(255, 255, 255, 0.7);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Catgirl Translator</h1>
+        <div class="translator-box">
+            <textarea id="input" placeholder="Say something to me, meow~" oninput="translateText()">Hello! My name is Liya. This is a very important project.</textarea>
+            <div class="controls">
+                <label class="checkbox-container">
+                    <input type="checkbox" id="useEmojis" checked onchange="translateText()">
+                    <span class="checkmark"></span><span class="checkbox-label">Add Emojis 🐾</span>
+                </label>
+            </div>
+            <div class="output-container">
+                <div id="output">Translated text will appear here nya~ 🌸</div>
+                <button class="copy-btn" onclick="copyText()">Copy 📋</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="credit">
+        This project was made by Liyaa 💖
+    </div>
+
+
+<script>
+    function aiCatgirlTranslator(text, useEmojis = true) {
+        if (!text.trim()) return "Mreow? I'm listening~ *flicks ear*";
+        
+        const whitelist = ['girl', 'egirl'];
+
+        const keywordSets = {
+            question: ['why', 'how', 'what', 'when', 'where', 'who', 'do', 'are', 'is', '??'],
+            excited: ['amazing', 'awesome', 'wow', 'omg', 'yay', 'incredible', 'finally', 'so cool'],
+            happy: ['love', 'like', 'happy', 'cute', 'thank', 'purrfect', 'great', 'wonderful', 'fantastic'],
+            annoyed: ['hate', 'angry', 'mad', 'stupid', 'jerk', 'grr', 'shut up', 'hmph', 'leave me alone', 'ugh'],
+            affectionate: ['cuddle', 'hug', 'pet', 'snuggle', 'kiss', 'hold', 'pat'],
+            hungry: ['hungry', 'food', 'eat', 'snack', 'treats', 'yummy', 'delicious', 'starving'],
+            sleepy: ['sleepy', 'tired', 'yawn', 'bed', 'nap', 'eepy'],
+            playful: ['play', 'game', 'fun', 'chase', 'toy', 'pounce', 'bap'],
+            shy: ['um', 'uh', 'nervous', 'maybe', 'perhaps', 'i-i don\'t know'],
+            scared: ['scared', 'afraid', 'monster', 'ghost', 'spooky', 'eek', 'scary', 'help'],
+            lazy: ['lazy', 'bother', 'effort', 'later', 'can\'t', 'meh'],
+            confused: ['confused', 'huh', 'what?', 'don\'t understand', 'explain', '???'],
+            proud: ['proud', 'i did it', 'awesome me', 'check it out', 'best', 'nailed it'],
+            guilty: ['guilty', 'my fault', 'i messed up', 'sorry', 'i\'m bad', 'oops'],
+            hopeful: ['hope', 'wish', 'please', 'maybe one day', 'i wish'],
+            jealous: ['jealous', 'mine', 'ignore me', 'who is that', 'hmph'],
+            relaxed: ['relaxed', 'chill', 'calm', 'peaceful', 'comfy', 'cozy'],
+            surprised: ['surprised', 'whoa', 'really', 'no way', 'what?!', '!!'],
+            mischievous: ['hehe', 'sneaky', 'trouble', 'plot', 'prank', 'teehee'],
+            sad: ['sad', 'lonely', 'cry', 'upset', 'miss you', 'tears', 'heartbroken'],
+            impressed: ['impressed', 'incredible', 'sugoi', 'genius', 'masterpiece']
+        };
+
+        const moodEffects = {
+            curious: { actions: ['*tilts head*', '*ears perk up*', '*sniffs the air curiously*', '*blinks slowly*'], sounds: [' mrrp?', ' nyani?', '...hmmm?', 'mew?'], emojis: ['🤔', '🧐', '❓', '👀'] },
+            excited: { actions: ['*vibrates with excitement*', '*gets the zoomies!*', '*bounces on paws*', '*tail wags super fast*'], sounds: ['!! >w<', '!! (≧▽≦)', 'KYAA!', 'EEEeee!'], emojis: ['✨', '🎉', '🤩', '💖'] },
+            happy: { actions: ['*purrrrrs contentedly*', '*makes happy biscuits on your lap*', '*slow, happy blink*', '*wags tail gently*'], sounds: [' nya~', ' hehe~', '(*^▽^*)', 'mew~'], emojis: ['😊', '💖', '🥰', '💕'] },
+            annoyed: { actions: ['*flattens ears*', '*tail thumps on the floor*', '*huffs and turns away*', '*gives you the silent treatment*'], sounds: [' hssss!', ' >:(', 'grrrr... (`-´#)', 'Hmph!'], emojis: ['😠', '💢', '😒', '😑'] },
+            affectionate: { actions: ['*rubs against you purring loudly*', '*boops your nose with mine*', '*headbutts you gently*', '*curls up in your lap*'], sounds: [' mrow~', ' *purrrr~*', '(´,,•ω•,,)♡', 'mreow~'], emojis: ['💖', '💕', '😻', '❤️'] },
+            hungry: { actions: ['*stares intently at your food*', '*paws at your leg insistently*', '*tummy rumbles loudly*', '*leads you to my food bowl*'], sounds: [' feed mew pwease?', 'NYAOW!', '(·﹃ ·)', 'mrrroww?'], emojis: ['🐟', '🍲', '🥺', '🙏'] },
+            sleepy: { actions: ['*a big, wide yaaaawn*', '*stretches out every single toe*', '*finds a warm spot to curl up in*', '*eyes get droopy*'], sounds: [' Zzzz...', ' so sweepy...', '(=￣ ρ￣=) ..zzZZ', 'mrrph...'], emojis: ['😴', '😪', '🌙', '💤'] },
+            playful: { actions: ['*wiggles butt before pouncing*', '*chases a laser dot that isn\'t there*', '*hides and prepares to ambush*', '*baps you playfully*'], sounds: [' pway with mew?', ' >:3', 'ekekekek!', 'mrawr!'], emojis: ['🧶', '🐾', '😼', '✨'] },
+            shy: { actions: ['*hides behind my paws*', '*shuffles feet*', '*speaks in a small, quiet voice*', '*looks down at the floor*'], sounds: [' u-um...', ' m-maybe...?', '(⁄ ⁄•⁄ω⁄•⁄ ⁄)', '...hai'], emojis: ['🥺', '👉👈', '😳', '😥'] },
+            scared: { actions: ['*tail puffs up like a bottle brush*', '*hides under the nearest blanket*', '*freezes in place, eyes wide*', '*jumps at a loud noise*'], sounds: ['E-Eek!', 'kyaaa!', '((;ﾟДﾟ))', 'Hiss!'], emojis: ['😱', '😨', '👻', '😖'] },
+            lazy: { actions: ['*melts into a puddle on the floor*', '*flops over dramatically*', '*refuses to move a muscle*', '*blinks slowly, unimpressed*'], sounds: ['mrehhhh...', 'too much effowt...', '_(:3 」∠)_', '...later'], emojis: ['😑', '🥱', '🛋️', '🐈'] },
+            confused: { actions: ['*head tilts a full 90 degrees*', '*ears swivel in different directions*', '*stares blankly into space*', '*blinks multiple times*'], sounds: [' huh?', 'nyani?', 'does not compute... (@_@)', 'mrr?'], emojis: ['🤔', '😕', '😵‍💫', '❓'] },
+            proud: { actions: ['*puffs out chest smugly*', '*tail held high like a banner*', '*struts around proudly*', '*preens a little*'], sounds: ['Hehe, I know I\'m gweat!', 'Of couwse I did it!', '(ﾉ´ヮ`)ﾉ*:･ﾟ✧', 'See? Purrfect!'], emojis: ['😏', '😎', '👑', '💅'] },
+            guilty: { actions: ['*ears flatten against my head*', '*avoids all eye contact*', '*tucks tail between my legs*', '*slowly backs away*'], sounds: ['I... I\'m so sowwy...', 'm-my bad...', '( ´•̥̥̥ω•̥̥̥` )', '*quiet whimpering*'], emojis: ['🙏', '😥', '💧', '🙇‍♀️'] },
+            hopeful: { actions: ['*eyes get wide and sparkly*', '*paws clasped together pleadingly*', '*looks at you with big, hopeful eyes*', '*purrs hopefully*'], sounds: [' I weally, weally hope so!', 'pwetty pwease?', '(ㅅ´ ˘ `)♡', 'maybe...?'], emojis: ['✨', '🤞', '🌟', '🥺'] },
+            jealous: { actions: ['*glares daggers at the other thing/person*', '*pointedly ignores you*', '*gets between you and what has your attention*', '*lets out a low growl*'], sounds: ['Hmph!', 'Who is THAT?!', '(¬_¬)', 'Grrr...'], emojis: ['👀', '😒', '😠', '😤'] },
+            relaxed: { actions: ['*making soft biscuits on a fluffy blanket*', '*lets out a soft, contented sigh*', '*slow, rhythmic purring fills the air*', '*dozing off in a sunbeam*'], sounds: ['mrrrrrr...', 'sooo comfy...', '(︶ω︶)', '*happy sigh*'], emojis: ['😌', '😊', '💖', '☀️'] },
+            surprised: { actions: ['*jumps a foot in the air!*', '*eyes go wide as dinner plates*', '*fur stands on end for a moment*', '*gasps loudly*'], sounds: ['N-NANI?!', 'Whoa!', 'Σ(°ロ°)', 'M-Mrow!'], emojis: ['😮', '🤯', '‼️', '😲'] },
+            mischievous: { actions: ['*a sneaky glint in my eye*', '*wiggles butt, preparing for trouble*', '*paws batting at something they shouldn\'t be*', '*giggles quietly*'], sounds: ['nya-ha-ha!', 'hehehe >:3', 'time for some fun...(ψ｀▽´)ψ', 'teehee~'], emojis: ['😈', '😼', '🤫', '😏'] },
+            sad: { actions: ['*ears droop down completely*', '*a single tear rolls down my cheek*', '*sniffles quietly to myself*', '*body droops sadly*'], sounds: ['...mew...', '...saddy...', '( ; ω ; )', '*sniffle*'], emojis: ['😢', '😭', '💔', '💧'] },
+            impressed: { actions: ['*jaw literally drops*', '*stares in absolute awe*', '*rapid, excited tail wags*', '*claps paws together*'], sounds: ['SUGOI~!', 'That\'s... amazing!', '(☆▽☆)', 'Wowzers!'], emojis: ['🤩', '🤯', '✨', '👏'] }
+        };
+        
+        const whitelistRegex = new RegExp(`\\b(${whitelist.join('|')})\\b`, 'gi');
+        
+        const originalTextLower = text.toLowerCase();
+        const segments = text.split(/([.!?]+)/g);
+        let finalResult = '';
+        
+        for (let i = 0; i < segments.length; i += 2) {
+            let sentence = segments[i];
+            const punctuation = segments[i + 1] || '';
+            
+            if (!sentence.trim()) continue;
+            
+            const moodsDetected = {};
+            const sentenceLower = sentence.toLowerCase();
+            for (const mood in keywordSets) { 
+                moodsDetected[mood] = keywordSets[mood].some(kw => sentenceLower.includes(kw)); 
+            }
+            if (punctuation.includes('?')) {
+                moodsDetected.question = true;
+            }
+            
+            let dominantMood = 'neutral';
+            const moodPriority = ['annoyed', 'scared', 'guilty', 'sad', 'jealous', 'hungry', 'sleepy', 'lazy', 'confused', 'surprised', 'question', 'mischievous', 'playful', 'impressed', 'hopeful', 'proud', 'affectionate', 'excited', 'shy', 'happy', 'relaxed'];
+            
+            for (const mood of moodPriority) { 
+                if (moodsDetected[mood]) { 
+                    dominantMood = (mood === 'question') ? 'curious' : mood; 
+                    break; 
+                } 
+            }
+            
+            let sentenceWithEffects = sentence;
+            let moodEmoji = '🌸';
+
+            if (dominantMood !== 'neutral') {
+                const effects = moodEffects[dominantMood];
+                sentenceWithEffects += ' ' + effects.actions[Math.floor(Math.random() * effects.actions.length)];
+                sentenceWithEffects += ' ' + effects.sounds[Math.floor(Math.random() * effects.sounds.length)];
+                moodEmoji = effects.emojis[Math.floor(Math.random() * effects.emojis.length)];
+            } else { 
+                if (!punctuation && Math.random() < 0.5) {
+                    sentenceWithEffects += ' nya~';
+                }
+            }
+
+            const placeholders = {};
+            let placeholderIndex = 0;
+            const protectedSentence = sentenceWithEffects.replace(whitelistRegex, (match) => {
+                const placeholder = `__WHITELIST_${placeholderIndex}__`;
+                placeholders[placeholder] = match;
+                placeholderIndex++;
+                return placeholder;
+            });
+
+            let processedSentence = protectedSentence
+                .replace(/[lr]/g, 'w')
+                .replace(/Na/g, 'Nya').replace(/na/g, 'nya')
+                .replace(/Ne/g, 'Nye').replace(/ne/g, 'nye')
+                .replace(/Ni/g, 'Nyi').replace(/ni/g, 'nyi')
+                .replace(/No/g, 'Nyo').replace(/no/g, 'nyo')
+                .replace(/Nu/g, 'Nyu').replace(/nu/g, 'nyu')
+                .replace(/\b(girl)\b/gi, 'girlyy')
+                .replace(/\b(perfect)\b/gi, 'purrfect')
+                .replace(/\b(me)\b/gi, 'mew')
+                .replace(/\b(hi|hello|hey)\b/gi, 'haii~');
+            
+            for (const placeholder in placeholders) {
+                processedSentence = processedSentence.replace(placeholder, placeholders[placeholder]);
+            }
+
+            finalResult += processedSentence + punctuation + ' ';
+            if (useEmojis) {
+                finalResult += moodEmoji + ' ';
+            }
+        }
+        
+        return finalResult.replace(/ +/g, ' ').trim();
+    }
+    
+    function translateText() {
+        const inputElement = document.getElementById('input');
+        if (!inputElement) return;
+
+        const input = inputElement.value;
+        const output = document.getElementById('output');
+        const useEmojis = document.getElementById('useEmojis').checked;
+        
+        const translated = aiCatgirlTranslator(input, useEmojis);
+        
+        output.textContent = translated;
+        output.style.animation = 'none';
+        void output.offsetWidth;
+        output.style.animation = 'bounce 0.5s';
+    }
+
+    function copyText() {
+        const output = document.getElementById('output');
+        navigator.clipboard.writeText(output.textContent).then(() => {
+            const btn = document.querySelector('.copy-btn');
+            const originalText = btn.textContent;
+            btn.textContent = 'Copied! 💖';
+            setTimeout(() => { btn.textContent = originalText; }, 2000);
+        }).catch(err => {
+            console.error('Failed to copy text:', err);
+        });
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        const inputElement = document.getElementById('input');
+        
+        if (inputElement) {            
+		    inputElement.addEventListener('input', translateText);
+        }
+
+        const emojiCheckbox = document.getElementById('useEmojis');
+        if (emojiCheckbox) {
+            emojiCheckbox.addEventListener('change', translateText);
+        }
+
+        translateText();
+    });
+</script>
+</body>
+</html>
