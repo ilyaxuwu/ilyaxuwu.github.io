@@ -3,354 +3,338 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Bio</title>
+    <title>Liyaa | Developer Bio</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
         :root {
-            --background-color: #000000;
-            --card-background: #1c1c1e;
-            --text-color: #f5f5f7;
-            --secondary-text-color: #a1a1a6;
+            --background-color: #050505;
+            --card-background: rgba(28, 28, 30, 0.6);
+            --text-color: #ffffff;
+            --secondary-text: #a1a1a6;
             --accent-color: #0a84ff;
-            --pink-color: #ff375f;
-            --separator-color: #38383a;
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-family: 'Inter', sans-serif;
             background-color: var(--background-color);
             color: var(--text-color);
             margin: 0;
-            padding: 0;
+            line-height: 1.6;
             overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at 50% 50%, #1a1a1a 0%, #050505 100%);
+            z-index: -1;
         }
 
         .navbar {
-            background-color: rgba(28, 28, 30, 0.75);
+            background-color: rgba(5, 5, 5, 0.8);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--separator-color);
-            padding: 15px 25px;
+            border-bottom: 1px solid var(--glass-border);
+            padding: 15px 0;
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
+            top: 0; left: 0; right: 0;
             z-index: 1000;
-            animation: slideInDown 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+            text-align: center;
         }
 
         .navbar-brand {
-            font-size: 1.1rem;
-            font-weight: 600;
-        }
-
-        .content {
-            padding-top: 80px;
-            padding-bottom: 40px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            opacity: 0.8;
         }
 
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
-            padding: 0 20px;
+            padding: 100px 20px 40px;
         }
 
         .header-section {
             text-align: center;
-            padding: 50px 0;
-            animation: fadeIn 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+            margin-bottom: 60px;
+            animation: fadeInDown 1s ease;
         }
 
         .header-section h1 {
-            font-size: 2.8rem;
-            margin-bottom: 15px;
-            font-weight: 700;
-            letter-spacing: -1px;
+            font-size: clamp(2rem, 8vw, 3.5rem);
+            margin-bottom: 20px;
+            font-weight: 800;
+            letter-spacing: -2px;
+            line-height: 1.1;
         }
 
-        .ilyax {
-            color: var(--pink-color);
-        }
-
+        .ilyax { color: #ff375f; }
         .liyaa {
-            background: linear-gradient(90deg, #ff9a9e, #fad0c4, #fad0c4, #ffd1ff, #f2c1d1, #f6e5e5);
+            background: linear-gradient(90deg, #ff9a9e, #fad0c4, #ffd1ff);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            font-style: italic;
         }
 
         .header-section p {
-            font-size: 1.2rem;
-            color: var(--secondary-text-color);
-            max-width: 600px;
+            font-size: clamp(1rem, 4vw, 1.25rem);
+            color: var(--secondary-text);
+            max-width: 700px;
             margin: 0 auto;
         }
 
         .card {
-            background-color: var(--card-background);
-            border-radius: 20px;
-            padding: 30px;
-            margin-bottom: 25px;
-            border: 1px solid var(--separator-color);
-            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            opacity: 0;
-            transform: translateY(30px);
-            transition: transform 0.4s ease, box-shadow 0.4s ease;
+            background: var(--card-background);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 35px;
+            margin-bottom: 30px;
+            border: 1px solid var(--glass-border);
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
         }
-        
+
         .card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
         }
 
         .card h2 {
-            font-size: 1.6rem;
-            font-weight: 600;
-            margin-bottom: 20px;
+            font-size: 1.4rem;
+            margin-top: 0;
+            margin-bottom: 25px;
             display: flex;
             align-items: center;
-            gap: 10px;
-        }
-        
-        .card p {
-            line-height: 1.7;
-            color: var(--secondary-text-color);
-        }
-
-        .skills-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 20px;
-            text-align: center;
+            gap: 12px;
+            color: var(--accent-color);
         }
 
         .projects-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 20px;
         }
 
-        .skill {
-            padding: 20px;
-            border-radius: 15px;
-            background-color: #2c2c2e;
-            transition: transform 0.3s ease, background-color 0.3s ease;
-        }
-        
-        .skill:hover {
-            transform: scale(1.05);
-            background-color: #3a3a3c;
-        }
-
-        .skill i {
-            font-size: 2.8rem;
-            margin-bottom: 15px;
-        }
-        
-        .skill-name {
-            font-weight: 500;
-            font-size: 0.9rem;
-        }
-        
         .project-card {
-            background: var(--card-background);
-            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 18px;
             padding: 25px;
             text-decoration: none;
-            color: var(--text-color);
+            color: inherit;
+            border: 1px solid var(--glass-border);
             transition: all 0.3s ease;
-            border: 1px solid var(--separator-color);
-            display: block;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
         .project-card:hover {
-            transform: translateY(-8px);
+            background: rgba(255, 255, 255, 0.08);
             border-color: var(--accent-color);
+            transform: translateY(-3px);
         }
 
+        .project-card.featured {
+            border: 1px solid #ff375f;
+            background: linear-gradient(145deg, rgba(255, 55, 95, 0.1), rgba(0,0,0,0));
+            flex-direction: row; 
+            align-items: center;
+            gap: 20px;
+        }
+
+        .project-card.featured i {
+            font-size: 2.5rem;
+            margin-bottom: 0;
+            background: rgba(255, 55, 95, 0.2);
+            padding: 15px;
+            border-radius: 12px;
+        }
+        
         .project-card i {
-            font-size: 1.8rem;
-            margin-bottom: 12px;
-            color: var(--accent-color);
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            width: fit-content;
         }
 
         .project-title {
-            font-size: 1.2rem;
-            font-weight: 600;
+            font-size: 1.1rem;
+            font-weight: 700;
             margin-bottom: 8px;
         }
-        
+
         .project-desc {
             font-size: 0.9rem;
-            color: var(--secondary-text-color);
-            line-height: 1.5;
-        }
-        
-        .company {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            padding: 20px;
-            background-color: #2c2c2e;
-            border-radius: 15px;
-            transition: background-color 0.3s ease;
-        }
-        
-        .company:hover {
-            background-color: #3a3a3c;
-        }
-        
-        .contact-btn {
-            display: inline-block;
-            background-color: var(--accent-color);
-            color: #fff;
-            padding: 14px 28px;
-            border-radius: 14px;
-            text-decoration: none;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            margin-right: 10px;
-            margin-top: 10px;
+            color: var(--secondary-text);
+            line-height: 1.4;
         }
 
-        .contact-btn:hover {
-            background-color: #0095ff;
-            transform: translateY(-3px) scale(1.02);
-        }
-
-        footer {
-            text-align: center;
-            padding: 30px;
-            color: var(--secondary-text-color);
-            font-size: 0.9rem;
-        }
-        
-        .notification {
-            position: fixed;
-            top: 80px;
-            right: 20px;
-            background-color: #2c2c2e;
-            color: var(--text-color);
-            padding: 15px 20px;
-            border-radius: 14px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-            border: 1px solid var(--separator-color);
-            display: flex;
-            align-items: center;
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
             gap: 15px;
-            z-index: 2000;
-            opacity: 0;
-            transform: translateX(100%);
-            animation: slideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
-        
-        .notification.hide {
-            animation: slideOut 0.5s cubic-bezier(0.7, 0, 0.84, 0) forwards;
-        }
-        
-        @keyframes slideInDown { from { transform: translateY(-100%); } to { transform: translateY(0); } }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes fadeInUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        @keyframes slideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
 
+        .skill {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 16px;
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .skill i {
+            display: block;
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+        }
+
+        .contact-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 16px 32px;
+            border-radius: 16px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-align: center;
+            flex: 1;
+            min-width: 160px;
+        }
+
+        .btn-primary { background-color: var(--accent-color); color: white; }
+        .btn-secondary { background: rgba(255, 255, 255, 0.1); color: white; }
+        .btn:hover { transform: scale(1.02); filter: brightness(1.2); }
+
+        @media (max-width: 600px) {
+            .project-card.featured { flex-direction: column; text-align: center; }
+            .project-card.featured i { margin-bottom: 15px; }
+            .container { padding-top: 80px; }
+            .navbar-brand { font-size: 0.7rem; }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
 
     <nav class="navbar">
-        <div class="navbar-brand">My Bio</div>
+        <div class="navbar-brand">Astral AI Systems & Design</div>
     </nav>
 
-    <div class="content">
-        <div class="container">
-            <header class="header-section">
-                <h1>Hello, I'm <span class="ilyax">Ilyax</span>, my real name is <span class="liyaa">Liyaa</span>.</h1>
-                <p>I'm a <span class="age-placeholder">15</span>-year-old girl who has been programming for 5 years. I specialize in modern website design.</p>
-            </header>
+    <div class="container">
+        <header class="header-section">
+            <h1>Hi, I'm <span class="ilyax">Ilyax</span><br><span class="liyaa">Liyaa</span></h1>
+            <p>16 year old developer specializing in Next-Gen AI Integration & Modern Web UI/UX.</p>
+        </header>
 
-            <section class="card" style="animation-delay: 0.1s;">
-                <h2><i class="fas fa-user-circle"></i>About Me</h2>
-                <p>I'm a <span class="age-placeholder">15</span>-year-old girl with 5 years of programming experience. I'm highly skilled in creating beautifully designed websites, developing Discord bots, and I love working on creative projects. I'm passionate about learning next-generation technologies. Additionally, I can play the piano, rap, and more.</p>
-            </section>
-
-            <section class="card" style="animation-delay: 0.2s;">
-                <h2><i class="fas fa-cogs"></i>My Skills</h2>
-                <div class="skills-grid">
-                    <div class="skill"><i class="fab fa-html5" style="color: #e34c26;"><br></i><span class="skill-name">HTML5</span></div>
-                    <div class="skill"><i class="fab fa-css3-alt" style="color: #264de4;"><br></i><span class="skill-name">CSS3</span></div>
-                    <div class="skill"><i class="fab fa-js-square" style="color: #f0db4f;"><br></i><span class="skill-name">JavaScript</span></div>
-                    <div class="skill"><i class="fab fa-node-js" style="color: #3c873a;"><br></i><span class="skill-name">Node.js</span></div>
-                    <div class="skill"><i class="fab fa-python" style="color: #306998;"><br></i><span class="skill-name">Python</span></div>
-                    <div class="skill"><i class="fas fa-brain" style="color: #be82ff;"><br></i><span class="skill-name">Artificial Intelligence</span></div>
+        <section class="card">
+            <h2><i class="fas fa-star"></i> Featured Project</h2>
+            <a href="https://github.com/ilyaxuwu/discord-ai-bot" class="project-card featured" target="_blank">
+                <i class="fas fa-robot" style="color: #ff375f;"></i>
+                <div>
+                    <div class="project-title">AI Discord Bot</div>
+                    <div class="project-desc">Advanced private AI bot with Ollama Support, Image processing, and autonomous Web Search capabilities.</div>
                 </div>
-            </section>
+            </a>
+        </section>
 
-            <section class="card" style="animation-delay: 0.3s;">
-                <h2><i class="fas fa-project-diagram"></i>My Projects</h2>
-                 <div class="projects-grid">
-                    <a href="https://ilyaxuwu.github.io/doors/anchorsolver.html" class="project-card"><i class="fas fa-anchor"></i><div class="project-title">Anchor Solver</div><div class="project-desc">A project that solves any anchor in The Mines. DOORS</div></a>
-                    <a href="https://ilyaxuwu.github.io/tampermonkey/analyze.html" class="project-card"><i class="fas fa-shield-alt"></i><div class="project-title">Script Analyzer</div><div class="project-desc">A system that detects infected codes such as grabbers.</div></a>
-                    <a href="https://ilyaxuwu.github.io/sploop/astral.html" class="project-card"><i class="fas fa-moon"></i><div class="project-title">Astral Script</div><div class="project-desc">The ultimate utility script with AI provided by tensorflow for Sploop.io.</div></a>
-                    <a href="https://ilyaxuwu.github.io/safety/lockmessage.html" class="project-card"><i class="fas fa-lock"></i><div class="project-title">Message Locker</div><div class="project-desc">AES-based message encryption with a password.</div></a>
-                    <a href="https://ilyaxuwu.github.io/Roblox/snipe.html" class="project-card"><i class="fas fa-crosshairs"></i><div class="project-title">Astral S — Roblox Stream Sniper</div><div class="project-desc">Realtime stream sniper tool — Snipe People in Roblox!</div></a>
-                    <a href="https://ilyaxuwu.github.io/eokul/sahteeokul.html" class="project-card"><i class="fas fa-graduation-cap"></i><div class="project-title">Fake E-Okul</div><div class="project-desc">A software that gives fake exam scores, fake course names, fake hours, and fake averages, made specifically for Turkey.</div></a>
-                    <a href="https://ilyaxuwu.github.io/catgirl/catgirl.html" class="project-card"><i class="fas fa-cat"></i><div class="project-title">Catgirl Message Converter</div><div class="project-desc">A software where you could replace your boring message into cute messages to trick your friends or get free nitro.</div></a>
-                </div>
-            </section>
-            
-            <section class="card" style="animation-delay: 0.4s;">
-                <h2><i class="fas fa-briefcase"></i>Work Experience</h2>
-                <a href="https://ilyaxuwu.github.io/mspaint/translation.html" style="text-decoration: none; color: inherit;">
-                    <div class="company">
-                         <i class="fas fa-paint-brush"></i>
-                         <div>
-                             <h3>Mspaint</h3>
-                             <p style="color: var(--secondary-text-color);">Turkish Translator</p>
-                         </div>
-                    </div>
+        <section class="card">
+            <h2><i class="fas fa-user-circle"></i> Identity</h2>
+            <p>Developing creative software solutions for <span class="age-placeholder">5</span> years. Passionate about AI ethics, cybersecurity, and artistic web experiences. Also a piano player and music enthusiast.</p>
+        </section>
+
+        <section class="card">
+            <h2><i class="fas fa-code"></i> Tech Stack</h2>
+            <div class="skills-grid">
+                <div class="skill"><i class="fab fa-js" style="color: #f0db4f;"></i>JS</div>
+                <div class="skill"><i class="fab fa-node-js" style="color: #3c873a;"></i>Node</div>
+                <div class="skill"><i class="fab fa-python" style="color: #306998;"></i>Python</div>
+                <div class="skill"><i class="fas fa-microchip" style="color: #be82ff;"></i>AI</div>
+                <div class="skill"><i class="fab fa-html5" style="color: #e34c26;"></i>HTML</div>
+                <div class="skill"><i class="fab fa-css3-alt" style="color: #264de4;"></i>CSS</div>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2><i class="fas fa-layer-group"></i> Other Projects</h2>
+            <div class="projects-grid">
+                <a href="https://ilyaxuwu.github.io/doors/anchorsolver.html" class="project-card">
+                    <i class="fas fa-anchor" style="color: #0a84ff;"></i>
+                    <div class="project-title">Anchor Solver</div>
+                    <div class="project-desc">Automated solution for DOORS: The Mines.</div>
                 </a>
-            </section>
+                
+                <a href="https://ilyaxuwu.github.io/tampermonkey/analyze.html" class="project-card">
+                    <i class="fas fa-shield-alt" style="color: #30d158;"></i>
+                    <div class="project-title">Script Analyzer</div>
+                    <div class="project-desc">Infection & Grabber detection system.</div>
+                </a>
 
-            <section class="card" style="animation-delay: 0.5s;">
-                <h2><i class="fas fa-paper-plane"></i>Contact</h2>
-                <p>You can reach me on Discord.</p>
-                <a href="javascript:void(0);" onclick="openDiscord()" class="contact-btn">Contact on Discord</a>
-                <a href="javascript:void(0);" onclick="showNotification('Test Notification!', 'This is how notifications will appear.')" class="contact-btn" style="background-color: #5856d6;">Notification Test</a>
-            </section>
-        </div>
+                <a href="https://ilyaxuwu.github.io/sploop/astral.html" class="project-card">
+                    <i class="fas fa-moon" style="color: #bf5af2;"></i>
+                    <div class="project-title">Astral Script</div>
+                    <div class="project-desc">Tensorflow-powered utility for Sploop.io.</div>
+                </a>
+
+                <a href="https://ilyaxuwu.github.io/safety/lockmessage.html" class="project-card">
+                    <i class="fas fa-lock" style="color: #ff9f0a;"></i>
+                    <div class="project-title">AES Message Locker</div>
+                    <div class="project-desc">End-to-end password encryption.</div>
+                </a>
+
+                <a href="https://ilyaxuwu.github.io/Roblox/snipe.html" class="project-card">
+                    <i class="fas fa-crosshairs" style="color: #ff453a;"></i>
+                    <div class="project-title">Astral S — Sniper</div>
+                    <div class="project-desc">Realtime Roblox stream sniper tool.</div>
+                </a>
+
+                <a href="https://ilyaxuwu.github.io/eokul/sahteeokul.html" class="project-card">
+                    <i class="fas fa-graduation-cap" style="color: #64d2ff;"></i>
+                    <div class="project-title">Fake E-Okul</div>
+                    <div class="project-desc">Exam score simulator for students. (Turkish Only)</div>
+                </a>
+
+                <a href="https://ilyaxuwu.github.io/catgirl/catgirl.html" class="project-card">
+                    <i class="fas fa-cat" style="color: #ff375f;"></i>
+                    <div class="project-title">Catgirl Converter</div>
+                    <div class="project-desc">Fun text converter for Discord.</div>
+                </a>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2><i class="fas fa-envelope"></i> Get in Touch</h2>
+            <div class="contact-actions">
+                <a href="javascript:void(0);" onclick="openDiscord()" class="btn btn-primary">Discord Profile</a>
+                <a href="https://github.com/ilyaxuwu" target="_blank" class="btn btn-secondary">GitHub</a>
+            </div>
+        </section>
     </div>
-
-    <footer>
-        Made with ❤️ by Liyaa
-    </footer>
 
     <script>
         function openDiscord() {
-            const discordUrl = 'https://discord.com/users/1115700478005743758';
-            var newWindow = window.open(discordUrl, '_blank');
-            if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
-                 showNotification('Popup Blocked!', "My Discord profile couldn't open. Please check your popup blocker.");
-            }
-        }
-        
-        function showNotification(title, message) {
-            const existingNotif = document.getElementById('ios-notification');
-            if(existingNotif) existingNotif.remove();
-
-            const notification = document.createElement('div');
-            notification.id = 'ios-notification';
-            notification.classList.add('notification');
-            notification.innerHTML = `<i class="fas fa-info-circle"></i><div><strong>${title}</strong><p style="margin: 5px 0 0; font-size: 0.9em; color: var(--secondary-text-color);">${message}</p></div>`;
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.classList.add('hide');
-                setTimeout(() => notification.remove(), 500);
-            }, 5000);
+            window.open('https://discord.com/users/1115700478005743758', '_blank');
         }
 
         function calculateAge(birthDate) {
@@ -358,16 +342,13 @@
             const today = new Date();
             let age = today.getFullYear() - birth.getFullYear();
             const m = today.getMonth() - birth.getMonth();
-            if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
-                age--;
-            }
+            if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
             return age;
         }
 
         document.addEventListener('DOMContentLoaded', () => {
             const age = calculateAge('2010-01-28');
-            const ageElements = document.querySelectorAll('.age-placeholder');
-            ageElements.forEach(el => el.textContent = age);
+            document.querySelectorAll('.age-placeholder').forEach(el => el.textContent = age);
         });
     </script>
 </body>
