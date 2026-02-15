@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AHK Ultimate Editor</title>
+    <title>AHK Idle</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -11,7 +11,7 @@
     <style>
         :root {
             --app-bg: #000000;
-            --window-bg: rgba(28, 28, 30, 0.65);
+            --window-bg: rgba(28, 28, 30, 0.85);
             --border-color: rgba(255, 255, 255, 0.12);
             --accent: #0A84FF;
             --accent-hover: #0077ED;
@@ -27,10 +27,11 @@
             font-family: -apple-system, BlinkMacSystemFont, sans-serif;
             background: radial-gradient(circle at 50% 0%, #1c1c2e 0%, #000000 100%);
             height: 100vh;
+            width: 100vw;
             display: flex;
             justify-content: center;
             align-items: center;
-            overflow: hidden;
+            overflow: hidden; 
             color: var(--text-main);
         }
 
@@ -46,31 +47,24 @@
             box-shadow: 0 40px 100px rgba(0,0,0,0.8);
             display: flex;
             flex-direction: column;
-            overflow: hidden;
+            overflow: hidden; 
             animation: scaleUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .header {
             height: 60px;
+            flex-shrink: 0;
             display: flex;
             align-items: center;
             justify-content: space-between;
             padding: 0 24px;
             border-bottom: 1px solid var(--border-color);
             background: rgba(255, 255, 255, 0.02);
+            z-index: 10;
         }
 
-        .traffic-lights {
-            display: flex;
-            gap: 8px;
-        }
-
-        .dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-        }
-
+        .traffic-lights { display: flex; gap: 8px; }
+        .dot { width: 12px; height: 12px; border-radius: 50%; }
         .close { background: #FF453A; }
         .min { background: #FFD60A; }
         .max { background: #32D74B; }
@@ -84,14 +78,9 @@
             align-items: center;
             gap: 10px;
         }
-
         .app-name i { color: #BF5AF2; }
 
-        .controls {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
+        .controls { display: flex; gap: 12px; align-items: center; }
 
         .mode-switch {
             background: rgba(0, 0, 0, 0.3);
@@ -132,29 +121,25 @@
             align-items: center;
             gap: 8px;
         }
-
-        .btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
+        .btn:hover { background: rgba(255, 255, 255, 0.1); }
         .btn-primary {
             background: var(--accent);
             border: none;
             box-shadow: 0 4px 12px rgba(10, 132, 255, 0.3);
         }
-
-        .btn-primary:hover {
-            background: var(--accent-hover);
-            transform: translateY(-1px);
-        }
+        .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
 
         .editor-area {
-            flex: 1;
+            flex: 1; 
             position: relative;
+            overflow: hidden; 
+            display: flex;
+            flex-direction: column;
         }
 
         .CodeMirror {
-            height: 100% !important;
+            height: 100% !important; 
+            width: 100% !important;
             background: transparent !important;
             color: #d4d4d4 !important;
             font-family: var(--font-code) !important;
@@ -163,27 +148,23 @@
             padding: 20px 0;
         }
 
+        .CodeMirror-scroll {
+            overflow-y: auto !important;
+            overflow-x: auto !important;
+            padding-bottom: 20px;
+        }
+
         .CodeMirror-gutters {
             background: transparent !important;
             border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
             padding-right: 15px;
         }
-
-        .CodeMirror-linenumber {
-            color: rgba(255, 255, 255, 0.2) !important;
-        }
-
-        .CodeMirror-cursor {
-            border-left: 2px solid var(--accent) !important;
-        }
-
-        .CodeMirror-activeline-background {
-            background: rgba(255, 255, 255, 0.03) !important;
-        }
+        .CodeMirror-linenumber { color: rgba(255, 255, 255, 0.2) !important; }
+        .CodeMirror-cursor { border-left: 2px solid var(--accent) !important; }
+        .CodeMirror-activeline-background { background: rgba(255, 255, 255, 0.03) !important; }
 
         .cm-keyword { color: #FF79C6 !important; font-weight: bold; }
-        .cm-atom { color: #BD93F9 !important; }
-        .cm-number { color: #BD93F9 !important; }
+        .cm-atom, .cm-number { color: #BD93F9 !important; }
         .cm-def { color: #50FA7B !important; }
         .cm-variable { color: #F8F8F2 !important; }
         .cm-variable-2 { color: #8BE9FD !important; }
@@ -196,6 +177,7 @@
 
         .status-bar {
             height: 36px;
+            flex-shrink: 0;
             border-top: 1px solid var(--border-color);
             background: rgba(0, 0, 0, 0.2);
             display: flex;
@@ -204,28 +186,31 @@
             padding: 0 20px;
             font-size: 11px;
             color: var(--text-muted);
+            z-index: 10;
         }
 
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            border: 2px solid transparent;
+            background-clip: content-box;
+        }
+        ::-webkit-scrollbar-thumb:hover { background-color: rgba(255, 255, 255, 0.2); }
+        ::-webkit-scrollbar-corner { background: transparent; }
+
         .input-overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.5);
             backdrop-filter: blur(15px);
             z-index: 100;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
+            display: flex; justify-content: center; align-items: flex-start;
             padding-top: 150px;
-            opacity: 0;
-            pointer-events: none;
+            opacity: 0; pointer-events: none;
             transition: all 0.3s ease;
         }
-
-        .input-overlay.visible {
-            opacity: 1;
-            pointer-events: all;
-        }
-
+        .input-overlay.visible { opacity: 1; pointer-events: all; }
         .modal {
             width: 480px;
             background: rgba(35, 35, 40, 0.95);
@@ -236,43 +221,17 @@
             transform: scale(0.95) translateY(10px);
             transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
         }
-
-        .input-overlay.visible .modal {
-            transform: scale(1) translateY(0);
-        }
-
-        .modal h3 {
-            margin: 0 0 16px 0;
-            font-size: 16px;
-            font-weight: 500;
-        }
-
+        .input-overlay.visible .modal { transform: scale(1) translateY(0); }
+        .modal h3 { margin: 0 0 16px 0; font-size: 16px; font-weight: 500; }
         .modal-input {
-            width: 100%;
-            background: rgba(0,0,0,0.4);
-            border: 2px solid transparent;
-            padding: 12px;
-            border-radius: 10px;
-            color: white;
-            font-family: var(--font-code);
-            font-size: 14px;
-            outline: none;
-            transition: 0.3s;
-            box-sizing: border-box;
+            width: 100%; background: rgba(0,0,0,0.4);
+            border: 2px solid transparent; padding: 12px;
+            border-radius: 10px; color: white;
+            font-family: var(--font-code); font-size: 14px;
+            outline: none; transition: 0.3s; box-sizing: border-box;
         }
-
-        .modal-input:focus {
-            background: rgba(0,0,0,0.6);
-            border-color: var(--accent);
-            box-shadow: var(--glow);
-        }
-
-        .modal-actions {
-            margin-top: 20px;
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-        }
+        .modal-input:focus { background: rgba(0,0,0,0.6); border-color: var(--accent); box-shadow: var(--glow); }
+        .modal-actions { margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px; }
 
         @keyframes scaleUp {
             from { opacity: 0; transform: scale(0.98); }
@@ -297,8 +256,8 @@
 
             <div class="controls">
                 <div class="mode-switch">
-                    <button class="switch-btn active" onclick="switchMode('v1')">v1 Legacy</button>
-                    <button class="switch-btn" onclick="switchMode('v2')">v2 Modern</button>
+                    <button class="switch-btn active" onclick="switchMode(this, 'v1')">v1 Legacy</button>
+                    <button class="switch-btn" onclick="switchMode(this, 'v2')">v2 Modern</button>
                 </div>
                 <button class="btn" onclick="toggleModal()">
                     <i class="fa-solid fa-terminal"></i> InputBox
@@ -337,38 +296,18 @@
 
     <script>
         CodeMirror.defineMode("ahk", function() {
-            const flow = "If|Else|While|For|Switch|Case|Endcase|Endswitch|Loop|Try|Catch|Throw|Return|Break|Continue|ExitApp";
-            const io = "GetKeyState|Send|Click|DoubleClick|MouseDown|MouseUp|MouseMove|KeyWait|CoordMode|BlockInput|SetKeyDelay|SetMouseDelay|SetWinDelay|SetBatchLines|SetDefaultBatchLines|SetCtrlKeyState";
-            const file = "FileRead|FileWrite|FileCopy|FileDelete|FileExist|FileGetSize|FileRecycle|FileUnRecycle|FileSearch|FileSelect|FileAssociate|FileGetAttrib|FileSetAttrib|IniRead|IniWrite|IniGetString|IniGetNumber|IniGetInt|IniGetFloat|IniSetString|IniSetNumber|IniSetInt|IniSetFloat|IniDeleteKey|IniDeleteSection|IniGetTitle|IniGetCount|IniGetKey|IniGetComment|IniGetVar|IniGetExeName|IniGetFullPath|IniGetRelativePath|IniGetBaseName|IniGetExt|IniGetDrive|IniGetDir|IniGetFile|IniGetAttrib|IniGetLastWriteTime|IniSetAttrib|IniSetLastWriteTime";
-            const sys = "Run|RunWait|ShellExecute|ShellExecuteWait|EnvGet|EnvSet|RegRead|RegWrite|RegDelete|DriveGet|DriveGetLabel|DriveType";
-            const types = "String|Number|Object|Boolean|Array|Map";
-            const gui = "Gui|Menu|Control|Add|Listview|Edit|Button|Checkbox|Radio|Group|Progress|Slider|Text|Image|Icon|SysListView32|ToolTip|MsgBox|InputBox";
-            const time = "SetTimer|Sleep|AdlibEnable|OnMessage|HotKey|HotToggle|TimerDelay|TimerEnabled";
-            const func = "Func|Gosub|Class|ComObjActive|ComObjCreate|ComObjError|RegExMatch|Clipboard|Include|OnError|OnExit|UseErrorLevel";
-            const win = "WinWait|WinExists|WinActivate|WinKill|WinMove|WinSetTitle|WinSet";
-            
-            const allKeywords = `${flow}|${io}|${file}|${sys}|${types}|${gui}|${time}|${func}|${win}`;
-            const keywordRegex = new RegExp(`^(${allKeywords})\\b`, "i");
+            const keywords = "If|Else|While|Loop|Return|Break|Continue|ExitApp|Gui|MsgBox|Send|Click|Sleep|PixelGetColor|ImageSearch|FileRead|FileAppend|Run";
+            const keywordRegex = new RegExp(`^(${keywords})\\b`, "i");
             
             return {
                 token: function(stream) {
                     if (stream.eatSpace()) return null;
-                    
                     if (stream.match(/;.*/)) return "comment";
-                    if (stream.match(/\/\*/)) {
-                        while (!stream.match(/\*\//) && !stream.eol()) stream.next();
-                        return "comment";
-                    }
-
                     if (stream.match(/"(?:[^\\"]|\\.)*"/)) return "string";
                     if (stream.match(/^[#!^+<>\*~]*[a-zA-Z0-9_]+::/)) return "hotkey";
                     if (stream.match(/%.*?%/)) return "variable";
-                    if (stream.match(/\b\d+(\.\d+)?\b/) || stream.match(/0x[0-9a-fA-F]+/)) return "number";
-                    if (stream.match(/A_[a-zA-Z0-9]+/)) return "builtin";
+                    if (stream.match(/\b\d+\b/)) return "number";
                     if (stream.match(keywordRegex)) return "keyword";
-                    if (stream.match(/[\w_]+\s*(?=\()/)) return "def";
-                    if (stream.match(/[{}()\[\]]/)) return "bracket";
-
                     stream.next();
                     return null;
                 }
@@ -430,9 +369,10 @@ ProcessSearch(term)
 
         editor.setValue(v1Code);
 
-        function switchMode(ver) {
+        function switchMode(btnElement, ver) {
             document.querySelectorAll('.switch-btn').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
+            
+            btnElement.classList.add('active');
             
             const status = document.getElementById('version-text');
             if (ver === 'v1') {
