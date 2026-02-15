@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AHK Ultimate Editor</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --app-bg: #000000;
+            --window-bg: rgba(28, 28, 30, 0.65);
+            --border-color: rgba(255, 255, 255, 0.12);
+            --accent: #0A84FF;
+            --accent-hover: #0077ED;
+            --text-main: #F5F5F7;
+            --text-muted: #86868B;
+            --font-code: 'JetBrains Mono', 'Menlo', monospace;
+            --glow: 0 0 20px rgba(10, 132, 255, 0.4);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background: radial-gradient(circle at 50% 0%, #1c1c2e 0%, #000000 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            color: var(--text-main);
+        }
+
+        .main-window {
+            width: 95%;
+            max-width: 1600px;
+            height: 92vh;
+            background: var(--window-bg);
+            backdrop-filter: blur(50px) saturate(180%);
+            -webkit-backdrop-filter: blur(50px) saturate(180%);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.8);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            animation: scaleUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .header {
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .traffic-lights {
+            display: flex;
+            gap: 8px;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .close { background: #FF453A; }
+        .min { background: #FFD60A; }
+        .max { background: #32D74B; }
+
+        .app-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-muted);
+            letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .app-name i { color: #BF5AF2; }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .mode-switch {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 3px;
+            border-radius: 8px;
+            display: flex;
+        }
+
+        .switch-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 6px 16px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .switch-btn.active {
+            background: rgba(255, 255, 255, 0.15);
+            color: var(--text-main);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            border: none;
+            box-shadow: 0 4px 12px rgba(10, 132, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+        }
+
+        .editor-area {
+            flex: 1;
+            position: relative;
+        }
+
+        .CodeMirror {
+            height: 100% !important;
+            background: transparent !important;
+            color: #d4d4d4 !important;
+            font-family: var(--font-code) !important;
+            font-size: 15px;
+            line-height: 1.6;
+            padding: 20px 0;
+        }
+
+        .CodeMirror-gutters {
+            background: transparent !important;
+            border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+            padding-right: 15px;
+        }
+
+        .CodeMirror-linenumber {
+            color: rgba(255, 255, 255, 0.2) !important;
+        }
+
+        .CodeMirror-cursor {
+            border-left: 2px solid var(--accent) !important;
+        }
+
+        .CodeMirror-activeline-background {
+            background: rgba(255, 255, 255, 0.03) !important;
+        }
+
+        .cm-keyword { color: #FF79C6 !important; font-weight: bold; }
+        .cm-atom { color: #BD93F9 !important; }
+        .cm-number { color: #BD93F9 !important; }
+        .cm-def { color: #50FA7B !important; }
+        .cm-variable { color: #F8F8F2 !important; }
+        .cm-variable-2 { color: #8BE9FD !important; }
+        .cm-string { color: #F1FA8C !important; }
+        .cm-comment { color: #6272A4 !important; font-style: italic; }
+        .cm-bracket { color: #FFB86C !important; }
+        .cm-tag { color: #FF5555 !important; }
+        .cm-builtin { color: #8BE9FD !important; font-style: italic; }
+        .cm-hotkey { color: #FFB86C !important; font-weight: bold; }
+
+        .status-bar {
+            height: 36px;
+            border-top: 1px solid var(--border-color);
+            background: rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .input-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(15px);
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: 150px;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        .input-overlay.visible {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal {
+            width: 480px;
+            background: rgba(35, 35, 40, 0.95);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+            transform: scale(0.95) translateY(10px);
+            transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        .input-overlay.visible .modal {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal h3 {
+            margin: 0 0 16px 0;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .modal-input {
+            width: 100%;
+            background: rgba(0,0,0,0.4);
+            border: 2px solid transparent;
+            padding: 12px;
+            border-radius: 10px;
+            color: white;
+            font-family: var(--font-code);
+            font-size: 14px;
+            outline: none;
+            transition: 0.3s;
+            box-sizing: border-box;
+        }
+
+        .modal-input:focus {
+            background: rgba(0,0,0,0.6);
+            border-color: var(--accent);
+            box-shadow: var(--glow);
+        }
+
+        .modal-actions {
+            margin-top: 20px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        @keyframes scaleUp {
+            from { opacity: 0; transform: scale(0.98); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-window">
+        <div class="header">
+            <div class="traffic-lights">
+                <div class="dot close"></div>
+                <div class="dot min"></div>
+                <div class="dot max"></div>
+            </div>
+
+            <div class="app-name">
+                <i class="fa-solid fa-layer-group"></i>
+                <span>AHK Ultimate Studio</span>
+            </div>
+
+            <div class="controls">
+                <div class="mode-switch">
+                    <button class="switch-btn active" onclick="switchMode('v1')">v1 Legacy</button>
+                    <button class="switch-btn" onclick="switchMode('v2')">v2 Modern</button>
+                </div>
+                <button class="btn" onclick="toggleModal()">
+                    <i class="fa-solid fa-terminal"></i> InputBox
+                </button>
+                <button class="btn btn-primary" onclick="copySource()">
+                    <i class="fa-regular fa-copy"></i> Copy
+                </button>
+            </div>
+        </div>
+
+        <div class="editor-area">
+            <textarea id="source"></textarea>
+        </div>
+
+        <div class="status-bar">
+            <span id="version-text">Active: AutoHotkey v1</span>
+            <span>UTF-8 with BOM</span>
+        </div>
+
+        <div class="input-overlay" id="inputModal">
+            <div class="modal">
+                <h3>Script Command Input</h3>
+                <input type="text" class="modal-input" placeholder="Enter command or variable...">
+                <div class="modal-actions">
+                    <button class="btn" onclick="toggleModal()">Cancel</button>
+                    <button class="btn btn-primary" onclick="toggleModal()">Execute</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/edit/matchbrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/edit/closebrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/selection/active-line.min.js"></script>
+
+    <script>
+        CodeMirror.defineMode("ahk", function() {
+            const flow = "If|Else|While|For|Switch|Case|Endcase|Endswitch|Loop|Try|Catch|Throw|Return|Break|Continue|ExitApp";
+            const io = "GetKeyState|Send|Click|DoubleClick|MouseDown|MouseUp|MouseMove|KeyWait|CoordMode|BlockInput|SetKeyDelay|SetMouseDelay|SetWinDelay|SetBatchLines|SetDefaultBatchLines|SetCtrlKeyState";
+            const file = "FileRead|FileWrite|FileCopy|FileDelete|FileExist|FileGetSize|FileRecycle|FileUnRecycle|FileSearch|FileSelect|FileAssociate|FileGetAttrib|FileSetAttrib|IniRead|IniWrite|IniGetString|IniGetNumber|IniGetInt|IniGetFloat|IniSetString|IniSetNumber|IniSetInt|IniSetFloat|IniDeleteKey|IniDeleteSection|IniGetTitle|IniGetCount|IniGetKey|IniGetComment|IniGetVar|IniGetExeName|IniGetFullPath|IniGetRelativePath|IniGetBaseName|IniGetExt|IniGetDrive|IniGetDir|IniGetFile|IniGetAttrib|IniGetLastWriteTime|IniSetAttrib|IniSetLastWriteTime";
+            const sys = "Run|RunWait|ShellExecute|ShellExecuteWait|EnvGet|EnvSet|RegRead|RegWrite|RegDelete|DriveGet|DriveGetLabel|DriveType";
+            const types = "String|Number|Object|Boolean|Array|Map";
+            const gui = "Gui|Menu|Control|Add|Listview|Edit|Button|Checkbox|Radio|Group|Progress|Slider|Text|Image|Icon|SysListView32|ToolTip|MsgBox|InputBox";
+            const time = "SetTimer|Sleep|AdlibEnable|OnMessage|HotKey|HotToggle|TimerDelay|TimerEnabled";
+            const func = "Func|Gosub|Class|ComObjActive|ComObjCreate|ComObjError|RegExMatch|Clipboard|Include|OnError|OnExit|UseErrorLevel";
+            const win = "WinWait|WinExists|WinActivate|WinKill|WinMove|WinSetTitle|WinSet";
+            
+            const allKeywords = `${flow}|${io}|${file}|${sys}|${types}|${gui}|${time}|${func}|${win}`;
+            const keywordRegex = new RegExp(`^(${allKeywords})\\b`, "i");
+            
+            return {
+                token: function(stream) {
+                    if (stream.eatSpace()) return null;
+                    
+                    if (stream.match(/;.*/)) return "comment";
+                    if (stream.match(/\/\*/)) {
+                        while (!stream.match(/\*\//) && !stream.eol()) stream.next();
+                        return "comment";
+                    }
+
+                    if (stream.match(/"(?:[^\\"]|\\.)*"/)) return "string";
+                    if (stream.match(/^[#!^+<>\*~]*[a-zA-Z0-9_]+::/)) return "hotkey";
+                    if (stream.match(/%.*?%/)) return "variable";
+                    if (stream.match(/\b\d+(\.\d+)?\b/) || stream.match(/0x[0-9a-fA-F]+/)) return "number";
+                    if (stream.match(/A_[a-zA-Z0-9]+/)) return "builtin";
+                    if (stream.match(keywordRegex)) return "keyword";
+                    if (stream.match(/[\w_]+\s*(?=\()/)) return "def";
+                    if (stream.match(/[{}()\[\]]/)) return "bracket";
+
+                    stream.next();
+                    return null;
+                }
+            };
+        });
+
+        const editor = CodeMirror.fromTextArea(document.getElementById("source"), {
+            mode: "ahk",
+            lineNumbers: true,
+            theme: "default",
+            styleActiveLine: true,
+            matchBrackets: true,
+            autoCloseBrackets: true,
+            indentUnit: 4,
+            tabSize: 4
+        });
+
+        const v1Code = `#NoEnv
+#SingleInstance, Force
+SetBatchLines, -1
+
+F1::
+    Gui, Add, Text,, Select Target:
+    Gui, Add, Button, gScan, Scan Files
+    Gui, Show,, AHK Ultimate
+Return
+
+Scan:
+    Loop, Files, C:\\Logs\\*.txt
+    {
+        FileRead, content, %A_LoopFileFullPath%
+        if (RegExMatch(content, "Error")) {
+            MsgBox, Found error in %A_LoopFileName%
+        }
+    }
+Return`;
+
+        const v2Code = `#Requires AutoHotkey v2.0
+
+F1::
+{
+    result := InputBox("Enter Search Term:", "Search", "w300 h130")
+    if (result.Result = "OK") {
+        ProcessSearch(result.Value)
+    }
+}
+
+ProcessSearch(term)
+{
+    if (term = "")
+        return
+
+    try {
+        Run("https://google.com/search?q=" . term)
+    } catch as err {
+        MsgBox("Failed: " . err.Message)
+    }
+}`;
+
+        editor.setValue(v1Code);
+
+        function switchMode(ver) {
+            document.querySelectorAll('.switch-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            const status = document.getElementById('version-text');
+            if (ver === 'v1') {
+                editor.setValue(v1Code);
+                status.innerText = "Active: AutoHotkey v1";
+            } else {
+                editor.setValue(v2Code);
+                status.innerText = "Active: AutoHotkey v2";
+            }
+        }
+
+        function toggleModal() {
+            const el = document.getElementById('inputModal');
+            el.classList.toggle('visible');
+            if (el.classList.contains('visible')) {
+                setTimeout(() => document.querySelector('.modal-input').focus(), 50);
+            }
+        }
+
+        function copySource() {
+            navigator.clipboard.writeText(editor.getValue());
+            const btn = document.querySelector('.btn-primary');
+            const original = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-check"></i> Copied';
+            btn.style.backgroundColor = '#32D74B';
+            setTimeout(() => {
+                btn.innerHTML = original;
+                btn.style.backgroundColor = '';
+            }, 1500);
+        }
+    </script>
+</body>
+</html>
