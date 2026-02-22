@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İftar Sayacı 2026</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #020205;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+        }
+        canvas#skyCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            display: block;
+        }
+        .content-wrapper {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100%;
+        }
+        .iftar-card {
+            width: 360px;
+            padding: 40px;
+            background: rgba(10, 15, 25, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.8), inset 0 0 20px rgba(255,255,255,0.05);
+            text-align: center;
+            color: #fff;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .iftar-card:hover {
+            transform: scale(1.02) translateY(-5px);
+        }
+        .date-label {
+            font-size: 15px;
+            font-weight: 800;
+            color: #ffb6c1;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 12px;
+            text-shadow: 0 0 15px rgba(255, 182, 193, 0.6);
+        }
+        .status-text {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: #ffffff;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+        }
+        .timer-display {
+            font-size: 68px;
+            font-weight: 800;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -3px;
+            margin: 10px 0;
+            color: #ffffff;
+            text-shadow: 0 5px 30px rgba(0,0,0,0.6), 0 0 10px rgba(255,255,255,0.2);
+        }
+        .detail-box {
+            display: flex;
+            justify-content: space-around;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 20px;
+            padding: 15px;
+            margin-top: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
+        }
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+        }
+        .detail-label {
+            font-size: 11px;
+            color: rgba(255,255,255,0.6);
+            font-weight: 700;
+            letter-spacing: 2px;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+        .detail-time {
+            font-size: 20px;
+            font-weight: 800;
+            color: #fff;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+        }
+        .debug-panel {
+            position: fixed;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(15px);
+            padding: 15px 30px;
+            border-radius: 30px;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border: 1px solid rgba(255,255,255,0.15);
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .debug-panel input[type="range"] {
+            width: 250px;
+            accent-color: #ffb6c1;
+        }
+        .debug-panel label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="skyCanvas"></canvas>
+    
+    <div class="content-wrapper">
+        <div class="iftar-card">
+            <div class="date-label" id="current-date">--.--.----</div>
+            <div class="status-text" id="status">Veri Yükleniyor</div>
+            <div class="timer-display" id="timer">--:--:--</div>
+            <div class="detail-box">
+                <div class="detail-item">
+                    <span class="detail-label">İMSAK</span>
+                    <span class="detail-time" id="imsak-time">--:--</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">İFTAR</span>
+                    <span class="detail-time" id="iftar-time">--:--</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="debug-panel">
+        <label>
+            <input type="checkbox" id="debugToggle"> Manuel Saat (Debug)
+        </label>
+        <input type="range" id="timeSlider" min="0" max="24" step="0.01" value="12" disabled>
+        <span id="timeLabel" style="min-width: 55px; font-variant-numeric: tabular-nums;">12:00</span>
+    </div>
+
+<script>
+    const canvas = document.getElementById('skyCanvas');
+    const ctx = canvas.getContext('2d');
+    const debugToggle = document.getElementById('debugToggle');
+    const timeSlider = document.getElementById('timeSlider');
+    const timeLabel = document.getElementById('timeLabel');
+    
+    let w, h;
+    let timeTick = 0;
+    let HORIZON = 0;
+
+    const COLORS = {
+        top: {
+            night: [2, 4, 12],
+            dawn: [20, 25, 50],
+            sunrise: [200, 80, 20],
+            day: [15, 60, 180],
+            sunset: [180, 40, 20],
+            dusk: [15, 15, 30]
+        },
+        bottom: {
+            night: [6, 10, 25],
+            dawn: [100, 50, 70],
+            sunrise: [255, 150, 20],
+            day: [100, 180, 255],
+            sunset: [255, 120, 0],
+            dusk: [50, 25, 50]
+        }
+    };
+
+    let stars = [];
+    let clouds = [];
+
+    function resize() {
+        w = canvas.width = window.innerWidth;
+        h = canvas.height = window.innerHeight;
+        HORIZON = h * 0.75;
+        initElements();
+    }
+
+    function initElements() {
+        stars = [];
+        for(let i=0; i<400; i++) {
+            stars.push({
+                x: Math.random() * w,
+                y: Math.random() * HORIZON,
+                s: Math.random() * 1.8,
+                a: Math.random(),
+                ts: 0.005 + Math.random() * 0.02,
+                ang: Math.random() * Math.PI * 2,
+                c: Math.random() > 0.8 ? '180, 220, 255' : (Math.random() > 0.5 ? '255, 240, 200' : '255, 255, 255')
+            });
+        }
+        clouds = [];
+        for(let i=0; i<15; i++) {
+            clouds.push({
+                x: Math.random() * w,
+                y: Math.random() * (HORIZON - 50),
+                w: 100 + Math.random() * 300,
+                h: 20 + Math.random() * 50,
+                sp: 0.05 + Math.random() * 0.1,
+                o: 0.05 + Math.random() * 0.25
+            });
+        }
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+
+    function lerp(start, end, t) {
+        return Math.round(start + (end - start) * t);
+    }
+
+    function getColorArr(c1, c2, t) {
+        return [lerp(c1[0], c2[0], t), lerp(c1[1], c2[1], t), lerp(c1[2], c2[2], t)];
+    }
+
+    function getGradientColors(time) {
+        let tColor, bColor;
+        if (time < 4) {
+            tColor = COLORS.top.night; bColor = COLORS.bottom.night;
+        } else if (time < 6) {
+            let f = (time - 4) / 2;
+            tColor = getColorArr(COLORS.top.night, COLORS.top.dawn, f);
+            bColor = getColorArr(COLORS.bottom.night, COLORS.bottom.dawn, f);
+        } else if (time < 7.5) {
+            let f = (time - 6) / 1.5;
+            tColor = getColorArr(COLORS.top.dawn, COLORS.top.sunrise, f);
+            bColor = getColorArr(COLORS.bottom.dawn, COLORS.bottom.sunrise, f);
+        } else if (time < 9) {
+            let f = (time - 7.5) / 1.5;
+            tColor = getColorArr(COLORS.top.sunrise, COLORS.top.day, f);
+            bColor = getColorArr(COLORS.bottom.sunrise, COLORS.bottom.day, f);
+        } else if (time < 16) {
+            tColor = COLORS.top.day; bColor = COLORS.bottom.day;
+        } else if (time < 18) {
+            let f = (time - 16) / 2;
+            tColor = getColorArr(COLORS.top.day, COLORS.top.sunset, f);
+            bColor = getColorArr(COLORS.bottom.day, COLORS.bottom.sunset, f);
+        } else if (time < 19.5) {
+            let f = (time - 18) / 1.5;
+            tColor = getColorArr(COLORS.top.sunset, COLORS.top.dusk, f);
+            bColor = getColorArr(COLORS.bottom.sunset, COLORS.bottom.dusk, f);
+        } else if (time < 21) {
+            let f = (time - 19.5) / 1.5;
+            tColor = getColorArr(COLORS.top.dusk, COLORS.top.night, f);
+            bColor = getColorArr(COLORS.bottom.dusk, COLORS.bottom.night, f);
+        } else {
+            tColor = COLORS.top.night; bColor = COLORS.bottom.night;
+        }
+        return { t: tColor, b: bColor };
+    }
+
+    function drawOcean(tColor, bColor) {
+        let r = Math.max(0, bColor[0] - 30);
+        let g = Math.max(0, bColor[1] - 30);
+        let b = Math.max(0, bColor[2] - 30);
+        
+        let r2 = Math.max(0, tColor[0] - 20);
+        let g2 = Math.max(0, tColor[1] - 20);
+        let b2 = Math.max(0, tColor[2] - 20);
+
+        let oceanGrad = ctx.createLinearGradient(0, HORIZON, 0, h);
+        oceanGrad.addColorStop(0, `rgb(${r}, ${g}, ${b})`);
+        oceanGrad.addColorStop(1, `rgb(${r2}, ${g2}, ${b2})`);
+        
+        ctx.fillStyle = oceanGrad;
+        ctx.fillRect(0, HORIZON, w, h - HORIZON);
+
+        ctx.fillStyle = `rgba(255,255,255,0.05)`;
+        for(let i=0; i<20; i++) {
+            let wy = HORIZON + Math.random() * (h - HORIZON);
+            let ww = 20 + Math.random() * 150;
+            ctx.fillRect(Math.random() * w, wy, ww, 1);
+        }
+    }
+
+    function drawWaterReflection(cx, r, g, b, altitude) {
+        let intensity = Math.max(0, altitude);
+        if (intensity <= 0) return;
+
+        let refGrad = ctx.createLinearGradient(0, HORIZON, 0, h);
+        refGrad.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${0.7 * intensity})`);
+        refGrad.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
+
+        ctx.fillStyle = refGrad;
+        ctx.beginPath();
+        ctx.moveTo(cx - 150 * intensity, HORIZON);
+        ctx.lineTo(cx + 150 * intensity, HORIZON);
+        ctx.lineTo(cx + 500 * intensity, h);
+        ctx.lineTo(cx - 500 * intensity, h);
+        ctx.fill();
+
+        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${0.9 * intensity})`;
+        for(let i=0; i<40; i++) {
+            let p = i / 40;
+            let wy = HORIZON + p * (h - HORIZON);
+            let waveWidth = (60 + p * 400) * intensity;
+            let xOff = Math.sin(timeTick * 0.04 + i * 0.8) * 40 * p;
+            
+            ctx.globalAlpha = 1 - p;
+            ctx.fillRect(cx - waveWidth/2 + xOff, wy, waveWidth, 1.5 + p * 3);
+        }
+        ctx.globalAlpha = 1.0;
+    }
+
+    function drawRealisticSun(time) {
+        if (time < 4.5 || time > 19.5) return;
+        
+        const cx = w / 2;
+        const progress = (time - 5) / 14;
+        const angle = Math.PI - (progress * Math.PI);
+        const radius = w * 0.45;
+        
+        const sx = cx + Math.cos(angle) * radius;
+        const sy = HORIZON - Math.sin(angle) * (h * 0.6);
+        const altitude = Math.sin(angle);
+
+        let sr = lerp(255, 255, altitude);
+        let sg = lerp(120, 255, altitude);
+        let sb = lerp(0, 230, altitude);
+        
+        const coreColor = altitude > 0.4 ? "#ffffff" : `rgb(255, 220, 150)`;
+        const midColor = `rgba(${sr}, ${sg}, ${sb}, 0.9)`;
+        const outerColor = `rgba(${sr}, ${Math.max(0, sg-50)}, 0, 0.4)`;
+
+        ctx.globalCompositeOperation = "screen";
+
+        const baseGlow = ctx.createRadialGradient(sx, sy, 0, sx, sy, 600);
+        baseGlow.addColorStop(0, midColor);
+        baseGlow.addColorStop(0.3, outerColor);
+        baseGlow.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = baseGlow;
+        ctx.beginPath(); ctx.arc(sx, sy, 600, 0, Math.PI * 2); ctx.fill();
+
+        ctx.save();
+        ctx.translate(sx, sy);
+        const numRays = 18;
+        for (let i = 0; i < numRays; i++) {
+            ctx.rotate((Math.PI * 2) / numRays + (timeTick * 0.001));
+            const rayLength = 800 * (1 + 0.3 * Math.sin(timeTick * 0.01 + i));
+            const rayGrad = ctx.createLinearGradient(0, 0, 0, rayLength);
+            rayGrad.addColorStop(0, outerColor);
+            rayGrad.addColorStop(1, "rgba(0,0,0,0)");
+            ctx.fillStyle = rayGrad;
+            ctx.beginPath();
+            ctx.moveTo(-25, 0);
+            ctx.lineTo(25, 0);
+            ctx.lineTo(80, rayLength);
+            ctx.lineTo(-80, rayLength);
+            ctx.fill();
+        }
+        ctx.restore();
+
+        const innerGlow = ctx.createRadialGradient(sx, sy, 10, sx, sy, 120 + Math.sin(timeTick * 0.05) * 10);
+        innerGlow.addColorStop(0, coreColor);
+        innerGlow.addColorStop(0.4, midColor);
+        innerGlow.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = innerGlow;
+        ctx.beginPath(); ctx.arc(sx, sy, 200, 0, Math.PI * 2); ctx.fill();
+
+        ctx.fillStyle = coreColor;
+        ctx.shadowBlur = 80;
+        ctx.shadowColor = midColor;
+        ctx.beginPath(); ctx.arc(sx, sy, 55, 0, Math.PI * 2); ctx.fill();
+        ctx.shadowBlur = 0;
+        
+        ctx.globalCompositeOperation = "source-over";
+
+        drawWaterReflection(sx, sr, sg, sb, altitude);
+    }
+
+    function drawRealisticMoon(time) {
+        if (time > 6.5 && time < 17.5) return;
+
+        const cx = w / 2;
+        let moonTime = time < 6.5 ? time + 24 : time;
+        const progress = (moonTime - 18) / 12;
+        const angle = Math.PI - (progress * Math.PI);
+        const radius = w * 0.45;
+        
+        const mx = cx + Math.cos(angle) * radius;
+        const my = HORIZON - Math.sin(angle) * (h * 0.6);
+        const altitude = Math.sin(angle);
+
+        let mr = lerp(255, 230, altitude);
+        let mg = lerp(220, 240, altitude);
+        let mb = lerp(180, 255, altitude);
+
+        ctx.globalCompositeOperation = "screen";
+
+        let glowColor = `rgba(${mr}, ${mg}, ${mb}, 0.5)`;
+        let outerColor = `rgba(${mr}, ${mg}, ${mb}, 0.15)`;
+
+        const moonGlow = ctx.createRadialGradient(mx, my, 40, mx, my, 500);
+        moonGlow.addColorStop(0, glowColor);
+        moonGlow.addColorStop(0.4, outerColor);
+        moonGlow.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = moonGlow;
+        ctx.beginPath(); ctx.arc(mx, my, 500, 0, Math.PI * 2); ctx.fill();
+
+        ctx.globalCompositeOperation = "source-over";
+
+        ctx.fillStyle = `rgb(${mr}, ${mg}, ${mb})`;
+        ctx.shadowBlur = 60;
+        ctx.shadowColor = glowColor;
+        ctx.beginPath(); ctx.arc(mx, my, 50, 0, Math.PI * 2); ctx.fill();
+        ctx.shadowBlur = 0;
+
+        ctx.save();
+        ctx.beginPath(); ctx.arc(mx, my, 50, 0, Math.PI * 2); ctx.clip();
+        ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
+        ctx.filter = "blur(5px)";
+        ctx.beginPath(); ctx.arc(mx - 15, my - 10, 15, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(mx + 10, my - 20, 10, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(mx + 20, my + 15, 18, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(mx - 5, my + 25, 12, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(mx + 25, my, 8, 0, Math.PI*2); ctx.fill();
+        ctx.restore();
+
+        drawWaterReflection(mx, mr, mg, mb, altitude);
+    }
+
+    function drawStarsClouds(time) {
+        const isNight = time < 6.5 || time > 17.5;
+        let starOpacity = 0;
+        
+        if (time < 5 || time > 20) starOpacity = 1;
+        else if (time >= 5 && time <= 6.5) starOpacity = 1 - ((time - 5) / 1.5);
+        else if (time >= 17.5 && time <= 20) starOpacity = (time - 17.5) / 2.5;
+
+        if (starOpacity > 0) {
+            stars.forEach(s => {
+                s.ang += s.ts;
+                s.a = 0.3 + (Math.sin(s.ang) + 1) * 0.4;
+                ctx.fillStyle = `rgba(${s.c}, ${s.a * starOpacity})`;
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, s.s, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
+        let isSunset = (time >= 17 && time <= 19.5);
+        let isSunrise = (time >= 5 && time <= 7.5);
+
+        clouds.forEach(c => {
+            c.x += c.sp;
+            if (c.x > w + c.w) c.x = -c.w;
+            
+            let cloudGrad = ctx.createLinearGradient(c.x, c.y - c.h, c.x, c.y + c.h);
+            
+            if (isSunset || isSunrise) {
+                cloudGrad.addColorStop(0, `rgba(40, 30, 50, ${c.o})`);
+                cloudGrad.addColorStop(1, `rgba(255, 100, 30, ${c.o * 1.8})`);
+            } else if (!isNight) {
+                cloudGrad.addColorStop(0, `rgba(255, 255, 255, ${c.o})`);
+                cloudGrad.addColorStop(1, `rgba(180, 200, 230, ${c.o * 0.8})`);
+            } else {
+                cloudGrad.addColorStop(0, `rgba(30, 40, 60, ${c.o * 0.8})`);
+                cloudGrad.addColorStop(1, `rgba(15, 20, 35, ${c.o * 0.5})`);
+            }
+
+            ctx.fillStyle = cloudGrad;
+            ctx.beginPath();
+            ctx.ellipse(c.x, c.y, c.w, c.h, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.ellipse(c.x + c.w * 0.3, c.y - c.h * 0.5, c.w * 0.6, c.h * 0.8, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.ellipse(c.x - c.w * 0.2, c.y - c.h * 0.3, c.w * 0.5, c.h * 0.7, 0, 0, Math.PI * 2);
+            ctx.fill();
+        });
+    }
+
+    function formatTimeLabel(t) {
+        let h = Math.floor(t);
+        let m = Math.floor((t - h) * 60);
+        return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
+    }
+
+    debugToggle.addEventListener('change', (e) => {
+        timeSlider.disabled = !e.target.checked;
+    });
+
+    timeSlider.addEventListener('input', (e) => {
+        timeLabel.textContent = formatTimeLabel(parseFloat(e.target.value));
+    });
+
+    function animate() {
+        timeTick++;
+        let now = new Date();
+        let time = now.getHours() + now.getMinutes() / 60 + now.getSeconds() / 3600;
+
+        if (debugToggle.checked) {
+            time = parseFloat(timeSlider.value);
+        }
+
+        const bgColors = getGradientColors(time);
+        
+        const skyGrad = ctx.createLinearGradient(0, 0, 0, HORIZON);
+        skyGrad.addColorStop(0, `rgb(${bgColors.t[0]}, ${bgColors.t[1]}, ${bgColors.t[2]})`);
+        skyGrad.addColorStop(1, `rgb(${bgColors.b[0]}, ${bgColors.b[1]}, ${bgColors.b[2]})`);
+        
+        ctx.fillStyle = skyGrad;
+        ctx.fillRect(0, 0, w, HORIZON);
+
+        drawStarsClouds(time);
+        drawRealisticSun(time);
+        drawRealisticMoon(time);
+        drawOcean(bgColors.t, bgColors.b);
+
+        requestAnimationFrame(animate);
+    }
+    
+    animate();
+
+    const tarihler = [
+        { "tarih": "2026-02-19", "imsak": "06:22", "aksam": "18:49" },
+        { "tarih": "2026-02-20", "imsak": "06:20", "aksam": "18:51" },
+        { "tarih": "2026-02-21", "imsak": "06:19", "aksam": "18:52" },
+        { "tarih": "2026-02-22", "imsak": "06:18", "aksam": "18:53" },
+        { "tarih": "2026-02-23", "imsak": "06:16", "aksam": "18:54" },
+        { "tarih": "2026-02-24", "imsak": "06:15", "aksam": "18:55" },
+        { "tarih": "2026-02-25", "imsak": "06:13", "aksam": "18:56" },
+        { "tarih": "2026-02-26", "imsak": "06:12", "aksam": "18:58" },
+        { "tarih": "2026-02-27", "imsak": "06:11", "aksam": "18:59" },
+        { "tarih": "2026-02-28", "imsak": "06:09", "aksam": "19:00" },
+        { "tarih": "2026-03-01", "imsak": "06:08", "aksam": "19:01" },
+        { "tarih": "2026-03-02", "imsak": "06:06", "aksam": "19:02" },
+        { "tarih": "2026-03-03", "imsak": "06:05", "aksam": "19:03" },
+        { "tarih": "2026-03-04", "imsak": "06:03", "aksam": "19:05" },
+        { "tarih": "2026-03-05", "imsak": "06:01", "aksam": "19:06" },
+        { "tarih": "2026-03-06", "imsak": "06:00", "aksam": "19:07" },
+        { "tarih": "2026-03-07", "imsak": "05:58", "aksam": "19:08" },
+        { "tarih": "2026-03-08", "imsak": "05:57", "aksam": "19:09" },
+        { "tarih": "2026-03-09", "imsak": "05:55", "aksam": "19:10" },
+        { "tarih": "2026-03-10", "imsak": "05:53", "aksam": "19:11" },
+        { "tarih": "2026-03-11", "imsak": "05:52", "aksam": "19:12" },
+        { "tarih": "2026-03-12", "imsak": "05:50", "aksam": "19:14" },
+        { "tarih": "2026-03-13", "imsak": "05:48", "aksam": "19:15" },
+        { "tarih": "2026-03-14", "imsak": "05:47", "aksam": "19:16" },
+        { "tarih": "2026-03-15", "imsak": "05:45", "aksam": "19:17" },
+        { "tarih": "2026-03-16", "imsak": "05:43", "aksam": "19:18" },
+        { "tarih": "2026-03-17", "imsak": "05:41", "aksam": "19:19" },
+        { "tarih": "2026-03-18", "imsak": "05:40", "aksam": "19:20" },
+        { "tarih": "2026-03-19", "imsak": "05:38", "aksam": "19:21" }
+    ];
+
+    function getLogicState(now) {
+        let tzOffset = now.getTimezoneOffset() * 60000;
+        let todayStr = (new Date(now.getTime() - tzOffset)).toISOString().split("T")[0];
+        let todayData = tarihler.find(d => d.tarih === todayStr);
+
+        if (!todayData) {
+            let futureDates = tarihler.filter(d => new Date(`${d.tarih}T00:00:00`) > now);
+            if (futureDates.length > 0) {
+                let nextDay = futureDates[0];
+                return {
+                    msg: "Sahurun Bitmesine Kalan",
+                    target: new Date(`${nextDay.tarih}T${nextDay.imsak}:00`),
+                    imsak: nextDay.imsak,
+                    iftar: nextDay.aksam,
+                    dateLabel: nextDay.tarih
+                };
+            } else {
+                return {
+                    msg: "Yakınlarda İftar Yok",
+                    target: null,
+                    imsak: "--:--",
+                    iftar: "--:--",
+                    dateLabel: "--.--.----"
+                };
+            }
+        }
+
+        let t_imsak = new Date(`${todayStr}T${todayData.imsak}:00`);
+        let t_imsak_1h = new Date(t_imsak.getTime() + 60*60*1000);
+        let t_iftar = new Date(`${todayStr}T${todayData.aksam}:00`);
+        let t_iftar_1h = new Date(t_iftar.getTime() + 60*60*1000);
+
+        if (now < t_imsak) {
+            return { msg: "Sahurun Bitmesine Kalan", target: t_imsak, imsak: todayData.imsak, iftar: todayData.aksam, dateLabel: todayStr };
+        } else if (now >= t_imsak && now < t_imsak_1h) {
+            return { msg: "Sahur Bitti", target: null, imsak: todayData.imsak, iftar: todayData.aksam, dateLabel: todayStr };
+        } else if (now >= t_imsak_1h && now < t_iftar) {
+            return { msg: "İftara Kalan Süre", target: t_iftar, imsak: todayData.imsak, iftar: todayData.aksam, dateLabel: todayStr };
+        } else if (now >= t_iftar && now < t_iftar_1h) {
+            return { msg: "Afiyet Olsun!", target: null, imsak: todayData.imsak, iftar: todayData.aksam, dateLabel: todayStr };
+        } else {
+            let tomorrow = new Date(now.getTime() + 24*60*60*1000);
+            let tmrStr = (new Date(tomorrow.getTime() - tzOffset)).toISOString().split("T")[0];
+            let tmrData = tarihler.find(d => d.tarih === tmrStr);
+
+            if (tmrData) {
+                let tmr_imsak = new Date(`${tmrStr}T${tmrData.imsak}:00`);
+                return { msg: "Sahurun Bitmesine Kalan", target: tmr_imsak, imsak: tmrData.imsak, iftar: tmrData.aksam, dateLabel: tmrStr };
+            } else {
+                return { msg: "Yakınlarda İftar Yok", target: null, imsak: "--:--", iftar: "--:--", dateLabel: "--.--.----" };
+            }
+        }
+    }
+
+    function updateTimer() {
+        let now = new Date();
+        
+        if (debugToggle.checked) {
+            let selectedTime = parseFloat(timeSlider.value);
+            let h = Math.floor(selectedTime);
+            let m = Math.floor((selectedTime - h) * 60);
+            let s = Math.floor((((selectedTime - h) * 60) - m) * 60);
+            
+            let year = now.getFullYear();
+            let month = now.getMonth();
+            let day = now.getDate();
+            if (year !== 2026) {
+                year = 2026; month = 1; day = 19;
+            }
+            now = new Date(year, month, day, h, m, s);
+        }
+
+        let state = getLogicState(now);
+
+        document.getElementById("current-date").textContent = state.dateLabel.split('-').reverse().join('.');
+        document.getElementById("status").textContent = state.msg;
+        document.getElementById("imsak-time").textContent = state.imsak;
+        document.getElementById("iftar-time").textContent = state.iftar;
+
+        if (state.target) {
+            let diff = state.target - now;
+            if (diff < 0) diff = 0;
+            const h = Math.floor(diff / 3600000);
+            const m = Math.floor((diff % 3600000) / 60000);
+            const s = Math.floor((diff % 60000) / 1000);
+            document.getElementById("timer").textContent = 
+                `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+        } else {
+            document.getElementById("timer").textContent = "00:00:00";
+        }
+    }
+
+    setInterval(updateTimer, 100);
+    updateTimer();
+
+</script>
+</body>
+</html>
