@@ -4,504 +4,150 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ilyax</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>👾</text></svg>">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-
-        :root {
-            --bg-color: #000000;
-            --card-bg: rgba(28, 28, 30, 0.65);
-            --card-hover: rgba(44, 44, 46, 0.8);
-            --text-main: #ffffff;
-            --text-secondary: #8e8e93;
-            --border-light: rgba(255, 255, 255, 0.08);
-            
-            --ios-blue: #0a84ff;
-            --ios-pink: #ff375f;
-            --ios-green: #30d158;
-            --ios-orange: #ff9f0a;
-            --ios-purple: #bf5af2;
-            --ios-teal: #64d2ff;
-            --ios-yellow: #ffd60a;
-            --ios-red: #ff453a;
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #1a1a1a;
+                --text: #e0e0e0;
+                --muted: #a0a0a0;
+                --link: #7aa2f7;
+            }
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
+        @media (prefers-color-scheme: light) {
+            :root {
+                --bg: #fafafa;
+                --text: #222;
+                --muted: #555;
+                --link: #1a5fb4;
+            }
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            line-height: 1.5;
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        body::before {
-            content: "";
-            position: fixed;
-            top: -20%; left: -10%; width: 50vw; height: 50vh;
-            background: radial-gradient(circle, rgba(10, 132, 255, 0.15) 0%, transparent 70%);
-            z-index: -1;
-            filter: blur(80px);
-        }
-        body::after {
-            content: "";
-            position: fixed;
-            bottom: -20%; right: -10%; width: 50vw; height: 50vh;
-            background: radial-gradient(circle, rgba(255, 55, 95, 0.1) 0%, transparent 70%);
-            z-index: -1;
-            filter: blur(80px);
-        }
-
-        .navbar {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(28, 28, 30, 0.7);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            padding: 12px 30px;
-            border-radius: 980px;
-            border: 1px solid var(--border-light);
-            z-index: 1000;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-            font-weight: 600;
-            font-size: 0.9rem;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            color: var(--text-secondary);
-        }
-
-        .container {
-            max-width: 850px;
-            margin: 0 auto;
-            padding: 120px 20px 60px;
-        }
-
-        .header-section {
-            text-align: center;
-            margin-bottom: 50px;
-            animation: fadeInUp 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-        }
-
-        .header-section h1 {
-            font-size: clamp(2.5rem, 8vw, 4rem);
-            font-weight: 800;
-            letter-spacing: -1.5px;
-            line-height: 1.1;
-            margin-bottom: 15px;
-        }
-
-        .ilyax { color: var(--text-main); }
-        .aeae {
-            background: linear-gradient(135deg, #ff9a9e, #fecfef);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .header-section p {
-            font-size: clamp(1.1rem, 4vw, 1.3rem);
-            color: var(--text-secondary);
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
             max-width: 600px;
-            margin: 0 auto;
-            font-weight: 400;
-        }
-
-        .card {
-            background: var(--card-bg);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            border: 1px solid var(--border-light);
-            border-radius: 32px;
-            padding: 35px;
-            margin-bottom: 25px;
-            transition: transform 0.3s ease, background 0.3s ease;
-            opacity: 0;
-            transform: translateY(20px);
-            animation: fadeInUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-        }
-
-        .card:nth-child(2) { animation-delay: 0.1s; }
-        .card:nth-child(3) { animation-delay: 0.2s; }
-        .card:nth-child(4) { animation-delay: 0.3s; }
-        .card:nth-child(5) { animation-delay: 0.4s; }
-        .card:nth-child(6) { animation-delay: 0.5s; }
-
-        .card h2 {
-            font-size: 1.3rem;
-            font-weight: 700;
-            margin-bottom: 25px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: var(--text-main);
-        }
-
-        .card h2 i {
-            color: var(--ios-blue);
-            font-size: 1.2rem;
-        }
-
-        .featured-project {
-            display: flex;
-            align-items: center;
-            gap: 25px;
-            background: linear-gradient(145deg, rgba(255, 55, 95, 0.15), rgba(0, 0, 0, 0));
-            border: 1px solid rgba(255, 55, 95, 0.3);
-            text-decoration: none;
-            color: inherit;
-            padding: 25px;
-            border-radius: 24px;
-            transition: all 0.3s ease;
-        }
-
-        .featured-project:hover {
-            transform: scale(1.02);
-            background: linear-gradient(145deg, rgba(255, 55, 95, 0.25), rgba(0, 0, 0, 0));
-        }
-
-        .featured-icon {
-            width: 70px;
-            height: 70px;
-            background: linear-gradient(135deg, var(--ios-pink), #ff7a9b);
-            border-radius: 18px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 2rem;
-            color: white;
-            box-shadow: 0 10px 20px rgba(255, 55, 95, 0.3);
-            flex-shrink: 0;
-        }
-
-        .featured-content h3 {
-            font-size: 1.4rem;
-            margin-bottom: 5px;
-            color: var(--text-main);
-        }
-
-        .featured-content p {
-            color: var(--text-secondary);
-            font-size: 1rem;
-        }
-
-        .identity-text {
-            font-size: 1.1rem;
-            color: var(--text-secondary);
+            margin: 2rem auto;
+            padding: 0 1.5rem;
             line-height: 1.6;
         }
 
-        .identity-text span {
-            color: var(--text-main);
-            font-weight: 500;
+        h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            margin-bottom: 0.2rem;
         }
 
-        .skills-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-            gap: 20px;
-            text-align: center;
-        }
-
-        .skill {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .skill-icon {
-            width: 60px;
-            height: 60px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 16px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 1.8rem;
-            border: 1px solid var(--border-light);
-            transition: transform 0.3s ease;
-        }
-
-        .skill:hover .skill-icon {
-            transform: scale(1.1);
-        }
-
-        .skill span {
-            font-size: 0.85rem;
-            font-weight: 500;
-            color: var(--text-secondary);
-        }
-
-        .projects-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            gap: 20px;
-        }
-
-        .project-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--border-light);
-            border-radius: 24px;
-            padding: 20px;
-            text-decoration: none;
-            color: inherit;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            transition: all 0.3s ease;
-        }
-
-        .project-card:hover {
-            background: rgba(255, 255, 255, 0.08);
-            transform: translateY(-5px);
-        }
-
-        .app-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 1.2rem;
-            color: white;
-            margin-bottom: 5px;
-        }
-
-        .project-title {
+        h2 {
             font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--text-main);
+            font-weight: 500;
+            color: var(--muted);
+            margin: 2rem 0 0.8rem;
+            padding-bottom: 0.3rem;
+            border-bottom: 1px solid var(--muted);
+            opacity: 0.7;
         }
 
-        .project-desc {
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-            line-height: 1.4;
-            flex-grow: 1;
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
         }
 
-        .contact-actions {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
+        li {
+            margin-bottom: 0.5rem;
+            color: var(--muted);
         }
 
-        .btn {
-            flex: 1;
-            min-width: 150px;
-            padding: 16px 20px;
-            border-radius: 980px;
-            text-align: center;
+        li strong {
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        a {
+            color: var(--link);
             text-decoration: none;
-            font-weight: 600;
-            font-size: 1rem;
-            transition: all 0.2s ease;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
         }
 
-        .btn-primary {
-            background-color: var(--ios-blue);
-            color: white;
+        a:hover {
+            text-decoration: underline;
         }
 
-        .btn-secondary {
-            background-color: rgba(255, 255, 255, 0.1);
-            color: white;
-            border: 1px solid var(--border-light);
+        .bio {
+            color: var(--muted);
+            margin-top: 0.5rem;
         }
 
-        .btn:active {
-            transform: scale(0.96);
-            opacity: 0.8;
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @media (max-width: 600px) {
-            .featured-project {
-                flex-direction: column;
-                text-align: center;
-                gap: 15px;
-            }
-            .header-section h1 { font-size: 2.5rem; }
-            .card { padding: 25px; }
-            .navbar { width: 90%; text-align: center; }
+        .desc {
+            color: var(--muted);
+            font-size: 0.95rem;
+            margin-left: 0.5rem;
         }
     </style>
 </head>
 <body>
+    <h1>Ilyax</h1>
+    <p class="bio">16 y/o developer — AI integration &amp; modern web UI/UX</p>
 
-    <nav class="navbar">
-        Hi lol
-    </nav>
+    <h2>Info</h2>
+    <ul>
+        <li><strong>Alias:</strong> Ilyax</li>
+        <li><strong>Age:</strong> 16</li>
+        <li><strong>Focus:</strong> AI tools, creative web apps, security</li>
+    </ul>
 
-    <div class="container">
-        <header class="header-section">
-            <h1>Hi, I'm <span class="ilyax">Ilyax</span><br>
-            <p><span class="age-placeholder">16</span> year old developer specializing in Next-Gen AI Integration & Modern Web UI/UX.</p>
-        </header>
+    <h2>Links</h2>
+    <ul>
+        <li>GitHub: <a href="https://github.com/ilyaxuwu" target="_blank">ilyaxuwu</a></li>
+        <li>Discord: <span>ilyaxuwu</span> (ID: 1115700478005743758)</li>
+    </ul>
 
-        <section class="card">
-            <h2><i class="fas fa-star" style="color: var(--ios-yellow)"></i> Featured</h2>
-            <a href="https://ilyaxuwu.github.io/danser/danser.html" class="featured-project" target="_blank">
-                <div class="featured-icon">
-                    <i class="fas fa-mouse-pointer"></i>
-                </div>
-                <div class="featured-content">
-                    <h3>none</h3>
-                    <p>none</p>
-                </div>
-            </a>
-        </section>
+    <h2>Projects (Random project I made when I was bored)</h2>
+    <ul>
+        <li>
+            <a href="https://github.com/ilyaxuwu/discord-ai-bot" target="_blank">AI Discord Bot</a>
+            <span class="desc">— Ollama, image processing, web search</span>
+        </li>
+        <li>
+            <a href="https://ilyaxuwu.github.io/doors/anchorsolver.html" target="_blank">Anchor Solver</a>
+            <span class="desc">— auto‑solver for DOORS: The Mines</span>
+        </li>
+        <li>
+            <a href="https://ilyaxuwu.github.io/tampermonkey/analyze.html" target="_blank">Script Analyzer</a>
+            <span class="desc">— infection & grabber detection</span>
+        </li>
+        <li>
+            <a href="https://ilyaxuwu.github.io/sploop/astral.html" target="_blank">Astral Script</a>
+            <span class="desc">— TensorFlow utility for Sploop.io</span>
+        </li>
+        <li>
+            <a href="https://ilyaxuwu.github.io/safety/lockmessage.html" target="_blank">AES Message Locker</a>
+            <span class="desc">— client‑side password encryption</span>
+        </li>
+        <li>
+            <a href="https://ilyaxuwu.github.io/Roblox/snipe.html" target="_blank">Astral S — Sniper</a>
+            <span class="desc">— realtime Roblox stream sniper</span>
+        </li>
+        <li>
+            <a href="https://ilyaxuwu.github.io/eokul/sahteeokul.html" target="_blank">Fake E‑Okul</a>
+            <span class="desc">— exam score simulator (Turkish Only)</span>
+        </li>
+        <li>
+            <a href="https://ilyaxuwu.github.io/catgirl/catgirl.html" target="_blank">Catgirl Converter</a>
+            <span class="desc">— fun text converter for Discord</span>
+        </li>
+        <li>
+            <a href="https://ilyaxuwu.github.io/iftarvakti/iftar.html" target="_blank">İftar Time (IST)</a>
+            <span class="desc">— accurate Istanbul prayer timer</span>
+        </li>
+    </ul>
 
-        <section class="card">
-            <h2><i class="fas fa-user" style="color: var(--ios-blue)"></i> Identity</h2>
-            <p class="identity-text">
-                Developing creative software solutions for <span><span class="dev-years-placeholder">5</span> years</span>. Passionate about AI ethics, cybersecurity, and artistic web experiences. Also a piano player and music enthusiast.
-            </p>
-        </section>
-
-        <section class="card">
-            <h2><i class="fas fa-laptop-code" style="color: var(--ios-purple)"></i> Tech Stack</h2>
-            <div class="skills-grid">
-                <div class="skill">
-                    <div class="skill-icon" style="color: var(--ios-yellow);"><i class="fab fa-js"></i></div>
-                    <span>JavaScript</span>
-                </div>
-                <div class="skill">
-                    <div class="skill-icon" style="color: var(--ios-green);"><i class="fab fa-node-js"></i></div>
-                    <span>Node.js</span>
-                </div>
-                <div class="skill">
-                    <div class="skill-icon" style="color: var(--ios-blue);"><i class="fab fa-python"></i></div>
-                    <span>Python</span>
-                </div>
-                <div class="skill">
-                    <div class="skill-icon" style="color: var(--ios-purple);"><i class="fas fa-microchip"></i></div>
-                    <span>AI Tools</span>
-                </div>
-                <div class="skill">
-                    <div class="skill-icon" style="color: var(--ios-orange);"><i class="fab fa-html5"></i></div>
-                    <span>HTML5</span>
-                </div>
-                <div class="skill">
-                    <div class="skill-icon" style="color: var(--ios-teal);"><i class="fab fa-css3-alt"></i></div>
-                    <span>CSS3</span>
-                </div>
-            </div>
-        </section>
-
-        <section class="card">
-            <h2><i class="fas fa-layer-group" style="color: var(--ios-teal)"></i> Projects</h2>
-            <div class="projects-grid">
-                
-                <a href="https://github.com/ilyaxuwu/discord-ai-bot" class="project-card" target="_blank">
-                    <div class="app-icon" style="background: var(--ios-blue);"><i class="fas fa-robot"></i></div>
-                    <div class="project-title">AI Discord Bot</div>
-                    <div class="project-desc">Advanced private AI bot with Ollama Support, Image processing, and autonomous Web Search.</div>
-                </a>
-
-                <a href="https://ilyaxuwu.github.io/doors/anchorsolver.html" class="project-card">
-                    <div class="app-icon" style="background: #1c1c1e; border: 1px solid var(--border-light)"><i class="fas fa-anchor" style="color: var(--ios-blue);"></i></div>
-                    <div class="project-title">Anchor Solver</div>
-                    <div class="project-desc">Automated solution for DOORS: The Mines.</div>
-                </a>
-                
-                <a href="https://ilyaxuwu.github.io/tampermonkey/analyze.html" class="project-card">
-                    <div class="app-icon" style="background: rgba(48, 209, 88, 0.2);"><i class="fas fa-shield-alt" style="color: var(--ios-green);"></i></div>
-                    <div class="project-title">Script Analyzer</div>
-                    <div class="project-desc">Infection & Grabber detection system.</div>
-                </a>
-
-                <a href="https://ilyaxuwu.github.io/sploop/astral.html" class="project-card">
-                    <div class="app-icon" style="background: rgba(191, 90, 242, 0.2);"><i class="fas fa-moon" style="color: var(--ios-purple);"></i></div>
-                    <div class="project-title">Astral Script</div>
-                    <div class="project-desc">Tensorflow-powered utility for Sploop.io.</div>
-                </a>
-
-                <a href="https://ilyaxuwu.github.io/safety/lockmessage.html" class="project-card">
-                    <div class="app-icon" style="background: rgba(255, 159, 10, 0.2);"><i class="fas fa-lock" style="color: var(--ios-orange);"></i></div>
-                    <div class="project-title">AES Message Locker</div>
-                    <div class="project-desc">End-to-end password encryption.</div>
-                </a>
-
-                <a href="https://ilyaxuwu.github.io/Roblox/snipe.html" class="project-card">
-                    <div class="app-icon" style="background: rgba(255, 69, 58, 0.2);"><i class="fas fa-crosshairs" style="color: var(--ios-red);"></i></div>
-                    <div class="project-title">Astral S — Sniper</div>
-                    <div class="project-desc">Realtime Roblox stream sniper tool.</div>
-                </a>
-
-                <a href="https://ilyaxuwu.github.io/eokul/sahteeokul.html" class="project-card">
-                    <div class="app-icon" style="background: rgba(100, 210, 255, 0.2);"><i class="fas fa-graduation-cap" style="color: var(--ios-teal);"></i></div>
-                    <div class="project-title">Fake E-Okul</div>
-                    <div class="project-desc">Exam score simulator for students. (TR)</div>
-                </a>
-
-                <a href="https://ilyaxuwu.github.io/catgirl/catgirl.html" class="project-card">
-                    <div class="app-icon" style="background: rgba(255, 55, 95, 0.2);"><i class="fas fa-cat" style="color: var(--ios-pink);"></i></div>
-                    <div class="project-title">Catgirl Converter</div>
-                    <div class="project-desc">Fun text converter for Discord.</div>
-                </a>
-
-                <a href="https://ilyaxuwu.github.io/iftarvakti/iftar.html" class="project-card">
-                    <div class="app-icon" style="background: rgba(255, 214, 10, 0.2);"><i class="fas fa-utensils" style="color: var(--ios-yellow);"></i></div>
-                    <div class="project-title">İftar Time (IST)</div>
-                    <div class="project-desc">The best Iftar timer for Istanbul Time.</div>
-                </a>
-            </div>
-        </section>
-
-        <section class="card">
-            <h2><i class="fas fa-envelope" style="color: var(--ios-red)"></i> Get in Touch</h2>
-            <div class="contact-actions">
-                <a href="javascript:void(0);" onclick="openDiscord()" class="btn btn-primary">
-                    <i class="fab fa-discord"></i> Discord
-                </a>
-                <a href="https://github.com/ilyaxuwu" target="_blank" class="btn btn-secondary">
-                    <i class="fab fa-github"></i> GitHub
-                </a>
-            </div>
-        </section>
-    </div>
-
-    <script>
-        function openDiscord() {
-            window.open('https://discord.com/users/1115700478005743758', '_blank');
-        }
-
-        function calculateAge(birthDate) {
-            const birth = new Date(birthDate);
-            const today = new Date();
-            let age = today.getFullYear() - birth.getFullYear();
-            const m = today.getMonth() - birth.getMonth();
-            if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
-            return age;
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const currentAge = calculateAge('2010-01-28');
-            document.querySelectorAll('.age-placeholder').forEach(el => el.textContent = currentAge);
-
-            const devStartYear = 2021;
-            const currentYear = new Date().getFullYear();
-            const devYears = currentYear - devStartYear;
-            document.querySelectorAll('.dev-years-placeholder').forEach(el => el.textContent = devYears);
-        });
-    </script>
+    <h2>Contact</h2>
+    <ul>
+        <li>GitHub: <a href="https://github.com/ilyaxuwu" target="_blank">github.com/ilyaxuwu</a></li>
+        <li>Discord: <a href="https://discord.com/users/1115700478005743758" target="_blank">open profile</a></li>
+    </ul>
 </body>
 </html>
