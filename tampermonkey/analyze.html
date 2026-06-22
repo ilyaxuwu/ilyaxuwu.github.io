@@ -455,6 +455,7 @@
                     { pattern: /new Function\(/gi, risk: 'high', description: 'Dynamic function creation' },
                     { pattern: /\.replace\(.*\/.*\/.*\)/gi, risk: 'medium', description: 'Regex replacement' },
                     { pattern: /window\.open\(/gi, risk: 'medium', description: 'Window popup' },
+                    { pattern: /window\.location\.replace\s*\(/gi, risk: 'high', description: 'Instant site redirect' },
                     { pattern: /\.onload\s*=/gi, risk: 'low', description: 'Onload event handler' },
                     { pattern: /\.onerror\s*=/gi, risk: 'low', description: 'Onerror event handler' },
                     { pattern: /\.addEventListener\(.*message/gi, risk: 'medium', description: 'Message event listener' },
