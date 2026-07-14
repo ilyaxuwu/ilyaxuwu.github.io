@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ilyax — Blog</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>👾</text></svg>">
+<style>
+:root{
+  --bg:#0e1014;
+  --surface:rgba(20,22,29,.88);
+  --surface-2:rgba(255,255,255,.04);
+  --text:#edf1fb;
+  --muted:#9da6b8;
+  --line:rgba(255,255,255,.08);
+  --shadow:0 24px 70px rgba(0,0,0,.34);
+  --radius:22px;
+  --accent:#7aa2f7;
+  --accent-2:#9ece6a;
+}
+:root.light{
+  --bg:#f5f7fb;
+  --surface:rgba(255,255,255,.9);
+  --surface-2:rgba(0,0,0,.03);
+  --text:#171a22;
+  --muted:#5e6472;
+  --line:rgba(0,0,0,.08);
+  --shadow:0 24px 70px rgba(0,0,0,.08);
+  --accent:#1a5fb4;
+  --accent-2:#2f855a;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+  color:var(--text);
+  background:
+    radial-gradient(circle at top left, rgba(122,162,247,.14), transparent 24%),
+    radial-gradient(circle at top right, rgba(158,206,106,.08), transparent 20%),
+    var(--bg);
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+a{color:inherit;text-decoration:none}
+button,input{font:inherit}
+.wrap{
+  width:min(1140px,calc(100% - 28px));
+  margin:0 auto;
+  padding:26px 0 54px;
+}
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:22px;
+}
+.brand{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.mark{
+  width:54px;height:54px;border-radius:16px;
+  display:grid;place-items:center;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  color:#fff;
+  font-weight:900;
+  box-shadow:var(--shadow);
+}
+.brand h1{
+  margin:0;
+  font-size:1.25rem;
+  letter-spacing:-.03em;
+}
+.brand p{
+  margin:4px 0 0;
+  color:var(--muted);
+  font-size:.92rem;
+}
+.actions{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+.pill, .iconbtn{
+  border:1px solid var(--line);
+  background:var(--surface);
+  color:var(--text);
+  border-radius:999px;
+  box-shadow:var(--shadow);
+}
+.pill{
+  padding:10px 14px;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+}
+.iconbtn{
+  width:44px;height:44px;
+  display:grid;place-items:center;
+  cursor:pointer;
+}
+.main{
+  display:grid;
+  grid-template-columns:340px 1fr;
+  gap:22px;
+}
+@media (max-width:940px){
+  .main{grid-template-columns:1fr}
+}
+.card{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  backdrop-filter:blur(16px);
+  overflow:hidden;
+}
+.card-head{
+  padding:18px 18px 14px;
+  border-bottom:1px solid var(--line);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+}
+.card-head h2{
+  margin:0;
+  font-size:1.02rem;
+  letter-spacing:.01em;
+}
+.card-body{padding:18px}
+.profile{
+  display:grid;
+  gap:16px;
+}
+.profile-top{
+  display:flex;
+  gap:14px;
+  align-items:center;
+}
+.avatar{
+  width:88px;height:88px;
+  border-radius:22px;
+  overflow:hidden;
+  border:1px solid var(--line);
+  background:linear-gradient(135deg, rgba(122,162,247,.18), rgba(158,206,106,.12));
+  flex:0 0 auto;
+}
+.avatar img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+.avatar .fallback{
+  width:100%;
+  height:100%;
+  display:grid;
+  place-items:center;
+  font-size:1.6rem;
+  font-weight:800;
+  color:var(--muted);
+}
+.profile h3{
+  margin:0;
+  font-size:1.08rem;
+}
+.profile .handle{
+  margin-top:4px;
+  color:var(--muted);
+  font-size:.92rem;
+}
+.profile .bio{
+  color:var(--muted);
+  font-size:.95rem;
+  margin:0;
+}
+.meta-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+.badge{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 11px;
+  border-radius:999px;
+  border:1px solid var(--line);
+  background:var(--surface-2);
+  color:var(--muted);
+  font-size:.86rem;
+}
+.blogs{
+  padding:18px;
+  display:grid;
+  gap:14px;
+}
+.blog{
+  padding:18px;
+  border:1px solid var(--line);
+  border-radius:20px;
+  background:var(--surface-2);
+  transition:transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+.blog:hover{
+  transform:translateY(-2px);
+  border-color:rgba(122,162,247,.28);
+  box-shadow:0 16px 34px rgba(0,0,0,.12);
+}
+.blog-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:12px;
+}
+.blog h3{
+  margin:0;
+  font-size:1.08rem;
+  letter-spacing:-.02em;
+}
+.meta{
+  margin-top:6px;
+  color:var(--muted);
+  font-size:.9rem;
+}
+.excerpt{
+  margin:12px 0 0;
+  color:var(--muted);
+}
+.tags{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:12px;
+}
+.tag{
+  padding:6px 10px;
+  border-radius:999px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.02);
+  color:var(--muted);
+  font-size:.84rem;
+}
+.row{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+input[type="search"]{
+  min-width:240px;
+  padding:12px 14px;
+  border-radius:14px;
+  border:1px solid var(--line);
+  background:var(--surface-2);
+  color:var(--text);
+  outline:none;
+}
+input[type="search"]::placeholder{color:var(--muted)}
+.primary, .secondary{
+  padding:11px 14px;
+  border-radius:14px;
+  border:1px solid var(--line);
+  cursor:pointer;
+}
+.primary{
+  background:var(--accent);
+  color:#fff;
+  border-color:transparent;
+}
+.secondary{
+  background:var(--surface-2);
+  color:var(--text);
+}
+.article{
+  display:none;
+  margin-top:14px;
+  padding-top:14px;
+  border-top:1px solid var(--line);
+  color:var(--text);
+  white-space:pre-wrap;
+}
+.article.open{display:block}
+.empty{
+  padding:24px 18px;
+  text-align:center;
+  color:var(--muted);
+  border:1px dashed var(--line);
+  border-radius:18px;
+}
+.footer{
+  margin-top:18px;
+  color:var(--muted);
+  font-size:.9rem;
+  text-align:center;
+}
+@media (max-width:640px){
+  .wrap{width:min(100% - 18px,1140px);padding-top:12px}
+  .topbar{flex-direction:column;align-items:stretch}
+  .actions{justify-content:space-between}
+  .blog-head{flex-direction:column}
+  input[type="search"]{width:100%;min-width:0}
+  .row{width:100%}
+  .row > *{width:100%}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="topbar">
+    <div class="brand">
+      <div class="mark">IY</div>
+      <div>
+        <h1>Ilyax Blog</h1>
+        <p id="subtitle">Minimal, modern, config-driven</p>
+      </div>
+    </div>
+    <div class="actions">
+      <span class="pill" id="statusPill">Config hazır</span>
+      <button class="iconbtn" id="themeBtn" aria-label="Tema değiştir">☾</button>
+    </div>
+  </header>
+
+  <section class="main">
+    <aside class="card">
+      <div class="card-head">
+        <h2>Profil</h2>
+        <button class="secondary" id="reloadAvatarBtn">Yenile</button>
+      </div>
+      <div class="card-body">
+        <div class="profile">
+          <div class="profile-top">
+            <div class="avatar">
+              <img id="profileAvatar" alt="profil resmi" hidden />
+              <div class="fallback" id="avatarFallback">IY</div>
+            </div>
+            <div>
+              <h3 id="profileName">Ilyax</h3>
+              <div class="handle" id="profileHandle">@ilyax</div>
+            </div>
+          </div>
+          <p class="bio" id="profileBio">I post some blogs in there.</p>
+          <div class="meta-row">
+            <span class="badge" id="avatarBadge">Coder</span>
+            <!-- Konsoldaki hatayı çözen, JavaScript'in beklediği HTML elementi: -->
+            <span class="badge" id="themeBadge">Tema: dark</span> 
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="card">
+      <div class="card-head">
+        <div>
+          <h2>Blogs</h2>
+          <div class="meta" id="countText">0 blogs</div>
+        </div>
+        <div class="row">
+          <input id="searchInput" type="search" placeholder="Search..." />
+          <button class="secondary" id="collapseBtn">Close</button>
+        </div>
+      </div>
+      <div class="blogs" id="blogList"></div>
+    </main>
+  </section>
+
+  <div class="footer">Made by ilyax.</div>
+</div>
+
+<script>
+const CONFIG = {
+  name: "ilyax",
+  handle: "@ilyax",
+  bio: "Godly coder, I post some blogs in there.",
+  subtitle: "I post blogs",
+  status: "Active",
+  avatar: "https://cdn.discordapp.com/avatars/1115700478005743758/d72547fd7ccf210424e1daa7bc3618ef.png?size=1024",
+  accent: "#7aa2f7"
+};
+
+const BLOGS = [
+  {
+    title: "My first blog!",
+    date: "2026-07-14",
+    tags: ["First"],
+    excerpt: "A test for my new blog website.",
+    body: "I've made new blog channel for that. Its just a test blog only. I will write new blogs more"
+  }
+];
+
+const els = {
+  name: document.getElementById('profileName'),
+  handle: document.getElementById('profileHandle'),
+  bio: document.getElementById('profileBio'),
+  avatar: document.getElementById('profileAvatar'),
+  fallback: document.getElementById('avatarFallback'),
+  badge: document.getElementById('avatarBadge'),
+  subtitle: document.getElementById('subtitle'),
+  themeBadge: document.getElementById('themeBadge'),
+  statusPill: document.getElementById('statusPill'),
+  countText: document.getElementById('countText'),
+  blogList: document.getElementById('blogList'),
+  searchInput: document.getElementById('searchInput'),
+  collapseBtn: document.getElementById('collapseBtn'),
+  reloadAvatarBtn: document.getElementById('reloadAvatarBtn'),
+  themeBtn: document.getElementById('themeBtn')
+};
+
+function esc(s){
+  return String(s)
+    .replaceAll('&','&amp;')
+    .replaceAll('<','&lt;')
+    .replaceAll('>','&gt;')
+    .replaceAll('"','&quot;')
+    .replaceAll("'",'&#39;');
+}
+
+function initials(name){
+  const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return 'IY';
+  if (parts.length === 1) return parts[0].slice(0,2).toUpperCase();
+  return (parts[0][0] + parts[1][0]).toUpperCase();
+}
+
+function applyConfig(){
+  els.name.textContent = CONFIG.name || 'Ilyax';
+  els.handle.textContent = CONFIG.handle || '@ilyax';
+  els.bio.textContent = CONFIG.bio || 'Blog, notlar ve Discord temalı kişisel alan.';
+  els.subtitle.textContent = CONFIG.subtitle || 'Minimal, modern, config-driven';
+  els.statusPill.textContent = CONFIG.status || 'Config hazır';
+  els.badge.textContent = 'Godly coder';
+
+  const src = CONFIG.avatar || '';
+  els.avatar.hidden = true;
+  els.fallback.style.display = 'grid';
+  els.fallback.textContent = initials(CONFIG.name || 'Ilyax');
+
+  if (src) {
+    els.avatar.src = src;
+    els.avatar.onload = () => {
+      els.avatar.hidden = false;
+      els.fallback.style.display = 'none';
+    };
+    els.avatar.onerror = () => {
+      els.avatar.hidden = true;
+      els.fallback.style.display = 'grid';
+      els.fallback.textContent = initials(CONFIG.name || 'Ilyax');
+    };
+  }
+
+  document.documentElement.style.setProperty('--accent', CONFIG.accent || '#7aa2f7');
+}
+
+function renderBlogs(term=''){
+  const q = term.trim().toLowerCase();
+  const filtered = BLOGS.filter(p => {
+    if (!q) return true;
+    return [p.title, p.date, p.tags.join(' '), p.excerpt, p.body].join(' ').toLowerCase().includes(q);
+  });
+
+  els.countText.textContent = `${filtered.length} Blogs`;
+  els.blogList.innerHTML = '';
+
+  if (!filtered.length) {
+    els.blogList.innerHTML = `<div class="empty">Didn't found.</div>`;
+    return;
+  }
+
+  filtered.forEach((post, idx) => {
+    const item = document.createElement('article');
+    item.className = 'blog';
+    item.innerHTML = `
+      <div class="blog-head">
+        <div>
+          <h3>${esc(post.title)}</h3>
+          <div class="meta">${esc(post.date)} · ${esc(post.tags.join(' · '))}</div>
+        </div>
+        <button class="secondary" data-copy="${esc(post.title)}">Copy</button>
+      </div>
+      <p class="excerpt">${esc(post.excerpt)}</p>
+      <div class="tags">${post.tags.map(t => `<span class="tag">${esc(t)}</span>`).join('')}</div>
+      <div class="row" style="margin-top:14px">
+        <button class="primary toggle-btn" data-target="a-${idx}">Read</button>
+      </div>
+      <div class="article" id="a-${idx}">${esc(post.body)}</div>
+    `;
+    els.blogList.appendChild(item);
+  });
+
+  els.blogList.querySelectorAll('[data-copy]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(btn.dataset.copy);
+        btn.textContent = 'Copied';
+        setTimeout(() => btn.textContent = 'Copy', 900);
+      } catch {
+        btn.textContent = 'Error';
+        setTimeout(() => btn.textContent = 'Copy', 900);
+      }
+    });
+  });
+
+  els.blogList.querySelectorAll('.toggle-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = document.getElementById(btn.dataset.target);
+      const open = target.classList.toggle('open');
+      btn.textContent = open ? 'Close' : 'Read';
+    });
+  });
+}
+
+function collapseAll(){
+  document.querySelectorAll('.article.open').forEach(el => el.classList.remove('open'));
+  document.querySelectorAll('.toggle-btn').forEach(btn => btn.textContent = 'Oku');
+}
+
+function setTheme(light){
+  document.documentElement.classList.toggle('light', light);
+  localStorage.setItem('theme', light ? 'light' : 'dark');
+  els.themeBtn.textContent = light ? '☀' : '☾';
+  els.themeBadge.textContent = `Tema: ${light ? 'light' : 'dark'}`;
+}
+
+function initTheme(){
+  const saved = localStorage.getItem('theme');
+  if (saved) return setTheme(saved === 'light');
+  const prefersLight = matchMedia && matchMedia('(prefers-color-scheme: light)').matches;
+  setTheme(prefersLight);
+}
+
+els.searchInput.addEventListener('input', e => renderBlogs(e.target.value));
+els.collapseBtn.addEventListener('click', collapseAll);
+els.reloadAvatarBtn.addEventListener('click', applyConfig);
+els.themeBtn.addEventListener('click', () => setTheme(!document.documentElement.classList.contains('light')));
+
+initTheme();
+applyConfig();
+renderBlogs();
+</script>
+</body>
+</html>
