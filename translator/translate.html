@@ -739,6 +739,47 @@ h1 { font-size: 1.6em; font-weight: 500; letter-spacing: -0.3px; color: #1a1a1a;
 .manage-item .item-actions button.danger { color: #c44; }
 .manage-item .item-actions button.danger:hover { border-color: #c44; background: #fef0f0; }
 
+/* History */
+.history-item {
+    display: flex; gap: 8px; align-items: flex-start; padding: 10px 12px;
+    border: 1px solid #e0ddd9; border-radius: 8px; background: #faf9f7;
+    cursor: pointer; transition: all 0.12s; margin-bottom: 6px;
+}
+.history-item:hover { border-color: #b8b0a8; background: #fff; }
+.history-item .h-content { flex: 1; min-width: 0; }
+.history-item .h-input { font-size: 0.8em; color: #999; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
+.history-item .h-output { font-size: 0.85em; color: #2c2c2c; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.history-item .h-meta { font-size: 0.7em; color: #bbb; margin-top: 2px; }
+.history-item .h-star {
+    flex-shrink: 0; width: 28px; height: 28px; border: 1px solid #e0ddd9;
+    border-radius: 6px; background: #fff; cursor: pointer; font-size: 0.85em;
+    display: flex; align-items: center; justify-content: center;
+    color: #ddd; transition: all 0.12s; margin-top: 2px;
+}
+.history-item .h-star:hover { border-color: #f0c040; color: #f0c040; }
+.history-item .h-star.faved { color: #f0c040; border-color: #f0c040; background: #fffbe6; }
+.history-filter { display: flex; gap: 6px; margin-bottom: 12px; }
+.history-filter button {
+    padding: 4px 12px; border: 1px solid #e0ddd9; border-radius: 6px;
+    font-size: 0.75em; cursor: pointer; background: #fff; color: #666; transition: all 0.12s;
+}
+.history-filter button:hover { border-color: #b8b0a8; }
+.history-filter button.active { background: #2c2c2c; color: #fff; border-color: #2c2c2c; }
+.history-empty { text-align: center; padding: 30px 20px; color: #bbb; font-size: 0.85em; }
+
+/* Batch */
+.batch-output { display: none; }
+.batch-output.open { display: block; }
+.batch-char-block {
+    display: flex; gap: 10px; align-items: flex-start;
+    padding: 10px 12px; border: 1px solid #e0ddd9; border-radius: 10px;
+    margin-bottom: 8px; background: #fff;
+}
+.batch-char-block .bc-toggle { flex-shrink: 0; margin-top: 2px; accent-color: #2c2c2c; }
+.batch-char-block .bc-name { font-weight: 500; font-size: 0.8em; color: #888; margin-bottom: 4px; }
+.batch-char-block .bc-output { font-size: 0.9em; line-height: 1.5; color: #2c2c2c; white-space: pre-wrap; word-wrap: break-word; min-height: 20px; }
+.batch-char-block .bc-output.hint { color: #ddd; font-style: italic; }
+
 @media (max-width: 500px) {
     body { padding: 16px 10px; }
     h1 { font-size: 1.3em; }
@@ -761,6 +802,8 @@ h1 { font-size: 1.6em; font-weight: 500; letter-spacing: -0.3px; color: #1a1a1a;
         <button id="manageBtn">Manage characters</button>
         <button id="importBtn">Import JSON</button>
         <button id="exportBtn">Export JSON</button>
+        <button id="templateBtn">Download Template</button>
+        <button id="historyBtn">History</button>
         <button id="guideBtn">Guide</button>
         <input type="file" id="importFileInput" accept=".json" style="display:none">
     </div>
@@ -774,13 +817,14 @@ h1 { font-size: 1.6em; font-weight: 500; letter-spacing: -0.3px; color: #1a1a1a;
     <div class="controls">
         <label><input type="checkbox" id="useEmojis" checked> Include emojis</label>
         <label><input type="checkbox" id="useActions" checked> Include actions</label>
+        <label><input type="checkbox" id="useBatch"> Batch mode</label>
         <div class="stats">
             <span id="wordCount">0 words</span>
             <span id="charInfo">&mdash;</span>
         </div>
     </div>
 
-    <div class="output-area">
+    <div class="output-area" id="singleOutput">
         <div class="output-header">
             <span class="char-badge" id="charBadge">Select a character</span>
         </div>
@@ -791,6 +835,7 @@ h1 { font-size: 1.6em; font-weight: 500; letter-spacing: -0.3px; color: #1a1a1a;
             <button id="resetBtn">Reset</button>
         </div>
     </div>
+    <div class="batch-output" id="batchOutput"></div>
 
     <div class="footer-note">speech vector engine</div>
 </div>
@@ -1093,6 +1138,27 @@ h1 { font-size: 1.6em; font-weight: 500; letter-spacing: -0.3px; color: #1a1a1a;
     </div>
 </div>
 
+<!-- HISTORY MODAL -->
+<div class="modal-overlay" id="historyModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h2>Translation history</h2>
+            <button class="close-btn" id="historyCloseBtn">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="history-filter">
+                <button id="histFilterAll" class="active">All</button>
+                <button id="histFilterFav">Favorites</button>
+                <button id="histClear">Clear all</button>
+            </div>
+            <div id="historyList"></div>
+        </div>
+        <div class="modal-footer">
+            <button id="historyDoneBtn" class="primary">Done</button>
+        </div>
+    </div>
+</div>
+
 <!-- MANAGE MODAL -->
 <div class="modal-overlay" id="manageModal">
     <div class="modal">
@@ -1137,100 +1203,130 @@ var EXAMPLE_PROFILES = [
     {
         id: 'hoshino', _builtin: true,
         name: 'Hoshino', series: 'Blue Archive', color: '#e88aa0',
-        vector: { energy: 0.2, formality: 0.15, playfulness: 0.5, aggression: 0.1, sleepiness: 0.9, archaic: 0.0 },
+        vector: { energy: 0.25, formality: 0.05, playfulness: 0.6, aggression: 0.1, sleepiness: 0.9, archaic: 0.0 },
         firstPerson: 'ojisan', secondPerson: false,
-        sentenceEndings: ['~', ' naa', ' nda yo', ' yo', ' darou'], endingsWeight: [3, 4, 2, 3, 2],
-        interjections: ['Uhe~', 'Fuwaa~', 'Uhee~', 'Aaa~'],
+        sentenceEndings: ['~', ' naa', ' nda yo', ' yo', ' darou', ' ...'], endingsWeight: [3, 4, 2, 3, 2, 2],
+        interjections: ['Uheee~', 'Uhe~', 'Fuwaa~', 'Maa...', 'Heee~', 'Aaa~'],
         laugh: null, rules: {}, prefix: null,
-        actions: ['*yawns*', '*stretches lazily*', '*blinks slowly*', '*nods off*'],
-        vocab: { 'hello': 'yaa~', 'tired': 'tsukareta', 'sleep': 'nemui', 'boring': 'taikutsu', 'work': 'mendou', 'good': 'yokatta', 'cute': 'kawaii~' },
+        actions: ['*yawns loudly*', '*stretches lazily*', '*blinks slowly*', '*nods off*', '*mumbles something*'],
+        vocab: { 'hello': 'yaa~', 'tired': 'tsukareta', 'sleep': 'nemui', 'boring': 'taikutsu', 'work': 'mendou', 'good': 'yokatta', 'cute': 'kawaii~', 'whatever': 'maa maa', 'lazy': 'darui', 'trouble': 'mendokusai' },
         grammar: [
             { from: /\bojisan\s+will\s+(\w+)/gi, to: 'ojisan $1 kana~' },
             { from: /\bojisan\s+want\s+to\s+(\w+)/gi, to: 'ojisan wa $1-tai' },
             { from: /\bojisan\s+want\s+(\w+)/gi, to: 'ojisan wa $1 ga hoshii' },
+            { from: /\bisn't\b/gi, to: 'ja nai kana~' },
+            { from: /\b(?:very|really)\s+(\w+)/gi, to: 'chotto $1' },
+            { from: /\bojisan\s+wa\s+(?:gonna|going\s+to)\s+(\w+)/gi, to: 'ojisan $1 kana~' },
+            { from: /\bdon't\s+know\b/gi, to: 'wakannai naa~' },
+            { from: /\blet's\s+(\w+)/gi, to: '$1 shiyou kana~' },
         ],
-        emojis: ['🌸', '💤', '😴', '✨', '🍵', '🥱']
+        emojis: ['🌸', '💤', '😴', '✨', '🍵', '🥱', '😪']
     },
     {
         id: 'shiroko', _builtin: true,
         name: 'Shiroko', series: 'Blue Archive', color: '#7aa8d4',
-        vector: { energy: 0.3, formality: 0.55, playfulness: 0.1, aggression: 0.3, sleepiness: 0.2, archaic: 0.0 },
+        vector: { energy: 0.3, formality: 0.65, playfulness: 0.05, aggression: 0.35, sleepiness: 0.15, archaic: 0.0 },
         firstPerson: 'watashi', secondPerson: false,
-        sentenceEndings: ['...', ' da', ' desu', ' na', ' yo'], endingsWeight: [5, 3, 3, 2, 1],
+        sentenceEndings: ['...', ' da', ' na', ' yo'], endingsWeight: [6, 3, 2, 1],
         interjections: ['Nn', '...', 'Sou ka', 'Nn...'],
         laugh: null, rules: {}, prefix: ['Nn', 'Nn...'],
-        actions: ['*nods*', '*adjusts gloves*', '*gives a calm look*', '*ears twitch*'],
-        vocab: { 'hello': 'konnichiwa', 'we': 'Abydos', 'friend': 'nakama', 'plan': 'sakusen', 'money': 'okane', 'go': 'iku', 'good': 'ii', 'bank': 'ginkou' },
+        actions: ['*nods silently*', '*adjusts gloves*', '*gives a calm look*', '*ears twitch*', '*stares blankly*'],
+        vocab: { 'hello': 'konnichiwa', 'we': 'Abydos', 'friend': 'nakama', 'plan': 'sakusen', 'money': 'okane', 'go': 'iku', 'good': 'ii', 'bank': 'ginkou', 'robbery': 'goutou', 'target': 'mokuhyou', 'protect': 'mamoru' },
         grammar: [
             { from: /\bwatashi\s+will\s+(\w+)/gi, to: 'watashi ga $1' },
+            { from: /\bwatashi\s+think\b/gi, to: '...sou da' },
+            { from: /\b(?:maybe|perhaps)\b/gi, to: 'tabun' },
+            { from: /\bwatashi\s+want\s+to\s+(\w+)/gi, to: '$1 shitai' },
+            { from: /\bno\s+need\b/gi, to: 'iranai' },
+            { from: /\bthat\s+is\b/gi, to: 'sore da' },
         ],
-        emojis: ['🐺', '🌙', '💫', '📋', '🎯']
+        emojis: ['🐺', '🌙', '💫', '📋', '🎯', '🏃']
     },
     {
         id: 'gojo', _builtin: true,
         name: 'Gojo', series: 'Jujutsu Kaisen', color: '#b0c4de',
-        vector: { energy: 0.85, formality: 0.1, playfulness: 0.9, aggression: 0.2, sleepiness: 0.05, archaic: 0.0 },
+        vector: { energy: 0.85, formality: 0.05, playfulness: 0.95, aggression: 0.3, sleepiness: 0.0, archaic: 0.0 },
         firstPerson: 'ore', secondPerson: 'omae',
-        sentenceEndings: ['~na', '~zo', '~dayo', '~sa', '~ze'], endingsWeight: [3, 2, 4, 2, 2],
-        interjections: ['Maa maa', 'Hehe', 'Hora hora', 'Ara ara'],
+        sentenceEndings: ['~na', '~zo', '~dayo', '~sa', '~ze', '~jan'], endingsWeight: [3, 2, 4, 2, 2, 2],
+        interjections: ['Maa maa', 'Hehe', 'Hora hora', 'Ara ara', 'N~'],
         laugh: 'fufufu', rules: {}, prefix: null,
-        actions: ['*adjusts blindfold*', '*grins*', '*floats lazily*', '*waves a hand*'],
-        vocab: { 'hello': 'yoo', 'strong': 'saikyou', 'fun': 'tanoshii', 'boring': 'taikutsu', 'amazing': 'yabai', 'good': 'yoi', 'no': 'muuri', "can't": 'dekinai', 'can': 'dekiru' },
+        actions: ['*adjusts blindfold*', '*grins*', '*floats lazily*', '*waves a hand*', '*snickers*', '*spreads arms dramatically*'],
+        vocab: { 'hello': 'yoo', 'strong': 'saikyou', 'fun': 'tanoshii', 'boring': 'taikutsu', 'amazing': 'yabai', 'good': 'yoi', 'no': 'muuri', "can't": 'dekinai', 'can': 'dekiru', 'honored': 'sonkei', 'heaven': 'ten', 'fool': 'baka', 'cute': 'kawaii', 'sorry': 'gomen~' },
         grammar: [
             { from: /\bore\s+will\s+(\w+)/gi, to: 'ore ga $1 ze' },
             { from: /\bore\s+want\s+to\s+(\w+)/gi, to: 'ore wa $1-tai na' },
             { from: /\bthis\s+is\b/gi, to: 'kore wa' },
             { from: /\bdon't\b/gi, to: 'nai' }, { from: /\bcan't\b/gi, to: 'dekinai' }, { from: /\bwon't\b/gi, to: 'nai' },
+            { from: /\bore\s+alone\b/gi, to: 'ore hitori' },
+            { from: /\byou're\s+(\w+)/gi, to: 'omae $1 jan' },
+            { from: /\bI'll\s+show\s+(?:you|them|him)\b/gi, to: 'miseru ze' },
         ],
-        emojis: ['⚡', '✨', '😎', '🌀', '👁️']
+        emojis: ['⚡', '✨', '😎', '🌀', '👁️', '😏']
     },
     {
         id: 'sukuna', _builtin: true,
         name: 'Sukuna', series: 'Jujutsu Kaisen', color: '#b84a4a',
-        vector: { energy: 0.55, formality: 0.2, playfulness: 0.05, aggression: 0.95, sleepiness: 0.0, archaic: 0.1 },
+        vector: { energy: 0.6, formality: 0.1, playfulness: 0.05, aggression: 0.95, sleepiness: 0.0, archaic: 0.35 },
         firstPerson: 'ore', secondPerson: 'kisama',
-        sentenceEndings: ['~zo', '~ze', ' da', '~na', '~wa'], endingsWeight: [4, 2, 3, 2, 2],
-        interjections: ['Hmph', 'Fumu', 'Kukuku', 'Chotto'],
+        sentenceEndings: ['~zo', '~ze', ' da', '~na', '~wa', ' no da'], endingsWeight: [4, 2, 3, 2, 2, 2],
+        interjections: ['Hmph', 'Fumu', 'Kukuku', 'Chotto', 'Ora'],
         laugh: 'kukuku', rules: {}, prefix: null,
-        actions: ['*grins*', '*cracks neck*', '*aura flares*', '*gazes down*'],
-        vocab: { 'strong': 'tsuyoi', 'weak': 'yowamushi', 'human': 'mushi', 'die': 'shine', 'interesting': 'omoshiroi', 'boring': 'tsumaranu', 'yes': 'sou da', 'vermin': 'mushikera' },
+        actions: ['*grins wickedly*', '*cracks neck*', '*aura flares*', '*gazes down*', '*tongue clicks*'],
+        vocab: { 'strong': 'tsuyoi', 'weak': 'yowamushi', 'human': 'mushi', 'die': 'shine', 'interesting': 'omoshiroi', 'boring': 'tsumaranu', 'yes': 'sou da', 'vermin': 'mushikera', 'king': 'ou', 'ancient': 'kodai', 'golden': 'kogane', 'era': 'jidai', 'foolish': 'oroka', 'play': 'asobu', 'amuse': 'tanoshimasero' },
         grammar: [
             { from: /\bore\s+will\s+(\w+)/gi, to: 'ore ga $1 zo' },
             { from: /\bore\s+want\s+to\s+(\w+)/gi, to: 'ore wa $1' },
             { from: /\bthis\s+is\b/gi, to: 'sore wa' },
             { from: /\byes\b/gi, to: 'sou da' },
+            { from: /\b(?:human|person|people)s?\b/gi, to: 'mushi' },
+            { from: /\bweak\b/gi, to: 'yowamushi' },
+            { from: /\bore\s+wa\b/gi, to: 'ore-sama wa' },
+            { from: /\bcome\s+(?:here|closer)\b/gi, to: 'koyo' },
+            { from: /\benough\b/gi, to: 'mou yoi' },
         ],
-        emojis: ['🔥', '👹', '💀', '🗡️', '🩸']
+        emojis: ['🔥', '👹', '💀', '🗡️', '🩸', '👑']
     },
     {
         id: 'furina', _builtin: true,
         name: 'Furina', series: 'Genshin Impact', color: '#7ab8d4',
-        vector: { energy: 0.8, formality: 0.45, playfulness: 0.7, aggression: 0.1, sleepiness: 0.05, archaic: 0.05 },
+        vector: { energy: 0.85, formality: 0.3, playfulness: 0.8, aggression: 0.1, sleepiness: 0.0, archaic: 0.05 },
         firstPerson: 'boku', secondPerson: false,
-        sentenceEndings: ['~daze', '~dayo', '~ne', '~no yo', '~wa'], endingsWeight: [3, 3, 3, 2, 2],
-        interjections: ['Fufu', 'Merveilleux', 'Bravo', 'Mon Dieu'],
+        sentenceEndings: ['~daze', '~dayo', '~ne', '~no yo', '~wa', '~desu wa'], endingsWeight: [3, 3, 2, 3, 2, 2],
+        interjections: ['Fufu', 'Merveilleux', 'Bravo', 'Mon Dieu', 'Ah~', 'En garde~'],
         laugh: 'fufu', rules: {}, prefix: null,
-        actions: ['*strikes a pose*', '*flourishes hand*', '*adjusts hat*', '*turns theatrically*'],
-        vocab: { 'hello': 'bonjour', 'good': 'magnifique', 'beautiful': 'magnifique', 'amazing': 'merveilleux', 'great': 'bravo', 'show': 'spectacle', 'dance': 'danse', 'water': 'eau' },
+        actions: ['*strikes a dramatic pose*', '*flourishes hand*', '*adjusts hat*', '*turns theatrically*', '*bows with a flourish*', '*gasps dramatically*'],
+        vocab: { 'hello': 'bonjour', 'good': 'magnifique', 'beautiful': 'magnifique', 'amazing': 'merveilleux', 'great': 'bravo', 'show': 'spectacle', 'dance': 'danse', 'water': 'eau', 'darling': 'mon cher', 'performance': 'representation', 'star': 'etoile', 'applause': 'applaudissement', 'curtain': 'rideau' },
         grammar: [
             { from: /\bboku\s+will\s+(\w+)/gi, to: 'boku ga $1 no yo' },
             { from: /\bthis\s+is\b/gi, to: 'ceci est' },
             { from: /\b(?:amazing|incredible)\b/gi, to: 'merveilleux' },
+            { from: /\bboku\s+wa\b/gi, to: 'boku-sama wa' },
+            { from: /\b(?:look|watch)\b/gi, to: 'admirez' },
+            { from: /\bboku\s+no\s+(\w+)/gi, to: 'mon $1' },
+            { from: /\bboku\s+shall\s+(\w+)/gi, to: 'boku ga $1 no desu' },
+            { from: /\b(?:hey|listen)\b/gi, to: 'ecoutez-moi' },
         ],
-        emojis: ['🎭', '💧', '👑', '🌟', '🎪']
+        emojis: ['🎭', '💧', '👑', '🌟', '🎪', '🎬']
     },
     {
         id: 'march', _builtin: true,
         name: 'March 7th', series: 'Honkai: Star Rail', color: '#d4a8d4',
-        vector: { energy: 0.9, formality: 0.1, playfulness: 0.85, aggression: 0.05, sleepiness: 0.0, archaic: 0.0 },
+        vector: { energy: 0.95, formality: 0.05, playfulness: 0.9, aggression: 0.05, sleepiness: 0.0, archaic: 0.0 },
         firstPerson: 'watashi', secondPerson: false,
-        sentenceEndings: ['~ne', '~yo', '~dane', '~jan', '~tteba'], endingsWeight: [3, 3, 2, 2, 1],
-        interjections: ['Wau~', 'Ehee', 'Mou~', 'Hyaa~'],
+        sentenceEndings: ['~ne', '~yo', '~dane', '~jan', '~tteba', '~na~'], endingsWeight: [3, 3, 2, 2, 2, 1],
+        interjections: ['Wau~', 'Ehee', 'Mou~', 'Hyaa~', 'N~'],
         laugh: 'ehee', rules: {}, prefix: null,
-        actions: ['*takes a photo*', '*bounces excitedly*', '*giggles*', '*peace sign*'],
-        vocab: { 'hello': 'yaa~', 'good': 'yatta', 'great': 'saikou', 'fun': 'tanoshii', 'cute': 'kawaii', 'amazing': 'sugoi', 'photo': 'shashin', 'wait': 'matte', 'go': 'ikou', 'beautiful': 'kirei', 'friend': 'nakama' },
-        grammar: [],
-        emojis: ['❄️', '📷', '✨', '💖', '🌠']
+        actions: ['*takes a photo*', '*bounces excitedly*', '*giggles*', '*peace sign*', '*strikes a cute pose*', '*almost trips*'],
+        vocab: { 'hello': 'yaa~', 'good': 'yatta', 'great': 'saikou', 'fun': 'tanoshii', 'cute': 'kawaii', 'amazing': 'sugoi', 'photo': 'shashin', 'wait': 'matte', 'go': 'ikou', 'beautiful': 'kirei', 'friend': 'nakama', 'awesome': 'yabai', 'me': 'watashi~', 'look': 'mite mite~', 'trouble': 'yamada~' },
+        grammar: [
+            { from: /\bwatashi\s+wa\s+(\w+)/gi, to: 'watashi tte $1 na~' },
+            { from: /\b(?:look|see)\b/gi, to: 'mite mite~' },
+            { from: /\bthis\s+is\b/gi, to: 'kore sa~' },
+            { from: /\bwatashi\s+like\s+(\w+)/gi, to: '$1 daisuki~' },
+            { from: /\blet's\s+go\b/gi, to: 'ikou~' },
+            { from: /\b(?:wow|oh)\b/gi, to: 'waa~' },
+        ],
+        emojis: ['❄️', '📷', '✨', '💖', '🌠', '🎀']
     }
 ];
 
@@ -1453,6 +1549,9 @@ function applyGrammar(text, ch) {
     if (ch.grammar) {
         for (var g = 0; g < ch.grammar.length; g++) {
             var rule = ch.grammar[g];
+            // Weight: 0-1, default 1.0. Skip if random roll fails
+            var w = rule.weight;
+            if (w !== undefined && Math.random() >= w) continue;
             if (rule.from && rule.to) text = text.replace(rule.from, rule.to);
         }
     }
@@ -1539,6 +1638,7 @@ function doTransform() {
     var result = transform(text, activeChar, emojiToggle.checked, actionToggle.checked);
     output.textContent = result || '...';
     output.className = '';
+    if (result) addHistory(text, result, activeChar.name);
 }
 
 copyBtn.addEventListener('click', function() {
@@ -1663,7 +1763,7 @@ function saveEditor() {
         }
     }
 
-    // Parse grammar
+    // Parse grammar (optional weight after comma: /pattern/gi: replacement, 0.7)
     var grammar = [];
     var grammarLines = document.getElementById('ef_grammar').value.trim().split('\n');
     for (var g = 0; g < grammarLines.length; g++) {
@@ -1672,12 +1772,24 @@ function saveEditor() {
         var colonIdx = line.indexOf(':');
         if (colonIdx > 0) {
             var fromStr = line.substring(0, colonIdx).trim();
-            var toStr = line.substring(colonIdx + 1).trim();
+            var afterColon = line.substring(colonIdx + 1).trim();
+            var toStr = afterColon;
+            var weight = undefined;
+            // Check for weight: "replacement, 0.7"
+            var commaIdx = afterColon.lastIndexOf(',');
+            if (commaIdx > 0) {
+                var possibleWeight = parseFloat(afterColon.substring(commaIdx + 1).trim());
+                if (!isNaN(possibleWeight) && possibleWeight >= 0 && possibleWeight <= 1) {
+                    weight = possibleWeight;
+                    toStr = afterColon.substring(0, commaIdx).trim();
+                }
+            }
             if (fromStr && toStr) {
                 var match = fromStr.match(/^\/(.+)\/([gim]*)$/);
                 var fromRegex = match ? new RegExp(match[1], match[2]) : new RegExp(fromStr, 'gi');
-                // Store both RegExp AND serializable format
-                grammar.push({ from: fromRegex, pattern: match ? match[1] : fromStr, flags: match ? match[2] : 'gi', to: toStr });
+                var obj = { from: fromRegex, pattern: match ? match[1] : fromStr, flags: match ? match[2] : 'gi', to: toStr };
+                if (weight !== undefined) obj.weight = weight;
+                grammar.push(obj);
             }
         }
     }
@@ -2121,6 +2233,63 @@ document.getElementById('importFileInput').addEventListener('change', function(e
     e.target.value = '';
 });
 
+// Download Template
+
+document.getElementById('templateBtn').addEventListener('click', downloadTemplate);
+
+function downloadTemplate() {
+    // A single example character you can edit.
+    // Fill in the fields, save, then import via 'Import JSON'.
+    var template = [
+        {
+            "_about": "Edit the fields below for your character, then import this file back into the app.",
+            "id": "my_character",
+            "name": "Character Name",
+            "series": "Series",
+            "color": "#7ab8d4",
+            "firstPerson": "ore",
+            "secondPerson": false,
+            "laugh": null,
+            "vector": {
+                "energy": 0.5,
+                "formality": 0.5,
+                "playfulness": 0.5,
+                "aggression": 0.3,
+                "sleepiness": 0.2,
+                "archaic": 0.0
+            },
+            "sentenceEndings": ["~zo", "~ze", "~na"],
+            "endingsWeight": [3, 2, 1],
+            "interjections": ["Hehe", "Maa maa"],
+            "prefix": null,
+            "actions": ["*grins*", "*strikes a pose*"],
+            "vocab": {
+                "hello": "yaa~",
+                "strong": "saikyou"
+            },
+            "grammar": [
+                {
+                    "pattern": "\\bore\\s+will\\s+(\\w+)",
+                    "flags": "gi",
+                    "to": "ore ga $1 ze"
+                }
+            ],
+            "emojis": ["✨", "😎", "💫"]
+        }
+    ];
+
+    var jsonStr = JSON.stringify(template, null, 4);
+    var blob = new Blob([jsonStr], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'character_template.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
 // Guide
 
 document.getElementById('guideBtn').addEventListener('click', function() {
@@ -2135,6 +2304,153 @@ document.getElementById('guideCloseBtn').addEventListener('click', closeGuide);
 document.getElementById('guideDoneBtn').addEventListener('click', closeGuide);
 document.getElementById('guideModal').addEventListener('click', function(e) {
     if (e.target === this) closeGuide();
+});
+
+
+// ---- SPEECH HISTORY ----
+var HIST_KEY = 'speech_vector_history';
+
+function loadHistory() {
+    try {
+        var raw = localStorage.getItem(HIST_KEY);
+        return raw ? JSON.parse(raw) : [];
+    } catch (e) { return []; }
+}
+
+function saveHistory(h) {
+    try { localStorage.setItem(HIST_KEY, JSON.stringify(h)); } catch (e) {}
+}
+
+function addHistory(input, output, charName) {
+    var h = loadHistory();
+    h.unshift({ input: input, output: output, char: charName, time: Date.now(), fav: false });
+    if (h.length > 200) h = h.slice(0, 200);
+    saveHistory(h);
+}
+
+function renderHistory(filter) {
+    var list = document.getElementById('historyList');
+    var h = loadHistory();
+    if (filter === 'fav') h = h.filter(function(e) { return e.fav; });
+    if (!h.length) {
+        list.innerHTML = '<div class="history-empty">' + (filter === 'fav' ? 'No favorites yet.' : 'No history yet. Try translating something!') + '</div>';
+        return;
+    }
+    list.innerHTML = '';
+    h.forEach(function(entry, idx) {
+        var item = document.createElement('div');
+        item.className = 'history-item';
+        item.innerHTML = '<div class="h-content">' +
+            '<div class="h-input">' + escHtml(entry.input) + '</div>' +
+            '<div class="h-output">' + escHtml(entry.output) + '</div>' +
+            '<div class="h-meta">' + escHtml(entry.char) + ' &middot; ' + new Date(entry.time).toLocaleString() + '</div></div>' +
+            '<button class="h-star' + (entry.fav ? ' faved' : '') + '">★</button>';
+        item.querySelector('.h-content').addEventListener('click', function() {
+            document.getElementById('input').value = entry.input;
+            document.getElementById('historyModal').classList.remove('open');
+            scheduleTransform();
+        });
+        item.querySelector('.h-star').addEventListener('click', function(e) {
+            e.stopPropagation();
+            entry.fav = !entry.fav;
+            var all = loadHistory();
+            for (var i = 0; i < all.length; i++) {
+                if (all[i].time === entry.time && all[i].input === entry.input) {
+                    all[i].fav = entry.fav;
+                    break;
+                }
+            }
+            saveHistory(all);
+            renderHistory(document.querySelector('.history-filter .active') ? document.querySelector('.history-filter .active').id === 'histFilterFav' ? 'fav' : 'all' : 'all');
+        });
+        list.appendChild(item);
+    });
+}
+
+document.getElementById('historyBtn').addEventListener('click', function() {
+    renderHistory('all');
+    document.getElementById('historyModal').classList.add('open');
+});
+
+document.getElementById('historyCloseBtn').addEventListener('click', function() {
+    document.getElementById('historyModal').classList.remove('open');
+});
+document.getElementById('historyDoneBtn').addEventListener('click', function() {
+    document.getElementById('historyModal').classList.remove('open');
+});
+document.getElementById('historyModal').addEventListener('click', function(e) {
+    if (e.target === this) document.getElementById('historyModal').classList.remove('open');
+});
+
+document.getElementById('histFilterAll').addEventListener('click', function() {
+    document.getElementById('histFilterAll').classList.add('active');
+    document.getElementById('histFilterFav').classList.remove('active');
+    renderHistory('all');
+});
+document.getElementById('histFilterFav').addEventListener('click', function() {
+    document.getElementById('histFilterFav').classList.add('active');
+    document.getElementById('histFilterAll').classList.remove('active');
+    renderHistory('fav');
+});
+document.getElementById('histClear').addEventListener('click', function() {
+    if (confirm('Clear all history?')) {
+        saveHistory([]);
+        renderHistory('all');
+    }
+});
+
+// ---- BATCH MODE ----
+var batchToggle = document.getElementById('useBatch');
+var batchOutput = document.getElementById('batchOutput');
+var singleOutput = document.getElementById('singleOutput');
+var batchChars = {};
+
+batchToggle.addEventListener('change', function() {
+    if (batchToggle.checked) {
+        singleOutput.style.display = 'none';
+        batchOutput.classList.add('open');
+        renderBatch();
+    } else {
+        singleOutput.style.display = 'block';
+        batchOutput.classList.remove('open');
+    }
+    renderButtons();
+});
+
+function renderBatch() {
+    if (!batchToggle.checked) return;
+    var all = getAllProfiles();
+    var text = input.value.trim();
+    batchOutput.innerHTML = '';
+    all.forEach(function(ch) {
+        var block = document.createElement('div');
+        block.className = 'batch-char-block';
+        var charId = ch.id;
+        var enabled = batchChars[charId] !== false;
+        var emojiOn = emojiToggle.checked;
+        var actionsOn = actionToggle.checked;
+        var result = enabled && text ? transform(text, ch, emojiOn, actionsOn) : '';
+        block.innerHTML = '<input type="checkbox" class="bc-toggle" ' + (enabled ? 'checked' : '') + '>' +
+            '<div style="flex:1">' +
+            '<div class="bc-name" style="border-left:3px solid ' + ch.color + ';padding-left:6px">' + escHtml(ch.name) + '</div>' +
+            '<div class="bc-output' + (result ? '' : ' hint') + '">' + (result || '(disabled)') + '</div></div>';
+        block.querySelector('.bc-toggle').addEventListener('change', function(e) {
+            batchChars[charId] = e.target.checked;
+            renderBatch();
+        });
+        batchOutput.appendChild(block);
+    });
+}
+
+// Batch mode: re-render whenever input/options change
+input.addEventListener('input', function() {
+    if (batchToggle && batchToggle.checked) renderBatch();
+});
+emojiToggle.addEventListener('change', function() {
+    if (batchToggle && batchToggle.checked) renderBatch();
+});
+actionToggle.addEventListener('change', function() {
+    if (batchToggle && batchToggle.checked) renderBatch();
 });
 
 renderButtons();
