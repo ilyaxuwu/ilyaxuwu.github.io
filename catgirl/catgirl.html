@@ -1,243 +1,2144 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catgirl Translator</title>
-    <style>
-        body { background: #ffdde9; font-family: 'Comic Sans MS', cursive, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 20px; background-image: url("data:image/svg+xml,%3Csvg width='52' height='26' viewBox='0 0 52' 26' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ff9fce' fill-opacity='0.2'%3E%3Cpath d='M10 10c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6zm25.464-1.95l8.486 8.486-1.414 1.414-8.486-8.486 1.414-1.414z' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); }
-        .container { background: white; padding: 2rem; border-radius: 20px; box-shadow: 0 0 20px rgba(255, 100, 200, 0.3); max-width: 600px; width: 90%; margin: 20px; border: 4px solid #ff99cc; display: flex; flex-direction: column; }
-        h1 { color: #ff69b4; text-align: center; font-size: 2.5em; margin: 0 0 1rem; text-shadow: 2px 2px 0px #fff; }
-        .translator-box { display: flex; flex-direction: column; gap: 1rem; }
-        textarea { resize: vertical; min-height: 100px; padding: 15px; border: 3px solid #ff99cc; border-radius: 15px; font-size: 1.1em; background: #fff9fc; }
-        button { background: #ff77aa; color: white; border: none; padding: 15px 30px; border-radius: 25px; font-size: 1.2em; cursor: pointer; transition: transform 0.2s, background 0.2s; }
-        button:hover { background: #ff5599; transform: scale(1.05) rotate(-2deg); }
-        button:active { transform: scale(0.95) rotate(2deg); }
-        #output { background: #fff9fc; padding: 20px; border-radius: 15px; border: 3px dashed #ff99cc; min-height: 100px; font-size: 1.2em; line-height: 1.4; color: #ff69b4; }
-        .controls { display: flex; gap: 1rem; align-items: center; margin: 10px 0; }
-        .checkbox-container { position: relative; display: flex; align-items: center; gap: 0.8rem; cursor: pointer; user-select: none; padding: 8px 12px; border-radius: 30px; background: #fff5f9; transition: all 0.3s ease; border: 2px solid #ff99cc; }
-        .checkbox-container:hover { transform: scale(1.05); box-shadow: 0 0 10px rgba(255, 153, 204, 0.3); }
-        .checkbox-container input { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; }
-        .checkmark { position: relative; height: 24px; width: 24px; background-color: #fff; border: 2px solid #ff77aa; border-radius: 6px; transition: all 0.3s ease; }
-        .checkbox-container input:checked ~ .checkmark { background-color: #ff77aa; border-color: #ff5599; }
-        .checkmark:after { content: "✓"; position: absolute; display: none; left: 50%; top: 45%; transform: translate(-50%, -50%); color: white; font-size: 16px; font-weight: bold; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
-        .checkbox-container input:checked ~ .checkmark:after { display: block; }
-        .checkbox-label { color: #ff69b4; font-size: 1.1em; font-weight: bold; text-shadow: 1px 1px 0px rgba(255,255,255,0.5); }
-        .output-container { position: relative; }
-        .copy-btn { position: absolute; right: 10px; bottom: 10px; background: #ff99cc; padding: 8px 15px; font-size: 0.9em; }
-        .copy-btn:hover { background: #ff77aa; }
-        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-        @media (max-width: 480px) { .container { padding: 1rem; } h1 { font-size: 2em; } .controls { flex-direction: column; align-items: stretch; } .copy-btn { position: static; margin-top: 10px; width: fit-content; } .checkbox-container { padding: 6px 10px; } }
-    
-        .credit {
-            margin-top: 2rem;
-            padding-bottom: 1rem;
-            text-align: center;
-            color: #ff69b4; 
-            font-size: 1em;
-            text-shadow: 1px 1px 0px rgba(255, 255, 255, 0.7);
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Translator</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f5f2f0;
+    color: #2c2c2c;
+    min-height: 100vh;
+    padding: 32px 16px;
+    display: flex;
+    justify-content: center;
+}
+
+.app { max-width: 760px; width: 100%; }
+
+h1 { font-size: 1.6em; font-weight: 500; letter-spacing: -0.3px; color: #1a1a1a; margin-bottom: 2px; }
+.sub { font-size: 0.85em; color: #888; margin-bottom: 28px; }
+
+/* Toolbar */
+.toolbar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.toolbar button {
+    padding: 6px 14px;
+    border: 1px solid #e0ddd9;
+    border-radius: 8px;
+    font-size: 0.8em;
+    font-weight: 500;
+    cursor: pointer;
+    background: #fff;
+    color: #666;
+    transition: all 0.12s;
+}
+
+.toolbar button:hover {
+    border-color: #b8b0a8;
+    color: #2c2c2c;
+}
+
+.toolbar button.primary {
+    background: #2c2c2c;
+    border-color: #2c2c2c;
+    color: #fff;
+}
+
+.toolbar button.primary:hover {
+    background: #444;
+}
+
+/* Character selector */
+.char-selector {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+    border-bottom: 1px solid #e0ddd9;
+    padding-bottom: 20px;
+}
+
+.char-btn {
+    padding: 10px 18px;
+    border-radius: 10px;
+    border: 1px solid #e0ddd9;
+    background: #fff;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: left;
+    min-width: 110px;
+    flex: 1 0 auto;
+    max-width: 180px;
+    position: relative;
+}
+
+.char-btn:hover { border-color: #b8b0a8; background: #faf9f7; }
+.char-btn.active { border-color: #2c2c2c; background: #2c2c2c; color: #fff; }
+
+.char-btn .name { font-size: 0.9em; font-weight: 500; }
+.char-btn .series { font-size: 0.7em; opacity: 0.6; margin-top: 1px; }
+.char-btn.active .series { opacity: 0.7; }
+
+.char-btn .builtin-badge {
+    font-size: 0.6em;
+    padding: 1px 5px;
+    border-radius: 4px;
+    background: #e8e6e4;
+    color: #999;
+    margin-left: 6px;
+    font-weight: 400;
+}
+
+.char-btn.active .builtin-badge {
+    background: rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.5);
+}
+
+.char-btn .edit-btn {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    border: 1px solid transparent;
+    background: transparent;
+    cursor: pointer;
+    font-size: 0.7em;
+    color: #bbb;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.char-btn:hover .edit-btn { display: flex; }
+.char-btn .edit-btn:hover { background: #e8e6e4; color: #666; border-color: #d4d0cb; }
+
+/* Input area */
+.input-area { margin-bottom: 20px; }
+.input-area textarea {
+    width: 100%; min-height: 110px; padding: 14px 16px;
+    border-radius: 12px; border: 1px solid #e0ddd9; background: #fff;
+    font-size: 0.95em; line-height: 1.6; font-family: inherit;
+    color: #2c2c2c; resize: vertical; transition: border 0.15s;
+}
+.input-area textarea:focus { outline: none; border-color: #888; }
+.input-area textarea::placeholder { color: #bbb; }
+
+/* Controls */
+.controls {
+    display: flex; gap: 12px; align-items: center; margin-bottom: 20px; flex-wrap: wrap;
+}
+.controls label {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 0.85em; color: #666; cursor: pointer;
+    padding: 4px 10px; border-radius: 6px; border: 1px solid #e0ddd9;
+    background: #fff; user-select: none; transition: border 0.15s;
+}
+.controls label:hover { border-color: #b8b0a8; }
+.controls input[type="checkbox"] { accent-color: #2c2c2c; }
+.stats { margin-left: auto; font-size: 0.8em; color: #aaa; }
+.stats span { margin-left: 8px; }
+
+/* Output area */
+.output-area {
+    background: #fff; border-radius: 12px; border: 1px solid #e0ddd9;
+    padding: 20px; min-height: 120px;
+}
+.output-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.char-badge { font-size: 0.75em; font-weight: 500; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
+.char-badge.active { color: #2c2c2c; }
+#output { font-size: 1em; line-height: 1.7; color: #2c2c2c; white-space: pre-wrap; word-wrap: break-word; min-height: 60px; }
+#output.hint { color: #bbb; }
+.output-footer { display: flex; gap: 8px; margin-top: 16px; justify-content: flex-end; }
+.output-footer button {
+    padding: 7px 16px; border: 1px solid #e0ddd9; border-radius: 8px;
+    font-size: 0.8em; font-weight: 500; cursor: pointer; background: #fff; color: #666; transition: all 0.12s;
+}
+.output-footer button:hover { border-color: #b8b0a8; color: #2c2c2c; }
+.output-footer button:active { background: #f5f2f0; }
+#copyBtn { background: #2c2c2c; color: #fff; border-color: #2c2c2c; }
+#copyBtn:hover { background: #444; }
+#copyBtn.copied { background: #2c7a4a; border-color: #2c7a4a; }
+
+/* Vector display */
+.vector-row {
+    display: flex; gap: 3px; margin-top: 12px; padding-top: 12px;
+    border-top: 1px solid #f0eeeb; height: 18px; align-items: flex-end;
+}
+.vector-row .v-bar {
+    flex: 1; border-radius: 2px 2px 0 0; background: #d4d0cb;
+    transition: height 0.3s ease; min-height: 2px; max-height: 14px;
+}
+
+.footer-note { text-align: center; margin-top: 20px; font-size: 0.75em; color: #ccc; }
+
+/* ---- MODAL ---- */
+.modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 1000;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.modal-overlay.open { display: flex; }
+
+.modal {
+    background: #fff;
+    border-radius: 16px;
+    max-width: 680px;
+    width: 100%;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    overflow: hidden;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px 0;
+}
+
+.modal-header h2 {
+    font-size: 1.2em;
+    font-weight: 500;
+}
+
+.modal-header .close-btn {
+    width: 32px; height: 32px;
+    border: 1px solid #e0ddd9;
+    border-radius: 8px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 1.1em;
+    color: #888;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.12s;
+}
+
+.modal-header .close-btn:hover {
+    border-color: #b8b0a8;
+    color: #2c2c2c;
+}
+
+.modal-body {
+    padding: 20px 24px;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.modal-footer {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    padding: 16px 24px;
+    border-top: 1px solid #f0eeeb;
+}
+
+.modal-footer button {
+    padding: 8px 20px;
+    border: 1px solid #e0ddd9;
+    border-radius: 8px;
+    font-size: 0.85em;
+    font-weight: 500;
+    cursor: pointer;
+    background: #fff;
+    color: #666;
+    transition: all 0.12s;
+}
+
+.modal-footer button:hover { border-color: #b8b0a8; color: #2c2c2c; }
+.modal-footer button.primary { background: #2c2c2c; color: #fff; border-color: #2c2c2c; }
+.modal-footer button.primary:hover { background: #444; }
+.modal-footer button.danger { color: #c44; border-color: #f0d0d0; }
+.modal-footer button.danger:hover { border-color: #c44; background: #fef0f0; }
+
+/* Editor form */
+.editor-form { display: flex; flex-direction: column; gap: 16px; }
+
+.form-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.form-group {
+    flex: 1;
+    min-width: 180px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.8em;
+    font-weight: 500;
+    color: #888;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #e0ddd9;
+    border-radius: 8px;
+    font-size: 0.9em;
+    font-family: inherit;
+    color: #2c2c2c;
+    background: #faf9f7;
+    transition: border 0.15s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #888;
+    background: #fff;
+}
+
+.form-group textarea {
+    min-height: 50px;
+    resize: vertical;
+    font-size: 0.85em;
+    font-family: 'SF Mono', 'Consolas', monospace;
+}
+
+.form-group .hint {
+    font-size: 0.75em;
+    color: #bbb;
+    margin-top: 3px;
+}
+
+/* Grammar helper */
+.grammar-helper {
+    margin-top: 10px;
+    padding: 12px;
+    background: #f7f6f4;
+    border-radius: 8px;
+    border: 1px solid #eeebe8;
+}
+
+.grammar-helper .gh-label {
+    font-size: 0.75em;
+    font-weight: 500;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-bottom: 8px;
+}
+
+.gh-templates {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+
+.gh-templates button {
+    padding: 4px 10px;
+    border: 1px solid #e0ddd9;
+    border-radius: 6px;
+    font-size: 0.75em;
+    cursor: pointer;
+    background: #fff;
+    color: #555;
+    transition: all 0.12s;
+    white-space: nowrap;
+}
+
+.gh-templates button:hover {
+    border-color: #b8b0a8;
+    background: #f0eeeb;
+    color: #2c2c2c;
+}
+
+.gh-builder {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.gh-builder .gh-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.gh-builder .gh-row label {
+    font-size: 0.8em;
+    color: #666;
+    flex-shrink: 0;
+    min-width: 90px;
+}
+
+.gh-builder .gh-row input[type="text"] {
+    flex: 1;
+    padding: 6px 10px;
+    border: 1px solid #e0ddd9;
+    border-radius: 6px;
+    font-size: 0.85em;
+    font-family: 'SF Mono', 'Consolas', monospace;
+    background: #fff;
+    transition: border 0.15s;
+}
+
+.gh-builder .gh-row input[type="text"]:focus {
+    outline: none;
+    border-color: #888;
+}
+
+.gh-builder .gh-row .gh-badge {
+    font-size: 0.7em;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: #e8e6e4;
+    color: #999;
+    white-space: nowrap;
+}
+
+.gh-preview {
+    margin-top: 6px;
+    padding: 6px 10px;
+    background: #fff;
+    border: 1px solid #e0ddd9;
+    border-radius: 6px;
+    font-size: 0.8em;
+    font-family: 'SF Mono', 'Consolas', monospace;
+    color: #888;
+    min-height: 28px;
+    word-break: break-all;
+}
+
+.gh-preview .gh-regex {
+    color: #7a4a9a;
+}
+
+.gh-preview .gh-arrow {
+    color: #bbb;
+    margin: 0 4px;
+}
+
+.gh-preview .gh-replace {
+    color: #4a7a5a;
+}
+
+.gh-add-btn {
+    align-self: flex-end;
+    padding: 6px 16px;
+    border: 1px solid #2c2c2c;
+    border-radius: 6px;
+    font-size: 0.8em;
+    font-weight: 500;
+    cursor: pointer;
+    background: #2c2c2c;
+    color: #fff;
+    transition: all 0.12s;
+}
+
+.gh-add-btn:hover {
+    background: #444;
+}
+
+.gh-add-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+/* Grammar test */
+.gh-test {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #eeebe8;
+}
+
+.gh-test textarea {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #e0ddd9;
+    border-radius: 6px;
+    font-size: 0.85em;
+    font-family: inherit;
+    background: #fff;
+    resize: vertical;
+    min-height: 40px;
+    transition: border 0.15s;
+}
+
+.gh-test textarea:focus {
+    outline: none;
+    border-color: #888;
+}
+
+.gh-test .gh-test-result {
+    margin-top: 6px;
+    padding: 8px 10px;
+    background: #fff;
+    border: 1px solid #e0ddd9;
+    border-radius: 6px;
+    font-size: 0.85em;
+    line-height: 1.5;
+    min-height: 36px;
+    word-break: break-word;
+    color: #2c2c2c;
+}
+
+.gh-test .gh-test-result.hint {
+    color: #bbb;
+}
+
+.gh-test .gh-test-matched {
+    margin-top: 4px;
+    font-size: 0.75em;
+    color: #999;
+}
+
+.gh-test .gh-test-matched span {
+    display: inline-block;
+    padding: 1px 6px;
+    margin: 1px 2px;
+    border-radius: 4px;
+    background: #eef5ee;
+    color: #4a7a5a;
+    font-family: 'SF Mono', 'Consolas', monospace;
+    font-size: 0.9em;
+}
+
+.gh-test .gh-test-matched .no-match {
+    background: #f5eeee;
+    color: #aa5a5a;
+}
+
+.form-group input[type="color"] {
+    height: 40px;
+    padding: 4px;
+    cursor: pointer;
+}
+
+.form-section {
+    border-top: 1px solid #f0eeeb;
+    padding-top: 16px;
+}
+
+.form-section h3 {
+    font-size: 0.9em;
+    font-weight: 500;
+    color: #666;
+    margin-bottom: 12px;
+}
+
+/* Vector sliders */
+.vector-sliders {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.vector-slider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.vector-slider .dim-label {
+    font-size: 0.8em;
+    color: #888;
+    width: 80px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    flex-shrink: 0;
+}
+
+.vector-slider input[type="range"] {
+    flex: 1;
+    accent-color: #2c2c2c;
+}
+
+.vector-slider .dim-value {
+    font-size: 0.8em;
+    color: #888;
+    width: 30px;
+    text-align: right;
+    font-family: 'SF Mono', 'Consolas', monospace;
+}
+
+/* Vocab editor */
+.vocab-editor textarea,
+.grammar-editor textarea,
+.array-editor textarea {
+    min-height: 80px;
+    font-size: 0.85em;
+}
+
+/* Import/Export area */
+.io-area {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+}
+
+.io-area button {
+    padding: 6px 14px;
+    border: 1px solid #e0ddd9;
+    border-radius: 8px;
+    font-size: 0.8em;
+    font-weight: 500;
+    cursor: pointer;
+    background: #fff;
+    color: #666;
+    transition: all 0.12s;
+}
+
+.io-area button:hover { border-color: #b8b0a8; color: #2c2c2c; }
+
+/* Guide modal */
+.guide-section {
+    margin-bottom: 20px;
+}
+
+.guide-section h3 {
+    font-size: 1em;
+    font-weight: 600;
+    color: #2c2c2c;
+    margin-bottom: 8px;
+    padding-bottom: 4px;
+    border-bottom: 2px solid #f0eeeb;
+}
+
+.guide-section h4 {
+    font-size: 0.9em;
+    font-weight: 500;
+    color: #444;
+    margin: 12px 0 4px;
+}
+
+.guide-section p {
+    font-size: 0.85em;
+    line-height: 1.6;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.guide-section ul {
+    margin: 4px 0 12px 18px;
+    font-size: 0.85em;
+    line-height: 1.7;
+    color: #666;
+}
+
+.guide-section code {
+    font-family: 'SF Mono', 'Consolas', monospace;
+    font-size: 0.85em;
+    padding: 1px 5px;
+    border-radius: 4px;
+    background: #f0eeeb;
+    color: #7a4a9a;
+}
+
+.guide-section .field-box {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: #f0eeeb;
+    font-size: 0.8em;
+    color: #555;
+    margin: 1px 0;
+}
+
+.guide-section .tip {
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: #f7f6f4;
+    border-left: 3px solid #7ab8d4;
+    font-size: 0.85em;
+    color: #555;
+    margin: 8px 0;
+}
+
+.guide-section .tip strong {
+    color: #2c2c2c;
+}
+
+.guide-divider {
+    height: 1px;
+    background: #f0eeeb;
+    margin: 16px 0;
+}
+
+/* Manage list */
+.manage-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 16px;
+}
+
+.manage-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid #e0ddd9;
+    border-radius: 8px;
+    background: #faf9f7;
+}
+
+.manage-item .item-name {
+    font-weight: 500;
+    flex: 1;
+}
+
+.manage-item .builtin-tag {
+    font-size: 0.7em;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: #e8e6e4;
+    color: #999;
+}
+
+.manage-item .item-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.manage-item .item-actions button {
+    padding: 4px 10px;
+    border: 1px solid #e0ddd9;
+    border-radius: 6px;
+    font-size: 0.75em;
+    cursor: pointer;
+    background: #fff;
+    color: #666;
+    transition: all 0.12s;
+}
+
+.manage-item .item-actions button:hover {
+    border-color: #b8b0a8;
+}
+
+.manage-item .item-actions button.danger { color: #c44; }
+.manage-item .item-actions button.danger:hover { border-color: #c44; background: #fef0f0; }
+
+@media (max-width: 500px) {
+    body { padding: 16px 10px; }
+    h1 { font-size: 1.3em; }
+    .char-btn { min-width: 90px; padding: 8px 12px; }
+    .stats { display: none; }
+    .modal { margin-top: 0; border-radius: 12px; }
+    .modal-body { padding: 16px; }
+    .form-row { flex-direction: column; }
+}
+</style>
 </head>
 <body>
-    <div class="container">
-        <h1>Catgirl Translator</h1>
-        <div class="translator-box">
-            <textarea id="input" placeholder="Say something to me, meow~" oninput="translateText()">Hello! My name is Liya. This is a very important project.</textarea>
-            <div class="controls">
-                <label class="checkbox-container">
-                    <input type="checkbox" id="useEmojis" checked onchange="translateText()">
-                    <span class="checkmark"></span><span class="checkbox-label">Add Emojis 🐾</span>
-                </label>
-            </div>
-            <div class="output-container">
-                <div id="output">Translated text will appear here nya~ 🌸</div>
-                <button class="copy-btn" onclick="copyText()">Copy 📋</button>
-            </div>
+
+<div class="app">
+    <h1>Speech Vector Translator</h1>
+    <p class="sub">Character voice transformation &mdash; select a profile, type, and translate</p>
+
+    <div class="toolbar">
+        <button id="addCharBtn" class="primary">+ Add character</button>
+        <button id="manageBtn">Manage characters</button>
+        <button id="importBtn">Import JSON</button>
+        <button id="exportBtn">Export JSON</button>
+        <button id="guideBtn">Guide</button>
+        <input type="file" id="importFileInput" accept=".json" style="display:none">
+    </div>
+
+    <div class="char-selector" id="charSelector"></div>
+
+    <div class="input-area">
+        <textarea id="input" placeholder="Type something...">You think you're strong? I've dealt with beings far beyond you. This should be fun.</textarea>
+    </div>
+
+    <div class="controls">
+        <label><input type="checkbox" id="useEmojis" checked> Include emojis</label>
+        <label><input type="checkbox" id="useActions" checked> Include actions</label>
+        <div class="stats">
+            <span id="wordCount">0 words</span>
+            <span id="charInfo">&mdash;</span>
         </div>
     </div>
 
-    <div class="credit">
-        This project was made by Liyaa 💖
+    <div class="output-area">
+        <div class="output-header">
+            <span class="char-badge" id="charBadge">Select a character</span>
+        </div>
+        <div id="output" class="hint">Choose a character voice and start typing...</div>
+        <div class="vector-row" id="vectorRow"></div>
+        <div class="output-footer">
+            <button id="copyBtn">Copy</button>
+            <button id="resetBtn">Reset</button>
+        </div>
     </div>
 
+    <div class="footer-note">speech vector engine</div>
+</div>
+
+<!-- EDITOR MODAL -->
+<div class="modal-overlay" id="editorModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h2 id="editorTitle">Add character</h2>
+            <button class="close-btn" id="editorCloseBtn">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="editor-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Name</label>
+                        <input type="text" id="ef_name" placeholder="e.g. Naruto">
+                    </div>
+                    <div class="form-group">
+                        <label>Series</label>
+                        <input type="text" id="ef_series" placeholder="e.g. Naruto Shippuden">
+                    </div>
+                    <div class="form-group" style="flex:0 0 60px">
+                        <label>Color</label>
+                        <input type="color" id="ef_color" value="#7ab8d4">
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Speech Profile</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>First person</label>
+                            <input type="text" id="ef_firstPerson" placeholder="ore / watashi / boku">
+                        </div>
+                        <div class="form-group">
+                            <label>Second person</label>
+                            <input type="text" id="ef_secondPerson" placeholder="omae / kisama (optional)">
+                        </div>
+                        <div class="form-group">
+                            <label>Laugh</label>
+                            <input type="text" id="ef_laugh" placeholder="kukuku / fufu">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Speech Vector</h3>
+                    <div class="vector-sliders" id="vectorSliders"></div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Sentence endings</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Endings (one per line)</label>
+                            <textarea id="ef_endings" placeholder="~zo&#10; da&#10;~dayo"></textarea>
+                            <div class="hint">Each ending gets applied to sentences</div>
+                        </div>
+                        <div class="form-group">
+                            <label>Weights (comma-separated)</label>
+                            <input type="text" id="ef_endingsWeight" placeholder="4, 3, 2">
+                            <div class="hint">Higher = more frequent</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Interjections &amp; Prefix</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Interjections (one per line)</label>
+                            <textarea id="ef_interjections" placeholder="Hehe&#10;Maa maa&#10;Hora hora"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Prefix tics (one per line)</label>
+                            <textarea id="ef_prefix" placeholder="Nn&#10;Nn..."></textarea>
+                            <div class="hint">e.g. Shiroko's 'Nn' prefix</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Actions</h3>
+                    <div class="form-group">
+                        <label>Actions (one per line)</label>
+                        <textarea id="ef_actions" placeholder="*grins*&#10;*adjusts collar*&#10;*strikes a pose*"></textarea>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Vocabulary</h3>
+                    <div class="form-group">
+                        <label>Word mappings (English → Character, one per line)</label>
+                        <textarea id="ef_vocab" class="vocab-editor" placeholder="hello: yaa~&#10;strong: saikyou&#10;good: yoi&#10;tired: tsukareta"></textarea>
+                        <div class="hint">Format: english: translation</div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Grammar Rules</h3>
+                    <div class="form-group">
+                        <label>Grammar patterns (regex → replacement, one per line)</label>
+                        <textarea id="ef_grammar" class="grammar-editor" placeholder="/\\bore\\s+will\\s+(\\w+)/gi: ore ga $1 ze&#10;/\\bthis\\s+is\\b/gi: kore wa"></textarea>
+                        <div class="hint">Format: /pattern/flags: replacement</div>
+                    </div>
+                    <div class="grammar-helper" id="grammarHelper">
+                        <div class="gh-label">Quick templates</div>
+                        <div class="gh-templates" id="ghTemplates"></div>
+                        <div class="gh-label" style="margin-top:12px">Pattern builder — type <strong>___</strong> for "any word"</div>
+                        <div class="gh-builder">
+                            <div class="gh-row">
+                                <label>Find:</label>
+                                <input type="text" id="ghFind" placeholder="ore will ___  →  matches &quot;ore will [anything]&quot;">
+                                <span class="gh-badge">___ = any word</span>
+                            </div>
+                            <div class="gh-row">
+                                <label>Replace:</label>
+                                <input type="text" id="ghReplace" placeholder='ore ga $1 ze  →  $1 is the captured word'>
+                                <span class="gh-badge">$1 $2 = captured words</span>
+                            </div>
+                            <div class="gh-preview" id="ghPreview">
+                                <span class="gh-regex">/pattern/gi</span>
+                                <span class="gh-arrow">→</span>
+                                <span class="gh-replace">replacement</span>
+                            </div>
+                            <button class="gh-add-btn" id="ghAddBtn">+ Add rule</button>
+                        </div>
+                        <div class="gh-test" id="ghTest">
+                            <div class="gh-label">Live test — type test text below</div>
+                            <textarea id="ghTestInput" placeholder="Type a sentence to test rules on..." rows="2">ore will destroy you</textarea>
+                            <div class="gh-test-result" id="ghTestResult">→ waiting for input...</div>
+                            <div class="gh-test-matched" id="ghTestMatched"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Emojis</h3>
+                    <div class="form-group">
+                        <label>Emojis (one per line)</label>
+                        <textarea id="ef_emojis" placeholder="✨&#10;😎&#10;💫"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button id="editorDeleteBtn" class="danger" style="display:none">Delete</button>
+            <span style="flex:1"></span>
+            <button id="editorCancelBtn">Cancel</button>
+            <button id="editorSaveBtn" class="primary">Save character</button>
+        </div>
+    </div>
+</div>
+
+<!-- GUIDE MODAL -->
+<div class="modal-overlay" id="guideModal">
+    <div class="modal" style="max-width: 720px">
+        <div class="modal-header">
+            <h2>How to Create a Character</h2>
+            <button class="close-btn" id="guideCloseBtn">✕</button>
+        </div>
+        <div class="modal-body">
+
+            <div class="guide-section">
+                <h3>1. Start with a template</h3>
+                <p>Click <strong>+ Add character</strong> to open the editor. You'll see these fields:</p>
+                <ul>
+                    <li><code>Name</code> &amp; <code>Series</code> &mdash; Just for display</li>
+                    <li><code>Color</code> &mdash; Pick a color for the character badge</li>
+                    <li><code>First person</code> &mdash; How the character says &quot;I&quot;. Common choices:
+                        <span class="field-box">ore</span> (masculine, rough),
+                        <span class="field-box">watashi</span> (neutral, polite),
+                        <span class="field-box">boku</span> (boyish, casual),
+                        <span class="field-box">ojisan</span> (&quot;old man&quot; style)
+                    </li>
+                    <li><code>Second person</code> &mdash; How they say &quot;you&quot; (optional). E.g.
+                        <span class="field-box">omae</span> (Gojo),
+                        <span class="field-box">kisama</span> (Sukuna)</li>
+                    <li><code>Laugh</code> &mdash; A laugh sound that appears sometimes.
+                        E.g. <span class="field-box">kukuku</span>, <span class="field-box">fufu</span>, <span class="field-box">ehee</span></li>
+                </ul>
+            </div>
+
+            <div class="guide-section">
+                <h3>2. Tune the Speech Vector</h3>
+                <p>Six sliders control the character's vocal personality. Each value is 0&ndash;100:</p>
+                <ul>
+                    <li><strong>Energy</strong> &mdash; How lively/active (0 = lazy, 100 = hyper)</li>
+                    <li><strong>Formality</strong> &mdash; How polite/formal (0 = casual, 100 = proper)</li>
+                    <li><strong>Playfulness</strong> &mdash; How joking/teasing (0 = serious, 100 = playful)</li>
+                    <li><strong>Aggression</strong> &mdash; How threatening (0 = gentle, 100 = fierce)</li>
+                    <li><strong>Sleepiness</strong> &mdash; How tired/drowsy (0 = awake, 100 = sleepy)</li>
+                    <li><strong>Archaic</strong> &mdash; How old-timey (0 = modern, 100 = ancient)</li>
+                </ul>
+                <div class="tip"><strong>Tip:</strong> The vector influences vocabulary frequency, action animations, sentence endings, and mood detection. A sleepy character (high Sleepiness) will be more likely to yawn, while a playful character will use more interjections.</div>
+            </div>
+
+            <div class="guide-section">
+                <h3>3. Sentence Endings</h3>
+                <p>These are suffixes the character adds to their sentences. Each line is one ending.</p>
+                <ul>
+                    <li>Examples: <span class="field-box">~zo</span>, <span class="field-box">~ze</span>, <span class="field-box">~na</span>, <span class="field-box">~dayo</span>, <span class="field-box">~ne</span>, <span class="field-box">...</span></li>
+                    <li><strong>Weights</strong> control how often each ending appears. Higher = more frequent.
+                        E.g. <code>4, 2, 1</code> means the first ending is twice as common as the second.</li>
+                </ul>
+            </div>
+
+            <div class="guide-section">
+                <h3>4. Interjections, Prefix &amp; Actions</h3>
+                <ul>
+                    <li><strong>Interjections</strong> &mdash; Words the character sometimes starts sentences with.
+                        E.g. <span class="field-box">Uhe~</span> (Hoshino), <span class="field-box">Fufu</span> (Furina)</li>
+                    <li><strong>Prefix tics</strong> &mdash; Short sounds spoken before a sentence (like Shiroko's <span class="field-box">Nn</span>). Only one category (interjection or prefix) fires per sentence.</li>
+                    <li><strong>Actions</strong> &mdash; Descriptions in *asterisks* that appear as actions.
+                        E.g. <span class="field-box">*grins*</span>, <span class="field-box">*adjusts blindfold*</span></li>
+                </ul>
+            </div>
+
+            <div class="guide-section">
+                <h3>5. Vocabulary</h3>
+                <p>Map English words to character-specific words. Each line is <code>english: translation</code>.</p>
+                <ul>
+                    <li>Example: <span class="field-box">hello: yaa~</span> &mdash; whenever &quot;hello&quot; appears, it may become &quot;yaa~&quot;</li>
+                    <li>Example: <span class="field-box">strong: saikyou</span> &mdash; &quot;You're strong&quot; &rarr; &quot;You're saikyou&quot;</li>
+                    <li>Mappings are applied randomly based on the character's playfulness.</li>
+                </ul>
+            </div>
+
+            <div class="guide-section">
+                <h3>6. Grammar Rules (No Regex Needed)</h3>
+                <p>Grammar rules change sentence structure. The helper lets you create them visually!</p>
+
+                <h4>Quick Templates</h4>
+                <p>Click any template button to instantly add a common grammar pattern:</p>
+                <ul>
+                    <li><span class="field-box">___ will ___</span> &mdash; &quot;ore will destroy&quot; &rarr; &quot;ore ga destroy zo&quot;</li>
+                    <li><span class="field-box">___ want to ___</span> &mdash; &quot;I want to sleep&quot; &rarr; &quot;ojisan wa sleep-tai&quot;</li>
+                    <li><span class="field-box">___ is ___</span> &mdash; &quot;this is&quot; &rarr; &quot;kore wa&quot;</li>
+                    <li><span class="field-box">yes / no</span> &mdash; Simple direct swaps</li>
+                </ul>
+
+                <h4>Pattern Builder</h4>
+                <p>Use <strong>___</strong> (three underscores) to mean &quot;any word here&quot;:</p>
+                <ul>
+                    <li><strong>Find:</strong> <code>ore will ___</code> &rarr; means matches &quot;ore will [anything]&quot;</li>
+                    <li><strong>Replace:</strong> <code>ore ga $1 ze</code> &rarr; <code>$1</code> puts the captured word back</li>
+                    <li>The live preview shows the generated regex as you type!</li>
+                </ul>
+
+                <h4>Live Test</h4>
+                <p>Type a sentence in the test box and see exactly which rules match and what the output looks like. No need to leave the editor to debug!</p>
+
+                <div class="tip"><strong>Tip:</strong> Patterns are tried in order from top to bottom. Put more specific rules first. For &quot;want to&quot;, put the <code>want to ___</code> rule before <code>want ___</code>.</div>
+            </div>
+
+            <div class="guide-section">
+                <h3>7. Emojis</h3>
+                <p>Each line is an emoji that may appear in the output when emoji mode is on.</p>
+            </div>
+
+            <div class="guide-divider"></div>
+
+            <div class="guide-section">
+                <h3>Managing Characters</h3>
+                <ul>
+                    <li><strong>Edit</strong> &mdash; Hover over a custom character and click &#9998; to edit it</li>
+                    <li><strong>Delete</strong> &mdash; Open Manage characters, find your character, click Delete</li>
+                    <li><strong>Built-in characters</strong> (Hoshino, Shiroko, Gojo, Sukuna, Furina, March 7th) cannot be edited or deleted</li>
+                </ul>
+
+                <h4>Import / Export</h4>
+                <ul>
+                    <li><strong>Export JSON</strong> &mdash; Downloads all your custom characters as a .json file</li>
+                    <li><strong>Import JSON</strong> &mdash; Upload a .json file to add characters. Existing characters with the same ID are overwritten</li>
+                </ul>
+
+                <div class="tip"><strong>Note:</strong> All your custom characters are automatically saved in your browser's localStorage. They persist across page reloads. Clearing browser data will remove them &mdash; use Export to keep a backup!</div>
+            </div>
+
+            <div class="guide-divider"></div>
+
+            <div class="guide-section">
+                <h3>Built-in Examples</h3>
+                <p>Study the built-in characters to understand how different settings work together:</p>
+                <ul>
+                    <li><strong>Hoshino</strong> &mdash; Uses <code>ojisan</code>, sleepy vector, occasional <code>Uhe~</code>, no lisp</li>
+                    <li><strong>Shiroko</strong> &mdash; Uses <code>watashi</code>, calm/stoic, heavy <code>...</code> endings, <code>Nn</code> prefix</li>
+                    <li><strong>Gojo</strong> &mdash; Uses <code>ore</code> + <code>omae</code>, high playfulness, <code>~zo/~ze</code> endings</li>
+                    <li><strong>Sukuna</strong> &mdash; Uses <code>ore</code> + <code>kisama</code>, high aggression, sharp tone</li>
+                    <li><strong>Furina</strong> &mdash; Uses <code>boku</code> (Japanese canon), French vocabulary, <code>fufu</code> laugh</li>
+                    <li><strong>March 7th</strong> &mdash; Uses <code>watashi</code>, high energy, photo-themed actions, <code>ehee</code> laugh</li>
+                </ul>
+            </div>
+
+        </div>
+        <div class="modal-footer">
+            <button id="guideDoneBtn" class="primary">Got it</button>
+        </div>
+    </div>
+</div>
+
+<!-- MANAGE MODAL -->
+<div class="modal-overlay" id="manageModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h2>Manage characters</h2>
+            <button class="close-btn" id="manageCloseBtn">✕</button>
+        </div>
+        <div class="modal-body">
+            <p style="color:#888;font-size:0.85em;margin-bottom:12px">Built-in characters can't be edited. Your custom characters can be edited or deleted.</p>
+            <div class="manage-list" id="manageList"></div>
+        </div>
+        <div class="modal-footer">
+            <button id="manageDoneBtn" class="primary">Done</button>
+        </div>
+    </div>
+</div>
 
 <script>
-    function aiCatgirlTranslator(text, useEmojis = true) {
-        if (!text.trim()) return "Mreow? I'm listening~ *flicks ear*";
-        
-        const whitelist = ['girl', 'egirl'];
 
-        const keywordSets = {
-            question: ['why', 'how', 'what', 'when', 'where', 'who', 'do', 'are', 'is', '??'],
-            excited: ['amazing', 'awesome', 'wow', 'omg', 'yay', 'incredible', 'finally', 'so cool'],
-            happy: ['love', 'like', 'happy', 'cute', 'thank', 'purrfect', 'great', 'wonderful', 'fantastic'],
-            annoyed: ['hate', 'angry', 'mad', 'stupid', 'jerk', 'grr', 'shut up', 'hmph', 'leave me alone', 'ugh'],
-            affectionate: ['cuddle', 'hug', 'pet', 'snuggle', 'kiss', 'hold', 'pat'],
-            hungry: ['hungry', 'food', 'eat', 'snack', 'treats', 'yummy', 'delicious', 'starving'],
-            sleepy: ['sleepy', 'tired', 'yawn', 'bed', 'nap', 'eepy'],
-            playful: ['play', 'game', 'fun', 'chase', 'toy', 'pounce', 'bap'],
-            shy: ['um', 'uh', 'nervous', 'maybe', 'perhaps', 'i-i don\'t know'],
-            scared: ['scared', 'afraid', 'monster', 'ghost', 'spooky', 'eek', 'scary', 'help'],
-            lazy: ['lazy', 'bother', 'effort', 'later', 'can\'t', 'meh'],
-            confused: ['confused', 'huh', 'what?', 'don\'t understand', 'explain', '???'],
-            proud: ['proud', 'i did it', 'awesome me', 'check it out', 'best', 'nailed it'],
-            guilty: ['guilty', 'my fault', 'i messed up', 'sorry', 'i\'m bad', 'oops'],
-            hopeful: ['hope', 'wish', 'please', 'maybe one day', 'i wish'],
-            jealous: ['jealous', 'mine', 'ignore me', 'who is that', 'hmph'],
-            relaxed: ['relaxed', 'chill', 'calm', 'peaceful', 'comfy', 'cozy'],
-            surprised: ['surprised', 'whoa', 'really', 'no way', 'what?!', '!!'],
-            mischievous: ['hehe', 'sneaky', 'trouble', 'plot', 'prank', 'teehee'],
-            sad: ['sad', 'lonely', 'cry', 'upset', 'miss you', 'tears', 'heartbroken'],
-            impressed: ['impressed', 'incredible', 'sugoi', 'genius', 'masterpiece']
-        };
+var DIMS = ['energy', 'formality', 'playfulness', 'aggression', 'sleepiness', 'archaic'];
 
-        const moodEffects = {
-            curious: { actions: ['*tilts head*', '*ears perk up*', '*sniffs the air curiously*', '*blinks slowly*'], sounds: [' mrrp?', ' nyani?', '...hmmm?', 'mew?'], emojis: ['🤔', '🧐', '❓', '👀'] },
-            excited: { actions: ['*vibrates with excitement*', '*gets the zoomies!*', '*bounces on paws*', '*tail wags super fast*'], sounds: ['!! >w<', '!! (≧▽≦)', 'KYAA!', 'EEEeee!'], emojis: ['✨', '🎉', '🤩', '💖'] },
-            happy: { actions: ['*purrrrrs contentedly*', '*makes happy biscuits on your lap*', '*slow, happy blink*', '*wags tail gently*'], sounds: [' nya~', ' hehe~', '(*^▽^*)', 'mew~'], emojis: ['😊', '💖', '🥰', '💕'] },
-            annoyed: { actions: ['*flattens ears*', '*tail thumps on the floor*', '*huffs and turns away*', '*gives you the silent treatment*'], sounds: [' hssss!', ' >:(', 'grrrr... (`-´#)', 'Hmph!'], emojis: ['😠', '💢', '😒', '😑'] },
-            affectionate: { actions: ['*rubs against you purring loudly*', '*boops your nose with mine*', '*headbutts you gently*', '*curls up in your lap*'], sounds: [' mrow~', ' *purrrr~*', '(´,,•ω•,,)♡', 'mreow~'], emojis: ['💖', '💕', '😻', '❤️'] },
-            hungry: { actions: ['*stares intently at your food*', '*paws at your leg insistently*', '*tummy rumbles loudly*', '*leads you to my food bowl*'], sounds: [' feed mew pwease?', 'NYAOW!', '(·﹃ ·)', 'mrrroww?'], emojis: ['🐟', '🍲', '🥺', '🙏'] },
-            sleepy: { actions: ['*a big, wide yaaaawn*', '*stretches out every single toe*', '*finds a warm spot to curl up in*', '*eyes get droopy*'], sounds: [' Zzzz...', ' so sweepy...', '(=￣ ρ￣=) ..zzZZ', 'mrrph...'], emojis: ['😴', '😪', '🌙', '💤'] },
-            playful: { actions: ['*wiggles butt before pouncing*', '*chases a laser dot that isn\'t there*', '*hides and prepares to ambush*', '*baps you playfully*'], sounds: [' pway with mew?', ' >:3', 'ekekekek!', 'mrawr!'], emojis: ['🧶', '🐾', '😼', '✨'] },
-            shy: { actions: ['*hides behind my paws*', '*shuffles feet*', '*speaks in a small, quiet voice*', '*looks down at the floor*'], sounds: [' u-um...', ' m-maybe...?', '(⁄ ⁄•⁄ω⁄•⁄ ⁄)', '...hai'], emojis: ['🥺', '👉👈', '😳', '😥'] },
-            scared: { actions: ['*tail puffs up like a bottle brush*', '*hides under the nearest blanket*', '*freezes in place, eyes wide*', '*jumps at a loud noise*'], sounds: ['E-Eek!', 'kyaaa!', '((;ﾟДﾟ))', 'Hiss!'], emojis: ['😱', '😨', '👻', '😖'] },
-            lazy: { actions: ['*melts into a puddle on the floor*', '*flops over dramatically*', '*refuses to move a muscle*', '*blinks slowly, unimpressed*'], sounds: ['mrehhhh...', 'too much effowt...', '_(:3 」∠)_', '...later'], emojis: ['😑', '🥱', '🛋️', '🐈'] },
-            confused: { actions: ['*head tilts a full 90 degrees*', '*ears swivel in different directions*', '*stares blankly into space*', '*blinks multiple times*'], sounds: [' huh?', 'nyani?', 'does not compute... (@_@)', 'mrr?'], emojis: ['🤔', '😕', '😵‍💫', '❓'] },
-            proud: { actions: ['*puffs out chest smugly*', '*tail held high like a banner*', '*struts around proudly*', '*preens a little*'], sounds: ['Hehe, I know I\'m gweat!', 'Of couwse I did it!', '(ﾉ´ヮ`)ﾉ*:･ﾟ✧', 'See? Purrfect!'], emojis: ['😏', '😎', '👑', '💅'] },
-            guilty: { actions: ['*ears flatten against my head*', '*avoids all eye contact*', '*tucks tail between my legs*', '*slowly backs away*'], sounds: ['I... I\'m so sowwy...', 'm-my bad...', '( ´•̥̥̥ω•̥̥̥` )', '*quiet whimpering*'], emojis: ['🙏', '😥', '💧', '🙇‍♀️'] },
-            hopeful: { actions: ['*eyes get wide and sparkly*', '*paws clasped together pleadingly*', '*looks at you with big, hopeful eyes*', '*purrs hopefully*'], sounds: [' I weally, weally hope so!', 'pwetty pwease?', '(ㅅ´ ˘ `)♡', 'maybe...?'], emojis: ['✨', '🤞', '🌟', '🥺'] },
-            jealous: { actions: ['*glares daggers at the other thing/person*', '*pointedly ignores you*', '*gets between you and what has your attention*', '*lets out a low growl*'], sounds: ['Hmph!', 'Who is THAT?!', '(¬_¬)', 'Grrr...'], emojis: ['👀', '😒', '😠', '😤'] },
-            relaxed: { actions: ['*making soft biscuits on a fluffy blanket*', '*lets out a soft, contented sigh*', '*slow, rhythmic purring fills the air*', '*dozing off in a sunbeam*'], sounds: ['mrrrrrr...', 'sooo comfy...', '(︶ω︶)', '*happy sigh*'], emojis: ['😌', '😊', '💖', '☀️'] },
-            surprised: { actions: ['*jumps a foot in the air!*', '*eyes go wide as dinner plates*', '*fur stands on end for a moment*', '*gasps loudly*'], sounds: ['N-NANI?!', 'Whoa!', 'Σ(°ロ°)', 'M-Mrow!'], emojis: ['😮', '🤯', '‼️', '😲'] },
-            mischievous: { actions: ['*a sneaky glint in my eye*', '*wiggles butt, preparing for trouble*', '*paws batting at something they shouldn\'t be*', '*giggles quietly*'], sounds: ['nya-ha-ha!', 'hehehe >:3', 'time for some fun...(ψ｀▽´)ψ', 'teehee~'], emojis: ['😈', '😼', '🤫', '😏'] },
-            sad: { actions: ['*ears droop down completely*', '*a single tear rolls down my cheek*', '*sniffles quietly to myself*', '*body droops sadly*'], sounds: ['...mew...', '...saddy...', '( ; ω ; )', '*sniffle*'], emojis: ['😢', '😭', '💔', '💧'] },
-            impressed: { actions: ['*jaw literally drops*', '*stares in absolute awe*', '*rapid, excited tail wags*', '*claps paws together*'], sounds: ['SUGOI~!', 'That\'s... amazing!', '(☆▽☆)', 'Wowzers!'], emojis: ['🤩', '🤯', '✨', '👏'] }
-        };
-        
-        const whitelistRegex = new RegExp(`\\b(${whitelist.join('|')})\\b`, 'gi');
-        
-        const originalTextLower = text.toLowerCase();
-        const segments = text.split(/([.!?]+)/g);
-        let finalResult = '';
-        
-        for (let i = 0; i < segments.length; i += 2) {
-            let sentence = segments[i];
-            const punctuation = segments[i + 1] || '';
-            
-            if (!sentence.trim()) continue;
-            
-            const moodsDetected = {};
-            const sentenceLower = sentence.toLowerCase();
-            for (const mood in keywordSets) { 
-                moodsDetected[mood] = keywordSets[mood].some(kw => sentenceLower.includes(kw)); 
-            }
-            if (punctuation.includes('?')) {
-                moodsDetected.question = true;
-            }
-            
-            let dominantMood = 'neutral';
-            const moodPriority = ['annoyed', 'scared', 'guilty', 'sad', 'jealous', 'hungry', 'sleepy', 'lazy', 'confused', 'surprised', 'question', 'mischievous', 'playful', 'impressed', 'hopeful', 'proud', 'affectionate', 'excited', 'shy', 'happy', 'relaxed'];
-            
-            for (const mood of moodPriority) { 
-                if (moodsDetected[mood]) { 
-                    dominantMood = (mood === 'question') ? 'curious' : mood; 
-                    break; 
-                } 
-            }
-            
-            let sentenceWithEffects = sentence;
-            let moodEmoji = '🌸';
+function pick(arr) {
+    if (!arr || !arr.length) return '';
+    return arr[Math.floor(Math.random() * arr.length)];
+}
 
-            if (dominantMood !== 'neutral') {
-                const effects = moodEffects[dominantMood];
-                sentenceWithEffects += ' ' + effects.actions[Math.floor(Math.random() * effects.actions.length)];
-                sentenceWithEffects += ' ' + effects.sounds[Math.floor(Math.random() * effects.sounds.length)];
-                moodEmoji = effects.emojis[Math.floor(Math.random() * effects.emojis.length)];
-            } else { 
-                if (!punctuation && Math.random() < 0.5) {
-                    sentenceWithEffects += ' nya~';
+function weightedPick(arr, weights) {
+    if (!arr || !arr.length) return '';
+    var total = 0;
+    for (var i = 0; i < weights.length; i++) total += weights[i];
+    var r = Math.random() * total;
+    for (var i = 0; i < arr.length; i++) {
+        r -= weights[i];
+        if (r <= 0) return arr[i];
+    }
+    return arr[arr.length - 1];
+}
+
+// Built-in example profiles
+
+var EXAMPLE_PROFILES = [
+    {
+        id: 'hoshino', _builtin: true,
+        name: 'Hoshino', series: 'Blue Archive', color: '#e88aa0',
+        vector: { energy: 0.2, formality: 0.15, playfulness: 0.5, aggression: 0.1, sleepiness: 0.9, archaic: 0.0 },
+        firstPerson: 'ojisan', secondPerson: false,
+        sentenceEndings: ['~', ' naa', ' nda yo', ' yo', ' darou'], endingsWeight: [3, 4, 2, 3, 2],
+        interjections: ['Uhe~', 'Fuwaa~', 'Uhee~', 'Aaa~'],
+        laugh: null, rules: {}, prefix: null,
+        actions: ['*yawns*', '*stretches lazily*', '*blinks slowly*', '*nods off*'],
+        vocab: { 'hello': 'yaa~', 'tired': 'tsukareta', 'sleep': 'nemui', 'boring': 'taikutsu', 'work': 'mendou', 'good': 'yokatta', 'cute': 'kawaii~' },
+        grammar: [
+            { from: /\bojisan\s+will\s+(\w+)/gi, to: 'ojisan $1 kana~' },
+            { from: /\bojisan\s+want\s+to\s+(\w+)/gi, to: 'ojisan wa $1-tai' },
+            { from: /\bojisan\s+want\s+(\w+)/gi, to: 'ojisan wa $1 ga hoshii' },
+        ],
+        emojis: ['🌸', '💤', '😴', '✨', '🍵', '🥱']
+    },
+    {
+        id: 'shiroko', _builtin: true,
+        name: 'Shiroko', series: 'Blue Archive', color: '#7aa8d4',
+        vector: { energy: 0.3, formality: 0.55, playfulness: 0.1, aggression: 0.3, sleepiness: 0.2, archaic: 0.0 },
+        firstPerson: 'watashi', secondPerson: false,
+        sentenceEndings: ['...', ' da', ' desu', ' na', ' yo'], endingsWeight: [5, 3, 3, 2, 1],
+        interjections: ['Nn', '...', 'Sou ka', 'Nn...'],
+        laugh: null, rules: {}, prefix: ['Nn', 'Nn...'],
+        actions: ['*nods*', '*adjusts gloves*', '*gives a calm look*', '*ears twitch*'],
+        vocab: { 'hello': 'konnichiwa', 'we': 'Abydos', 'friend': 'nakama', 'plan': 'sakusen', 'money': 'okane', 'go': 'iku', 'good': 'ii', 'bank': 'ginkou' },
+        grammar: [
+            { from: /\bwatashi\s+will\s+(\w+)/gi, to: 'watashi ga $1' },
+        ],
+        emojis: ['🐺', '🌙', '💫', '📋', '🎯']
+    },
+    {
+        id: 'gojo', _builtin: true,
+        name: 'Gojo', series: 'Jujutsu Kaisen', color: '#b0c4de',
+        vector: { energy: 0.85, formality: 0.1, playfulness: 0.9, aggression: 0.2, sleepiness: 0.05, archaic: 0.0 },
+        firstPerson: 'ore', secondPerson: 'omae',
+        sentenceEndings: ['~na', '~zo', '~dayo', '~sa', '~ze'], endingsWeight: [3, 2, 4, 2, 2],
+        interjections: ['Maa maa', 'Hehe', 'Hora hora', 'Ara ara'],
+        laugh: 'fufufu', rules: {}, prefix: null,
+        actions: ['*adjusts blindfold*', '*grins*', '*floats lazily*', '*waves a hand*'],
+        vocab: { 'hello': 'yoo', 'strong': 'saikyou', 'fun': 'tanoshii', 'boring': 'taikutsu', 'amazing': 'yabai', 'good': 'yoi', 'no': 'muuri', "can't": 'dekinai', 'can': 'dekiru' },
+        grammar: [
+            { from: /\bore\s+will\s+(\w+)/gi, to: 'ore ga $1 ze' },
+            { from: /\bore\s+want\s+to\s+(\w+)/gi, to: 'ore wa $1-tai na' },
+            { from: /\bthis\s+is\b/gi, to: 'kore wa' },
+            { from: /\bdon't\b/gi, to: 'nai' }, { from: /\bcan't\b/gi, to: 'dekinai' }, { from: /\bwon't\b/gi, to: 'nai' },
+        ],
+        emojis: ['⚡', '✨', '😎', '🌀', '👁️']
+    },
+    {
+        id: 'sukuna', _builtin: true,
+        name: 'Sukuna', series: 'Jujutsu Kaisen', color: '#b84a4a',
+        vector: { energy: 0.55, formality: 0.2, playfulness: 0.05, aggression: 0.95, sleepiness: 0.0, archaic: 0.1 },
+        firstPerson: 'ore', secondPerson: 'kisama',
+        sentenceEndings: ['~zo', '~ze', ' da', '~na', '~wa'], endingsWeight: [4, 2, 3, 2, 2],
+        interjections: ['Hmph', 'Fumu', 'Kukuku', 'Chotto'],
+        laugh: 'kukuku', rules: {}, prefix: null,
+        actions: ['*grins*', '*cracks neck*', '*aura flares*', '*gazes down*'],
+        vocab: { 'strong': 'tsuyoi', 'weak': 'yowamushi', 'human': 'mushi', 'die': 'shine', 'interesting': 'omoshiroi', 'boring': 'tsumaranu', 'yes': 'sou da', 'vermin': 'mushikera' },
+        grammar: [
+            { from: /\bore\s+will\s+(\w+)/gi, to: 'ore ga $1 zo' },
+            { from: /\bore\s+want\s+to\s+(\w+)/gi, to: 'ore wa $1' },
+            { from: /\bthis\s+is\b/gi, to: 'sore wa' },
+            { from: /\byes\b/gi, to: 'sou da' },
+        ],
+        emojis: ['🔥', '👹', '💀', '🗡️', '🩸']
+    },
+    {
+        id: 'furina', _builtin: true,
+        name: 'Furina', series: 'Genshin Impact', color: '#7ab8d4',
+        vector: { energy: 0.8, formality: 0.45, playfulness: 0.7, aggression: 0.1, sleepiness: 0.05, archaic: 0.05 },
+        firstPerson: 'boku', secondPerson: false,
+        sentenceEndings: ['~daze', '~dayo', '~ne', '~no yo', '~wa'], endingsWeight: [3, 3, 3, 2, 2],
+        interjections: ['Fufu', 'Merveilleux', 'Bravo', 'Mon Dieu'],
+        laugh: 'fufu', rules: {}, prefix: null,
+        actions: ['*strikes a pose*', '*flourishes hand*', '*adjusts hat*', '*turns theatrically*'],
+        vocab: { 'hello': 'bonjour', 'good': 'magnifique', 'beautiful': 'magnifique', 'amazing': 'merveilleux', 'great': 'bravo', 'show': 'spectacle', 'dance': 'danse', 'water': 'eau' },
+        grammar: [
+            { from: /\bboku\s+will\s+(\w+)/gi, to: 'boku ga $1 no yo' },
+            { from: /\bthis\s+is\b/gi, to: 'ceci est' },
+            { from: /\b(?:amazing|incredible)\b/gi, to: 'merveilleux' },
+        ],
+        emojis: ['🎭', '💧', '👑', '🌟', '🎪']
+    },
+    {
+        id: 'march', _builtin: true,
+        name: 'March 7th', series: 'Honkai: Star Rail', color: '#d4a8d4',
+        vector: { energy: 0.9, formality: 0.1, playfulness: 0.85, aggression: 0.05, sleepiness: 0.0, archaic: 0.0 },
+        firstPerson: 'watashi', secondPerson: false,
+        sentenceEndings: ['~ne', '~yo', '~dane', '~jan', '~tteba'], endingsWeight: [3, 3, 2, 2, 1],
+        interjections: ['Wau~', 'Ehee', 'Mou~', 'Hyaa~'],
+        laugh: 'ehee', rules: {}, prefix: null,
+        actions: ['*takes a photo*', '*bounces excitedly*', '*giggles*', '*peace sign*'],
+        vocab: { 'hello': 'yaa~', 'good': 'yatta', 'great': 'saikou', 'fun': 'tanoshii', 'cute': 'kawaii', 'amazing': 'sugoi', 'photo': 'shashin', 'wait': 'matte', 'go': 'ikou', 'beautiful': 'kirei', 'friend': 'nakama' },
+        grammar: [],
+        emojis: ['❄️', '📷', '✨', '💖', '🌠']
+    }
+];
+
+// User profiles (localStorage)
+
+var STORAGE_KEY = 'speech_vector_user_profiles';
+
+function loadUserProfiles() {
+    try {
+        var raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+            var parsed = JSON.parse(raw);
+            // Rebuild RegExp objects from serialized format
+            parsed.forEach(function(p) {
+                if (p.grammar) {
+                    p.grammar = p.grammar.map(function(g) {
+                        if (g.pattern) {
+                            return { from: new RegExp(g.pattern, g.flags || 'gi'), to: g.to };
+                        }
+                        // Handle legacy format where from might be a broken object
+                        if (g.from && typeof g.from === 'object' && !(g.from instanceof RegExp)) {
+                            return { from: /./, to: g.to || '' };
+                        }
+                        return g;
+                    });
+                }
+            });
+            return parsed;
+        }
+    } catch (e) {}
+    return [];
+}
+
+function saveUserProfiles(profiles) {
+    try {
+        // Convert RegExp objects to serializable format before storing
+        var saveable = profiles.map(function(p) {
+            var copy = JSON.parse(JSON.stringify(p));
+            if (p.grammar) {
+                copy.grammar = p.grammar.map(function(g) {
+                    if (g.from instanceof RegExp) {
+                        return { pattern: g.from.source, flags: g.from.flags, to: g.to };
+                    }
+                    return g;
+                });
+            }
+            return copy;
+        });
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(saveable));
+    } catch (e) {
+        console.warn('Could not save to localStorage:', e);
+    }
+}
+
+var userProfiles = loadUserProfiles();
+
+function getAllProfiles() {
+    return EXAMPLE_PROFILES.concat(userProfiles);
+}
+
+function getAllProfilesMap() {
+    var map = {};
+    EXAMPLE_PROFILES.forEach(function(p) { map[p.id] = p; });
+    userProfiles.forEach(function(p) { map[p.id] = p; });
+    return map;
+}
+
+function findProfile(id) {
+    var map = getAllProfilesMap();
+    return map[id] || null;
+}
+
+// Engine
+
+var activeChar = null;
+
+function transform(text, ch, emojiOn, actionsOn) {
+    if (!ch || !text.trim()) return '';
+    var v = ch.vector;
+    var parts = text.match(/[^.!?]+[.!?]*/g) || [text];
+    var out = '';
+
+    for (var i = 0; i < parts.length; i++) {
+        var raw = parts[i].trim();
+        if (!raw) continue;
+        var pm = raw.match(/[.!?]+$/);
+        var punct = pm ? pm[0] : '';
+        var s = pm ? raw.slice(0, -punct.length).trim() : raw;
+        if (!s) continue;
+        var mood = detectMood(s, v);
+        s = applyVocab(s, ch.vocab, v);
+        s = applyRules(s, ch.rules);
+        s = applyPerson(s, ch);
+        s = applyGrammar(s, ch);
+
+        var endThreshold = (ch.sentenceEndings && ch.sentenceEndings[0] === '...') ? 0.05 : 0.15;
+        var end = weightedPick(
+            (ch.sentenceEndings && ch.sentenceEndings.length) ? ch.sentenceEndings : ['~'],
+            (ch.endingsWeight && ch.endingsWeight.length) ? ch.endingsWeight : [1]
+        );
+        if (s.length > 2 && v.playfulness > endThreshold && ch.sentenceEndings) {
+            var hasEnding = false;
+            for (var e = 0; e < ch.sentenceEndings.length; e++) {
+                if (s.endsWith(ch.sentenceEndings[e].trim())) { hasEnding = true; break; }
+            }
+            if (!hasEnding) s += end;
+        }
+
+        if (ch.prefix && ch.prefix.length && Math.random() < 0.55 && ch.prefix[0]) {
+            s = pick(ch.prefix) + '. ' + s;
+        } else if (i === 0 && !ch.prefix && ch.interjections && ch.interjections.length && Math.random() < v.playfulness * 0.35) {
+            s = pick(ch.interjections) + '. ' + s;
+        }
+
+        var act = '';
+        if (actionsOn && ch.actions && ch.actions.length && Math.random() < v.energy * 0.4) {
+            act = ' ' + pick(ch.actions);
+        }
+
+        var em = '';
+        if (emojiOn) {
+            var map = {
+                happy: ['😊', '🎉', '💖'], playful: ['😏', '😼', '✨'],
+                angry: ['💢', '🔥', '😠'], sleepy: ['😴', '💤', '🥱'],
+                calm: ['🌸', '🌊', '💫'],            neutral: (ch.emojis && ch.emojis.length) ? ch.emojis : ['✨']
+            };
+            em = ' ' + pick(map[mood in map ? mood : 'neutral']);
+        }
+
+        out += s + act + em + punct;
+        if (i < parts.length - 1) out += ' ';
+    }
+
+    if (ch.laugh && Math.random() < v.playfulness * 0.2 + v.aggression * 0.15) {
+        out += ' ' + ch.laugh;
+    }
+    return out.trim();
+}
+
+function detectMood(s, v) {
+    var lower = s.toLowerCase();
+    var words = {
+        happy: ['love', 'like', 'happy', 'great', 'beautiful', 'amazing', 'fun', 'nice', 'good', 'wonderful', 'awesome'],
+        playful: ['hehe', 'haha', 'lol', 'game', 'play', 'joke', 'silly', 'cute', 'trick'],
+        angry: ['hate', 'angry', 'mad', 'stupid', 'damn', 'kill', 'die', 'terrible', 'bad', 'worst'],
+        sleepy: ['sleep', 'tired', 'yawn', 'bed', 'nap', 'rest', 'dream', 'lazy', 'exhausted'],
+        calm: ['peace', 'calm', 'relax', 'quiet', 'still', 'gentle', 'soft', 'warm', 'serene']
+    };
+    var scores = {};
+    for (var w in words) { scores[w] = 0; for (var k = 0; k < words[w].length; k++) { if (lower.indexOf(words[w][k]) !== -1) scores[w]++; } }
+    scores.playful *= (1 + v.playfulness * 0.5); scores.sleepy *= (1 + v.sleepiness * 0.5);
+    scores.angry *= (1 + v.aggression * 0.5); scores.calm *= (1 + (1 - v.energy) * 0.3);
+    scores.happy *= (1 + v.playfulness * 0.3);
+    var best = 'neutral', bestScore = 0;
+    for (var w in scores) { if (scores[w] > bestScore) { bestScore = scores[w]; best = w; } }
+    return bestScore > 0 ? best : 'neutral';
+}
+
+function applyVocab(text, map, v) {
+    if (!map) return text;
+    var result = text;
+    for (var word in map) {
+        var repl = map[word]; var chance = 0.5 + v.playfulness * 0.3;
+        if (Math.random() < chance) {
+            var re = new RegExp('\\b' + word + '\\b', 'gi');
+            result = result.replace(re, function(m) {
+                return (m[0] === m[0].toUpperCase() && m.length > 1) ? repl.charAt(0).toUpperCase() + repl.slice(1) : repl;
+            });
+        }
+    }
+    return result;
+}
+
+function applyRules(text, rules) {
+    if (!rules) return text;
+    var result = text;
+    for (var p in rules) {
+        var r = rules[p];
+        if (Math.random() < r.chance) result = result.replace(new RegExp(p, 'gi'), r.to);
+    }
+    return result;
+}
+
+function applyPerson(text, ch) {
+    var fp = ch.firstPerson;
+    if (!fp) return text;
+
+    if (fp === 'watashi') {
+        text = text.replace(/\bI'm\b/gi, 'watashi wa');
+        text = text.replace(/\bI am\b/gi, 'watashi wa');
+        text = text.replace(/\bI\b(?!')/g, 'watashi');
+        text = text.replace(/\bmy\b/gi, 'watashi no');
+        text = text.replace(/\bme\b/gi, 'watashi');
+    } else if (fp === 'ore' || fp === 'boku') {
+        text = text.replace(/\bI'm\b/gi, fp + ' wa');
+        text = text.replace(/\bI am\b/gi, fp + ' wa');
+        text = text.replace(/\bI\b(?!')/g, fp);
+        text = text.replace(/\bmy\b/gi, fp + ' no');
+        text = text.replace(/\bme\b/gi, fp);
+    } else {
+        text = text.replace(/\bI'm\b/gi, fp + ' wa');
+        text = text.replace(/\bI am\b/gi, fp + ' wa');
+        text = text.replace(/\bI\b(?!')/g, fp);
+        text = text.replace(/\bmy\b/gi, fp + ' no');
+        text = text.replace(/\bme\b/gi, fp);
+    }
+
+    if (ch.secondPerson && ch.vector && ch.vector.aggression > 0.1) {
+        text = text.replace(/\byou\b/gi, ch.secondPerson);
+    }
+    text = text.replace(/\b(ore|ojisan|kisama|omae|boku|watashi)\s+(?:am|is|are)\b/gi, '$1 wa');
+    return text;
+}
+
+function applyGrammar(text, ch) {
+    if (!text) return '';
+    text = text.replace(/\bthe\b/gi, '').replace(/\ba\b(?=\s+\w)/gi, '').replace(/\ban\b(?=\s+[aeiou])/gi, '');
+    text = text.replace(/\s{2,}/g, ' ');
+    text = text.replace(/\bgonna\b/gi, 'ga yaru').replace(/\bwanna\b/gi, 'shitai');
+    if (ch.grammar) {
+        for (var g = 0; g < ch.grammar.length; g++) {
+            var rule = ch.grammar[g];
+            if (rule.from && rule.to) text = text.replace(rule.from, rule.to);
+        }
+    }
+    text = text.replace(/\s{2,}/g, ' ').replace(/\s+([,;.!?])/g, '$1');
+    return text.trim();
+}
+
+// UI
+
+var selector = document.getElementById('charSelector');
+var input = document.getElementById('input');
+var output = document.getElementById('output');
+var copyBtn = document.getElementById('copyBtn');
+var resetBtn = document.getElementById('resetBtn');
+var badge = document.getElementById('charBadge');
+var vectorRow = document.getElementById('vectorRow');
+var wordCount = document.getElementById('wordCount');
+var charInfo = document.getElementById('charInfo');
+var emojiToggle = document.getElementById('useEmojis');
+var actionToggle = document.getElementById('useActions');
+
+function renderButtons() {
+    selector.innerHTML = '';
+    var allProfiles = getAllProfiles();
+    allProfiles.forEach(function(ch) {
+        var btn = document.createElement('button');
+        btn.className = 'char-btn';
+        btn.dataset.id = ch.id;
+        var builtinTag = ch._builtin ? '<span class="builtin-badge">built-in</span>' : '';
+        btn.innerHTML = '<div class="name">' + ch.name + ' ' + builtinTag + '</div><div class="series">' + ch.series + '</div>';
+
+        if (!ch._builtin) {
+            var edit = document.createElement('button');
+            edit.className = 'edit-btn';
+            edit.textContent = '✎';
+            edit.title = 'Edit ' + ch.name;
+            edit.addEventListener('click', function(e) {
+                e.stopPropagation();
+                openEditor(ch.id);
+            });
+            btn.appendChild(edit);
+        }
+
+        btn.addEventListener('click', function() { selectChar(ch.id); });
+        selector.appendChild(btn);
+    });
+}
+
+function selectChar(id) {
+    var btns = document.querySelectorAll('.char-btn');
+    for (var i = 0; i < btns.length; i++) btns[i].classList.remove('active');
+    var found = document.querySelector('.char-btn[data-id="' + id + '"]');
+    if (found) found.classList.add('active');
+    activeChar = findProfile(id);
+    if (!activeChar) { activeChar = getAllProfiles()[0]; if (activeChar) selectChar(activeChar.id); return; }
+    badge.textContent = activeChar.name;
+    badge.className = 'char-badge active';
+    charInfo.textContent = activeChar.name;
+    renderVector(activeChar.vector, id);
+    scheduleTransform();
+}
+
+function renderVector(v, charId) {
+    if (!v) return;
+    vectorRow.innerHTML = '';
+    DIMS.forEach(function(dim) {
+        var bar = document.createElement('div');
+        bar.className = 'v-bar';
+        bar.style.height = ((v[dim] || 0) * 14) + 'px';
+        bar.title = dim + ': ' + Math.round((v[dim] || 0) * 100) + '%';
+        vectorRow.appendChild(bar);
+    });
+}
+
+var timer = null;
+function scheduleTransform() { clearTimeout(timer); timer = setTimeout(doTransform, 80); }
+
+function doTransform() {
+    var text = input.value;
+    var wc = text.trim() ? text.trim().split(/\s+/).length : 0;
+    wordCount.textContent = wc + ' word' + (wc !== 1 ? 's' : '');
+    if (!activeChar) { output.textContent = 'Select a character voice...'; output.className = 'hint'; return; }
+    if (!text.trim()) { output.textContent = 'Type something to translate...'; output.className = 'hint'; return; }
+    var result = transform(text, activeChar, emojiToggle.checked, actionToggle.checked);
+    output.textContent = result || '...';
+    output.className = '';
+}
+
+copyBtn.addEventListener('click', function() {
+    var t = output.textContent;
+    if (!t || output.className === 'hint') return;
+    var ta = document.createElement('textarea');
+    ta.value = t; ta.style.cssText = 'position:fixed;left:-9999px;top:0';
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    try { document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
+    copyBtn.textContent = 'Copied'; copyBtn.classList.add('copied');
+    setTimeout(function() { copyBtn.textContent = 'Copy'; copyBtn.classList.remove('copied'); }, 1800);
+});
+
+resetBtn.addEventListener('click', function() {
+    input.value = ''; activeChar = null;
+    document.querySelectorAll('.char-btn').forEach(function(b) { b.classList.remove('active'); });
+    output.textContent = 'Choose a character voice and start typing...'; output.className = 'hint';
+    badge.className = 'char-badge'; badge.textContent = 'Select a character';
+    vectorRow.innerHTML = ''; charInfo.textContent = '\u2014'; wordCount.textContent = '0 words';
+});
+
+input.addEventListener('input', scheduleTransform);
+emojiToggle.addEventListener('change', scheduleTransform);
+actionToggle.addEventListener('change', scheduleTransform);
+
+// Editor
+
+var editingId = null;
+
+function openEditor(id) {
+    var profile = id ? findProfile(id) : null;
+    editingId = id;
+
+    document.getElementById('editorTitle').textContent = id ? 'Edit: ' + profile.name : 'Add character';
+    document.getElementById('editorDeleteBtn').style.display = (id && profile && !profile._builtin) ? '' : 'none';
+
+    // Populate fields
+    document.getElementById('ef_name').value = profile ? profile.name || '' : '';
+    document.getElementById('ef_series').value = profile ? profile.series || '' : '';
+    document.getElementById('ef_color').value = profile ? profile.color || '#7ab8d4' : '#7ab8d4';
+    document.getElementById('ef_firstPerson').value = profile ? profile.firstPerson || '' : 'ore';
+    document.getElementById('ef_secondPerson').value = profile ? (profile.secondPerson || '') : '';
+    document.getElementById('ef_laugh').value = profile ? (profile.laugh || '') : '';
+
+    // Vector sliders
+    renderVectorSliders(profile ? profile.vector : null);
+
+    // Arrays
+    document.getElementById('ef_endings').value = profile && profile.sentenceEndings ? profile.sentenceEndings.join('\n') : '';
+    document.getElementById('ef_endingsWeight').value = profile && profile.endingsWeight ? profile.endingsWeight.join(', ') : '';
+    document.getElementById('ef_interjections').value = profile && profile.interjections ? profile.interjections.join('\n') : '';
+    document.getElementById('ef_prefix').value = profile && profile.prefix ? profile.prefix.join('\n') : '';
+    document.getElementById('ef_actions').value = profile && profile.actions ? profile.actions.join('\n') : '';
+    document.getElementById('ef_emojis').value = profile && profile.emojis ? profile.emojis.join('\n') : '';
+
+    // Vocab
+    var vocabLines = [];
+    if (profile && profile.vocab) {
+        for (var k in profile.vocab) { vocabLines.push(k + ': ' + profile.vocab[k]); }
+    }
+    document.getElementById('ef_vocab').value = vocabLines.join('\n');
+
+    // Grammar - handle both RegExp and serialized {pattern, flags} formats
+    var grammarLines = [];
+    if (profile && profile.grammar) {
+        for (var g = 0; g < profile.grammar.length; g++) {
+            var gr = profile.grammar[g];
+            var fromStr = '';
+            if (gr.from instanceof RegExp) {
+                fromStr = gr.from.toString();
+            } else if (gr.pattern) {
+                fromStr = '/' + gr.pattern + '/' + (gr.flags || 'gi');
+            } else if (gr.from && gr.from.source) {
+                fromStr = '/' + gr.from.source + '/' + (gr.from.flags || 'gi');
+            }
+            if (fromStr) grammarLines.push(fromStr + ': ' + gr.to);
+        }
+    }
+    document.getElementById('ef_grammar').value = grammarLines.join('\n');
+
+    document.getElementById('editorModal').classList.add('open');
+}
+
+function closeEditor() {
+    document.getElementById('editorModal').classList.remove('open');
+    editingId = null;
+    window._ghTestInited = false;
+    renderButtons();
+}
+
+function saveEditor() {
+    // Collect vector
+    var vector = {};
+    DIMS.forEach(function(dim, idx) {
+        var slider = document.getElementById('es_' + dim);
+        vector[dim] = slider ? parseFloat(slider.value) / 100 : 0.5;
+    });
+
+    // Parse arrays
+    function parseLines(id) {
+        var val = document.getElementById(id).value.trim();
+        return val ? val.split('\n').map(function(s) { return s.trim(); }).filter(function(s) { return s; }) : [];
+    }
+
+    function parseWeights(str) {
+        if (!str.trim()) return [1];
+        return str.split(',').map(function(s) { return parseInt(s.trim(), 10) || 1; });
+    }
+
+    // Parse vocab
+    var vocab = {};
+    var vocabLines = document.getElementById('ef_vocab').value.trim().split('\n');
+    for (var v = 0; v < vocabLines.length; v++) {
+        var line = vocabLines[v].trim();
+        if (!line) continue;
+        var colonIdx = line.indexOf(':');
+        if (colonIdx > 0) {
+            var key = line.substring(0, colonIdx).trim().toLowerCase();
+            var val = line.substring(colonIdx + 1).trim();
+            if (key) vocab[key] = val;
+        }
+    }
+
+    // Parse grammar
+    var grammar = [];
+    var grammarLines = document.getElementById('ef_grammar').value.trim().split('\n');
+    for (var g = 0; g < grammarLines.length; g++) {
+        var line = grammarLines[g].trim();
+        if (!line) continue;
+        var colonIdx = line.indexOf(':');
+        if (colonIdx > 0) {
+            var fromStr = line.substring(0, colonIdx).trim();
+            var toStr = line.substring(colonIdx + 1).trim();
+            if (fromStr && toStr) {
+                var match = fromStr.match(/^\/(.+)\/([gim]*)$/);
+                var fromRegex = match ? new RegExp(match[1], match[2]) : new RegExp(fromStr, 'gi');
+                // Store both RegExp AND serializable format
+                grammar.push({ from: fromRegex, pattern: match ? match[1] : fromStr, flags: match ? match[2] : 'gi', to: toStr });
+            }
+        }
+    }
+
+    var endings = parseLines('ef_endings');
+    var endingsWeight = parseWeights(document.getElementById('ef_endingsWeight').value);
+    // Trim weights to match endings length
+    while (endingsWeight.length < endings.length) endingsWeight.push(1);
+    endingsWeight = endingsWeight.slice(0, endings.length);
+
+    var secondPerson = document.getElementById('ef_secondPerson').value.trim() || false;
+    var laugh = document.getElementById('ef_laugh').value.trim() || null;
+    var prefix = parseLines('ef_prefix');
+    if (prefix.length === 0) prefix = null;
+
+    var profile = {
+        id: editingId || 'user_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+        _builtin: false,
+        name: document.getElementById('ef_name').value.trim() || 'Unnamed',
+        series: document.getElementById('ef_series').value.trim() || 'Custom',
+        color: document.getElementById('ef_color').value || '#7ab8d4',
+        vector: vector,
+        firstPerson: document.getElementById('ef_firstPerson').value.trim() || 'watashi',
+        secondPerson: secondPerson,
+        sentenceEndings: endings,
+        endingsWeight: endingsWeight,
+        interjections: parseLines('ef_interjections'),
+        prefix: prefix,
+        laugh: laugh,
+        rules: {},
+        actions: parseLines('ef_actions'),
+        vocab: vocab,
+        grammar: grammar,
+        emojis: parseLines('ef_emojis')
+    };
+
+    if (editingId) {
+        // Update existing user profile
+        for (var i = 0; i < userProfiles.length; i++) {
+            if (userProfiles[i].id === editingId) {
+                userProfiles[i] = profile;
+                break;
+            }
+        }
+    } else {
+        userProfiles.push(profile);
+    }
+
+    saveUserProfiles(userProfiles);
+    closeEditor();
+
+    // If we were viewing this character, re-select it
+    if (activeChar && (activeChar.id === profile.id || editingId === profile.id)) {
+        selectChar(profile.id);
+    }
+}
+
+function deleteEditorChar() {
+    if (!editingId) return;
+    if (!confirm('Delete this character? This can\'t be undone.')) return;
+    for (var i = 0; i < userProfiles.length; i++) {
+        if (userProfiles[i].id === editingId) {
+            userProfiles.splice(i, 1);
+            break;
+        }
+    }
+    saveUserProfiles(userProfiles);
+    if (activeChar && activeChar.id === editingId) {
+        activeChar = null;
+        badge.textContent = 'Select a character';
+        badge.className = 'char-badge';
+        charInfo.textContent = '\u2014';
+    }
+    closeEditor();
+}
+
+function renderVectorSliders(existingVector) {
+    var container = document.getElementById('vectorSliders');
+    container.innerHTML = '';
+    DIMS.forEach(function(dim) {
+        var val = existingVector ? Math.round((existingVector[dim] || 0) * 100) : 50;
+        var div = document.createElement('div');
+        div.className = 'vector-slider';
+        div.innerHTML = '<span class="dim-label">' + dim + '</span>' +
+            '<input type="range" id="es_' + dim + '" min="0" max="100" value="' + val + '">' +
+            '<span class="dim-value" id="esv_' + dim + '">' + val + '</span>';
+        container.appendChild(div);
+        div.querySelector('input').addEventListener('input', function() {
+            document.getElementById('esv_' + dim).textContent = this.value;
+        });
+    });
+}
+
+// Gammar Live Test
+
+function setupGrammarLiveTest() {
+    if (window._ghTestInited) return;
+    window._ghTestInited = true;
+    var grammarTa = document.getElementById('ef_grammar');
+    var testInput = document.getElementById('ghTestInput');
+
+    function runTest() {
+        var rulesText = grammarTa.value;
+        var testText = testInput.value.trim();
+        var resultEl = document.getElementById('ghTestResult');
+        var matchedEl = document.getElementById('ghTestMatched');
+
+        if (!testText) {
+            resultEl.textContent = '→ Type something to test...';
+            resultEl.className = 'gh-test-result hint';
+            matchedEl.innerHTML = '';
+            return;
+        }
+
+        // Parse grammar rules from textarea
+        var rules = [];
+        var lines = rulesText.split('\n');
+        for (var i = 0; i < lines.length; i++) {
+            var line = lines[i].trim();
+            if (!line) continue;
+            var colonIdx = line.indexOf(':');
+            if (colonIdx > 0) {
+                var fromStr = line.substring(0, colonIdx).trim();
+                var toStr = line.substring(colonIdx + 1).trim();
+                if (fromStr && toStr) {
+                    var match = fromStr.match(/^\/(.+)\/([gim]*)$/);
+                    if (match) {
+                        try {
+                            rules.push({ from: new RegExp(match[1], match[2]), to: toStr, label: fromStr });
+                        } catch(e) {}
+                    }
                 }
             }
+        }
 
-            const placeholders = {};
-            let placeholderIndex = 0;
-            const protectedSentence = sentenceWithEffects.replace(whitelistRegex, (match) => {
-                const placeholder = `__WHITELIST_${placeholderIndex}__`;
-                placeholders[placeholder] = match;
-                placeholderIndex++;
-                return placeholder;
+        if (rules.length === 0) {
+            resultEl.textContent = '→ No valid grammar rules found. Add some rules above.';
+            resultEl.className = 'gh-test-result hint';
+            matchedEl.innerHTML = '';
+            return;
+        }
+
+        // Apply rules and track matches
+        var current = testText;
+        var matchedRules = [];
+        var allApplied = true;
+
+        for (var r = 0; r < rules.length; r++) {
+            var rule = rules[r];
+            var before = current;
+            current = current.replace(rule.from, rule.to);
+            if (current !== before) {
+                matchedRules.push({ label: rule.label, from: before, to: current, result: current });
+            }
+        }
+
+        // Show result
+        resultEl.textContent = current;
+        resultEl.className = 'gh-test-result';
+
+        // Show which rules matched
+        var matchedHtml = '';
+        if (matchedRules.length === 0) {
+            matchedHtml = '<span class="no-match">⚠ No rules matched the test text</span>';
+        } else {
+            matchedHtml = '✅ ' + matchedRules.length + ' rule(s) matched: ';
+            for (var m = 0; m < matchedRules.length; m++) {
+                var mr = matchedRules[m];
+                matchedHtml += '<span title="' + escHtml(mr.from) + ' → ' + escHtml(mr.to) + '">' + escHtml(mr.label) + '</span>';
+            }
+        }
+        matchedEl.innerHTML = matchedHtml;
+    }
+
+    // Debounced update
+    var testTimer = null;
+    function scheduleTest() {
+        clearTimeout(testTimer);
+        testTimer = setTimeout(runTest, 100);
+    }
+
+    grammarTa.addEventListener('input', scheduleTest);
+    testInput.addEventListener('input', scheduleTest);
+
+    // Run initial test
+    setTimeout(runTest, 200);
+}
+
+//  Grammar Helper (That shi was too hard)
+
+var GRAMMAR_TEMPLATES = [
+    { label: '___ will ___', find: '___ will ___', replace: '$1 ga $2' },
+    { label: '___ want to ___', find: '___ want to ___', replace: '$1 wa $2' },
+    { label: '___ is ___', find: '___ is ___', replace: '$1 wa $2' },
+    { label: '___ don\'t', find: "___ don't", replace: '$1 nai' },
+    { label: '___ can\'t', find: "___ can't", replace: '$1 dekinai' },
+    { label: 'this is', find: 'this is', replace: 'kore wa' },
+    { label: 'that is', find: 'that is', replace: 'sore wa' },
+    { label: 'yes', find: 'yes', replace: 'sou da' },
+    { label: 'no', find: 'no', replace: 'iie' },
+];
+
+function initGrammarHelper() {
+    // Guard against duplicate initialization (event listener leak)
+    if (window._ghInited) return;
+    window._ghInited = true;
+
+    var container = document.getElementById('ghTemplates');
+    container.innerHTML = '';
+    GRAMMAR_TEMPLATES.forEach(function(t) {
+        var btn = document.createElement('button');
+        btn.textContent = t.label;
+        btn.title = 'Find: "' + t.find + '" → "' + t.replace + '"';
+        btn.addEventListener('click', function() {
+            var line = buildGrammarLine(t.find, t.replace);
+            appendToGrammar(line);
+        });
+        container.appendChild(btn);
+    });
+
+    // Builder preview
+    var findInput = document.getElementById('ghFind');
+    var replaceInput = document.getElementById('ghReplace');
+    var preview = document.getElementById('ghPreview');
+    var addBtn = document.getElementById('ghAddBtn');
+
+    function updatePreview() {
+        var find = findInput.value.trim();
+        var replace = replaceInput.value.trim();
+        if (!find || !replace) {
+            preview.innerHTML = '<span style="color:#ccc">Type find & replace above to preview</span>';
+            addBtn.disabled = true;
+            return;
+        }
+        var result = buildGrammarLine(find, replace);
+        var parts = result.split(': ');
+        preview.innerHTML = '<span class="gh-regex">' + escHtml(parts[0]) + '</span><span class="gh-arrow"> → </span><span class="gh-replace">' + escHtml(parts[1] || '') + '</span>';
+        addBtn.disabled = false;
+    }
+
+    findInput.addEventListener('input', updatePreview);
+    replaceInput.addEventListener('input', updatePreview);
+
+    addBtn.addEventListener('click', function() {
+        var find = findInput.value.trim();
+        var replace = replaceInput.value.trim();
+        if (!find || !replace) return;
+        var line = buildGrammarLine(find, replace);
+        appendToGrammar(line);
+        findInput.value = '';
+        replaceInput.value = '';
+        updatePreview();
+    });
+
+    updatePreview();
+}
+
+function buildGrammarLine(find, replace) {
+    // Convert natural language pattern to regex
+    // ___ becomes capturing group (\w+)
+    // Words get \b boundaries
+    // Spaces become \s+
+    var escaped = '';
+    var captureCount = 0;
+    var i = 0;
+    while (i < find.length) {
+        if (find.substring(i, i+3) === '___') {
+            captureCount++;
+            escaped += '(\\w+)';
+            i += 3;
+        } else {
+            var ch = find[i];
+            // Escape regex special characters
+            if ('\\^$.|?*+/()[]{}'.indexOf(ch) !== -1) {
+                escaped += '\\' + ch;
+            } else if (ch === ' ') {
+                escaped += '\\s+';
+            } else {
+                escaped += ch;
+            }
+            i++;
+        }
+    }
+
+    // Add \b around whole pattern
+    var pattern = '\\b' + escaped + '\\b';
+    var flags = 'gi';
+    var regexStr = '/' + pattern + '/' + flags;
+    return regexStr + ': ' + replace;
+}
+
+function appendToGrammar(line) {
+    var ta = document.getElementById('ef_grammar');
+    var current = ta.value.trim();
+    if (current) {
+        ta.value = current + '\n' + line;
+    } else {
+        ta.value = line;
+    }
+    // Trigger input event for any listeners
+    var evt = document.createEvent('Event');
+    evt.initEvent('input', true, false);
+    ta.dispatchEvent(evt);
+}
+
+function escHtml(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// Editor event listeners
+document.getElementById('editorCloseBtn').addEventListener('click', closeEditor);
+document.getElementById('editorCancelBtn').addEventListener('click', closeEditor);
+document.getElementById('editorSaveBtn').addEventListener('click', saveEditor);
+document.getElementById('editorDeleteBtn').addEventListener('click', deleteEditorChar);
+
+// Init grammar helper when editor opens
+var origOpenEditor = openEditor;
+openEditor = function(id) {
+    origOpenEditor(id);
+    initGrammarHelper();
+    // Reset guard for setupGrammarLiveTest (it's called once per editor open via timer)
+    setTimeout(setupGrammarLiveTest, 50);
+};
+
+// Close modal on overlay click
+document.getElementById('editorModal').addEventListener('click', function(e) {
+    if (e.target === this) closeEditor();
+});
+document.getElementById('manageModal').addEventListener('click', function(e) {
+    if (e.target === this) closeManage();
+});
+
+// ---- Add / Manage / Import / Export ----
+
+document.getElementById('addCharBtn').addEventListener('click', function() { openEditor(null); });
+
+document.getElementById('manageBtn').addEventListener('click', openManage);
+
+function openManage() {
+    var list = document.getElementById('manageList');
+    list.innerHTML = '';
+    var all = getAllProfiles();
+    all.forEach(function(ch) {
+        var item = document.createElement('div');
+        item.className = 'manage-item';
+        var builtinTag = ch._builtin ? '<span class="builtin-tag">built-in</span>' : '';
+        item.innerHTML = '<div class="item-name">' + ch.name + ' <span style="color:#999;font-size:0.85em">(' + ch.series + ')</span> ' + builtinTag + '</div>';
+        var actionsDiv = document.createElement('div');
+        actionsDiv.className = 'item-actions';
+        if (!ch._builtin) {
+            var editBtn = document.createElement('button');
+            editBtn.textContent = 'Edit';
+            editBtn.addEventListener('click', function() { closeManage(); openEditor(ch.id); });
+            actionsDiv.appendChild(editBtn);
+            var delBtn = document.createElement('button');
+            delBtn.className = 'danger';
+            delBtn.textContent = 'Delete';
+            delBtn.addEventListener('click', function() {
+                if (confirm('Delete ' + ch.name + '?')) {
+                    for (var i = 0; i < userProfiles.length; i++) {
+                        if (userProfiles[i].id === ch.id) { userProfiles.splice(i, 1); break; }
+                    }
+                    saveUserProfiles(userProfiles);
+                    if (activeChar && activeChar.id === ch.id) { activeChar = null; badge.className = 'char-badge'; badge.textContent = 'Select a character'; }
+                    openManage();
+                    renderButtons();
+                }
+            });
+            actionsDiv.appendChild(delBtn);
+        }
+        item.appendChild(actionsDiv);
+        list.appendChild(item);
+    });
+    document.getElementById('manageModal').classList.add('open');
+}
+
+function closeManage() {
+    document.getElementById('manageModal').classList.remove('open');
+    renderButtons();
+}
+
+document.getElementById('manageCloseBtn').addEventListener('click', closeManage);
+document.getElementById('manageDoneBtn').addEventListener('click', closeManage);
+
+// Import / Export
+
+document.getElementById('exportBtn').addEventListener('click', function() {
+    var data = JSON.stringify(userProfiles, null, 2);
+    var blob = new Blob([data], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'character_profiles_' + new Date().toISOString().slice(0, 10) + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+});
+
+document.getElementById('importBtn').addEventListener('click', function() {
+    document.getElementById('importFileInput').click();
+});
+
+document.getElementById('importFileInput').addEventListener('change', function(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+        try {
+            var imported = JSON.parse(ev.target.result);
+            if (!Array.isArray(imported)) throw new Error('Not an array');
+            // Validate basic structure
+            var valid = imported.every(function(p) { return p.name && p.firstPerson; });
+            if (!valid) throw new Error('Invalid character format');
+
+            // Merge with existing: new characters are added, existing ones are overwritten by id
+            var existingIds = {};
+            userProfiles.forEach(function(p) { existingIds[p.id] = true; });
+
+            imported.forEach(function(p) {
+                p._builtin = false;
+                if (!p.id) p.id = 'user_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+                if (existingIds[p.id]) {
+                    // Overwrite
+                    for (var i = 0; i < userProfiles.length; i++) {
+                        if (userProfiles[i].id === p.id) { userProfiles[i] = p; break; }
+                    }
+                } else {
+                    userProfiles.push(p);
+                }
             });
 
-            let processedSentence = protectedSentence
-                .replace(/[lr]/g, 'w')
-                .replace(/Na/g, 'Nya').replace(/na/g, 'nya')
-                .replace(/Ne/g, 'Nye').replace(/ne/g, 'nye')
-                .replace(/Ni/g, 'Nyi').replace(/ni/g, 'nyi')
-                .replace(/No/g, 'Nyo').replace(/no/g, 'nyo')
-                .replace(/Nu/g, 'Nyu').replace(/nu/g, 'nyu')
-                .replace(/\b(girl)\b/gi, 'girlyy')
-                .replace(/\b(perfect)\b/gi, 'purrfect')
-                .replace(/\b(me)\b/gi, 'mew')
-                .replace(/\b(hi|hello|hey)\b/gi, 'haii~');
-            
-            for (const placeholder in placeholders) {
-                processedSentence = processedSentence.replace(placeholder, placeholders[placeholder]);
-            }
-
-            finalResult += processedSentence + punctuation + ' ';
-            if (useEmojis) {
-                finalResult += moodEmoji + ' ';
-            }
+            saveUserProfiles(userProfiles);
+            renderButtons();
+            alert('Imported ' + imported.length + ' character(s).');
+        } catch (err) {
+            alert('Import failed: ' + err.message);
         }
-        
-        return finalResult.replace(/ +/g, ' ').trim();
-    }
-    
-    function translateText() {
-        const inputElement = document.getElementById('input');
-        if (!inputElement) return;
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+});
 
-        const input = inputElement.value;
-        const output = document.getElementById('output');
-        const useEmojis = document.getElementById('useEmojis').checked;
-        
-        const translated = aiCatgirlTranslator(input, useEmojis);
-        
-        output.textContent = translated;
-        output.style.animation = 'none';
-        void output.offsetWidth;
-        output.style.animation = 'bounce 0.5s';
-    }
+// Guide
 
-    function copyText() {
-        const output = document.getElementById('output');
-        navigator.clipboard.writeText(output.textContent).then(() => {
-            const btn = document.querySelector('.copy-btn');
-            const originalText = btn.textContent;
-            btn.textContent = 'Copied! 💖';
-            setTimeout(() => { btn.textContent = originalText; }, 2000);
-        }).catch(err => {
-            console.error('Failed to copy text:', err);
-        });
-    }
-    
-    document.addEventListener('DOMContentLoaded', function() {
-        const inputElement = document.getElementById('input');
-        
-        if (inputElement) {            
-		    inputElement.addEventListener('input', translateText);
-        }
+document.getElementById('guideBtn').addEventListener('click', function() {
+    document.getElementById('guideModal').classList.add('open');
+});
 
-        const emojiCheckbox = document.getElementById('useEmojis');
-        if (emojiCheckbox) {
-            emojiCheckbox.addEventListener('change', translateText);
-        }
+function closeGuide() {
+    document.getElementById('guideModal').classList.remove('open');
+}
 
-        translateText();
-    });
+document.getElementById('guideCloseBtn').addEventListener('click', closeGuide);
+document.getElementById('guideDoneBtn').addEventListener('click', closeGuide);
+document.getElementById('guideModal').addEventListener('click', function(e) {
+    if (e.target === this) closeGuide();
+});
+
+renderButtons();
+selectChar('hoshino');
 </script>
 </body>
 </html>
