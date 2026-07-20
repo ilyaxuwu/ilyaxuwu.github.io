@@ -1,584 +1,3407 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tampermonkey Script Security Analyzer</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="no-referrer">
+  <title>SandScript Analyzer</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(125deg, #0f2027, #203a43, #2c5364);
-            color: #e9e9e9;
-            min-height: 100vh;
-            padding: 20px;
-            position: relative;
-            overflow-x: hidden;
-        }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', system-ui, sans-serif;
+      background: #f5f5f7;
+      color: #1a1a1a;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
 
-        .stars {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            pointer-events: none;
-        }
+    .app {
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 48px 24px 64px;
+    }
 
-        .star {
-            position: absolute;
-            background-color: white;
-            border-radius: 50%;
-            animation: twinkle linear infinite;
-        }
+    header {
+      margin-bottom: 48px;
+      text-align: center;
+    }
 
-        @keyframes twinkle {
-            0%, 100% { opacity: 0.2; }
-            50% { opacity: 1; }
-        }
+    header h1 {
+      font-size: 1.875rem;
+      font-weight: 600;
+      letter-spacing: -0.025em;
+      color: #111;
+      margin-bottom: 8px;
+    }
 
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            background: rgba(13, 25, 42, 0.8);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        }
+    header p {
+      font-size: 0.9375rem;
+      color: #666;
+      max-width: 480px;
+      margin: 0 auto;
+    }
 
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
 
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            background: linear-gradient(90deg, #ff7e5f, #feb47b);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
 
-        .subtitle {
-            font-size: 1.1rem;
-            color: #a0a0a0;
-        }
+    .input-area {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      transition: border-color 0.2s;
+    }
 
-        .input-section {
-            margin-bottom: 25px;
-        }
+    .input-area:focus-within {
+      border-color: #2563eb;
+    }
 
-        .file-upload-container {
-            margin-bottom: 20px;
-            text-align: center;
-        }
+    textarea {
+      width: 100%;
+      height: 240px;
+      padding: 16px;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      font-family: 'SF Mono', 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+      font-size: 0.8125rem;
+      line-height: 1.5;
+      color: #1a1a1a;
+      background: #fafafa;
+      resize: vertical;
+      transition: border-color 0.2s, background 0.2s;
+    }
 
-        .file-upload-label {
-            display: inline-block;
-            padding: 12px 25px;
-            background: rgba(20, 30, 48, 0.6);
-            border: 2px dashed rgba(255, 255, 255, 0.3);
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
+    textarea:focus {
+      outline: none;
+      border-color: #2563eb;
+      background: #fff;
+    }
 
-        .file-upload-label:hover {
-            border-color: #ff7e5f;
-            background: rgba(255, 126, 95, 0.1);
-        }
+    textarea::placeholder {
+      color: #9ca3af;
+    }
 
-        #fileInput {
-            display: none;
-        }
+    .input-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 16px;
+    }
 
-        .file-name {
-            margin-top: 10px;
-            font-size: 0.9rem;
-            color: #a0a0a0;
-        }
+    .file-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      background: #fff;
+      color: #374151;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
 
-        textarea {
-            width: 100%;
-            height: 200px;
-            background: rgba(20, 30, 48, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            padding: 15px;
-            color: #e9e9e9;
-            font-family: monospace;
-            resize: vertical;
-            margin-bottom: 15px;
-            transition: border-color 0.3s;
-        }
+    .file-btn:hover {
+      border-color: #9ca3af;
+      background: #f9fafb;
+    }
 
-        textarea:focus {
-            outline: none;
-            border-color: #ff7e5f;
-        }
+    #fileInput {
+      display: none;
+    }
 
-        button {
-            background: linear-gradient(90deg, #ff7e5f, #feb47b);
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: transform 0.3s, box-shadow 0.3s;
-            display: block;
-            margin: 0 auto;
-        }
+    .file-name {
+      font-size: 0.8125rem;
+      color: #6b7280;
+      margin-left: 4px;
+    }
 
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255, 126, 95, 0.4);
-        }
+    .spacer {
+      flex: 1;
+    }
 
-        .results {
-            display: none;
-            margin-top: 30px;
-        }
+    .analyze-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 24px;
+      border: none;
+      border-radius: 6px;
+      background: #111;
+      color: #fff;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
 
-        .risk-meter {
-            height: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            margin: 20px 0;
-            overflow: hidden;
-            position: relative;
-        }
+    .analyze-btn:hover {
+      background: #2a2a2a;
+    }
 
-        .risk-level {
-            height: 100%;
-            border-radius: 10px;
-            transition: width 0.5s ease-in-out;
-        }
+    .analyze-btn:active {
+      transform: scale(0.98);
+    }
 
-        .risk-low {
-            background: linear-gradient(90deg, #4ecdc4, #42b883);
-        }
+    .analyze-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
 
-        .risk-medium {
-            background: linear-gradient(90deg, #ffb347, #ffcc33);
-        }
+    .analyze-btn svg {
+      width: 16px;
+      height: 16px;
+    }
 
-        .risk-high {
-            background: linear-gradient(90deg, #ff7e5f, #ff2a00);
-        }
 
-        .risk-text {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: white;
-            font-weight: bold;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-        }
 
-        .results-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
+    .status-bar {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      margin-bottom: 24px;
+      font-size: 0.875rem;
+      color: #374151;
+    }
 
-        .result-card {
-            background: rgba(20, 30, 48, 0.6);
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
+    .status-bar.visible {
+      display: flex;
+    }
 
-        .result-card h3 {
-            margin-bottom: 15px;
-            font-size: 1.2rem;
-            display: flex;
-            align-items: center;
-        }
+    .status-spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid #e5e7eb;
+      border-top-color: #2563eb;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      flex-shrink: 0;
+    }
 
-        .result-card h3 span {
-            margin-right: 10px;
-            font-size: 1.5rem;
-        }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
 
-        .risk-item {
-            margin-bottom: 10px;
-            padding: 10px;
-            border-radius: 5px;
-            background: rgba(255, 255, 255, 0.05);
-        }
+    .status-bar .status-icon {
+      flex-shrink: 0;
+      font-size: 1rem;
+    }
 
-        .low-risk {
-            border-left: 4px solid #4ecdc4;
-        }
+    .status-bar .status-text {
+      flex: 1;
+    }
 
-        .medium-risk {
-            border-left: 4px solid #ffb347;
-        }
+    .status-bar .finding-count {
+      font-size: 0.8125rem;
+      color: #6b7280;
+      background: #f3f4f6;
+      padding: 2px 10px;
+      border-radius: 999px;
+    }
 
-        .high-risk {
-            border-left: 4px solid #ff7e5f;
-        }
 
-        .risk-count {
-            font-size: 2rem;
-            font-weight: bold;
-            text-align: center;
-            margin: 10px 0;
-        }
 
-        .risk-label {
-            text-align: center;
-            font-size: 0.9rem;
-            color: #a0a0a0;
-        }
+    .progress-track {
+      width: 100%;
+      height: 4px;
+      background: #e5e7eb;
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
 
-        .detected-items {
-            margin-top: 20px;
-            max-height: 200px;
-            overflow-y: auto;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
-            padding: 10px;
-            font-family: monospace;
-            font-size: 0.9rem;
-        }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #2563eb, #3b82f6, #60a5fa);
+      border-radius: 2px;
+      width: 0%;
+      transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
 
-        .detected-item {
-            padding: 5px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
+    .progress-fill.indeterminate {
+      width: 40%;
+      animation: progressIndeterminate 1.2s ease-in-out infinite;
+    }
 
-        footer {
-            text-align: center;
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            color: #a0a0a0;
-            font-size: 0.9rem;
-        }
+    @keyframes progressIndeterminate {
+      0% { transform: translateX(-100%); width: 40%; }
+      50% { transform: translateX(150%); width: 60%; }
+      100% { transform: translateX(350%); width: 40%; }
+    }
 
-        .credits {
-            margin-top: 10px;
-            font-size: 0.9rem;
-            color: #ff7e5f;
-        }
-    </style>
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.6875rem;
+      color: #6b7280;
+      margin-top: 3px;
+    }
+
+    .progress-text {
+      font-size: 0.6875rem;
+      color: #6b7280;
+      margin-top: 3px;
+    }
+
+
+
+    .results {
+      display: none;
+    }
+
+    .results.visible {
+      display: block;
+    }
+
+    .risk-summary {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .risk-badge {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 20px;
+      border-radius: 10px;
+      flex: 1;
+      min-width: 200px;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+    }
+
+    .risk-badge .risk-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .risk-dot.safe { background: #22c55e; }
+    .risk-dot.low { background: #22c55e; }
+    .risk-dot.medium { background: #eab308; }
+    .risk-dot.high { background: #ef4444; }
+    .risk-dot.critical { background: #dc2626; }
+
+    .risk-badge .risk-label {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: #111;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .risk-badge .risk-detail {
+      font-size: 0.75rem;
+      color: #6b7280;
+    }
+
+    .stat-cards {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .stat-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 12px 18px;
+      min-width: 90px;
+      text-align: center;
+    }
+
+    .stat-card .stat-num {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #111;
+    }
+
+    .stat-card .stat-label {
+      font-size: 0.6875rem;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-top: 2px;
+    }
+
+
+
+    .findings-section {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .findings-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      border-bottom: 1px solid #e5e7eb;
+      background: #fafafa;
+    }
+
+    .findings-header h3 {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #111;
+    }
+
+    .findings-header .count {
+      font-size: 0.75rem;
+      color: #6b7280;
+      background: #f3f4f6;
+      padding: 2px 10px;
+      border-radius: 999px;
+    }
+
+    .findings-log {
+      max-height: 400px;
+      overflow-y: auto;
+      padding: 8px;
+    }
+
+    .finding-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-size: 0.8125rem;
+      line-height: 1.45;
+      transition: background 0.15s;
+      border-bottom: 1px solid #f3f4f6;
+    }
+
+    .finding-item:last-child {
+      border-bottom: none;
+    }
+
+    .finding-item:hover {
+      background: #f9fafb;
+    }
+
+    .finding-icon {
+      flex-shrink: 0;
+      font-size: 0.875rem;
+      width: 20px;
+      text-align: center;
+      margin-top: 1px;
+    }
+
+    .finding-body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .finding-type {
+      font-weight: 600;
+      color: #111;
+    }
+
+    .finding-detail {
+      color: #4b5563;
+      word-break: break-all;
+      font-family: 'SF Mono', 'JetBrains Mono', 'Consolas', monospace;
+      font-size: 0.75rem;
+      margin-top: 2px;
+    }
+
+    .finding-tag {
+      display: inline-block;
+      font-size: 0.625rem;
+      font-weight: 600;
+      padding: 1px 7px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-left: 8px;
+    }
+
+    .tag-safe { background: #dcfce7; color: #166534; }
+    .tag-low { background: #dcfce7; color: #166534; }
+    .tag-medium { background: #fef9c3; color: #854d0e; }
+    .tag-high { background: #fee2e2; color: #991b1b; }
+    .tag-critical { background: #fecaca; color: #7f1d1d; }
+
+    .finding-threat {
+      margin-top: 4px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.71875rem;
+      font-weight: 500;
+    }
+
+    .threat-high { background: #fef2f2; color: #991b1b; border-left: 3px solid #ef4444; }
+    .threat-medium { background: #fffbeb; color: #854d0e; border-left: 3px solid #eab308; }
+    .threat-low { background: #f0fdf4; color: #166534; border-left: 3px solid #22c55e; }
+
+
+
+    .empty-state {
+      text-align: center;
+      padding: 32px 16px;
+      color: #6b7280;
+    }
+
+    .empty-state p {
+      font-size: 0.875rem;
+    }
+
+
+
+    footer {
+      text-align: center;
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    footer p {
+      font-size: 0.8125rem;
+      color: #9ca3af;
+      margin-bottom: 2px;
+    }
+
+    footer .credit {
+      font-size: 0.8125rem;
+      color: #2563eb;
+      margin-top: 8px;
+    }
+
+
+
+    .findings-log::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    .findings-log::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .findings-log::-webkit-scrollbar-thumb {
+      background: #d1d5db;
+      border-radius: 999px;
+    }
+
+
+
+    @media (max-width: 640px) {
+      .app { padding: 24px 16px 48px; }
+      header h1 { font-size: 1.5rem; }
+      .input-actions { flex-wrap: wrap; }
+      .risk-summary { flex-direction: column; }
+      .analyze-btn { width: 100%; justify-content: center; }
+    }
+
+
+    .url-fetch-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .url-fetch-row input[type="url"] {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 0.8125rem;
+      font-family: 'SF Mono', 'JetBrains Mono', 'Consolas', monospace;
+      color: #1a1a1a;
+      background: #fafafa;
+      transition: border-color 0.2s, background 0.2s;
+      outline: none;
+      min-width: 0;
+    }
+
+    .url-fetch-row input[type="url"]:focus {
+      border-color: #2563eb;
+      background: #fff;
+    }
+
+    .url-fetch-row input[type="url"]::placeholder {
+      color: #9ca3af;
+    }
+
+    .fetch-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 8px 16px;
+      border: 1px solid #2563eb;
+      border-radius: 6px;
+      background: #2563eb;
+      color: #fff;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .fetch-btn:hover {
+      background: #1d4ed8;
+    }
+
+    .fetch-btn:active {
+      transform: scale(0.97);
+    }
+
+    .fetch-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .fetch-error {
+      color: #dc2626;
+      font-size: 0.75rem;
+      padding: 4px 0;
+      display: none;
+    }
+
+    .fetch-error.visible {
+      display: block;
+    }
+
+
+
+    .debug-bar {
+      display: none;
+      margin-bottom: 12px;
+      padding: 8px 12px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      font-family: 'SF Mono', 'JetBrains Mono', monospace;
+      font-size: 0.6875rem;
+      color: #475569;
+      max-height: 200px;
+      overflow-y: auto;
+      transition: all 0.2s;
+    }
+
+    .debug-bar.visible {
+      display: block;
+    }
+
+    .debug-bar::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .debug-bar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 999px;
+    }
+
+    #debugToggleBtn.active {
+      background: #e0f2fe;
+      border-color: #38bdf8;
+      color: #0284c7;
+    }
+  </style>
 </head>
 <body>
-    <div class="stars" id="stars"></div>
-    
-    <div class="container">
-        <header>
-            <h1>Tampermonkey Script Security Analyzer</h1>
-            <p class="subtitle">Detect potentially dangerous patterns in userscript code</p>
-        </header>
-        
-        <div class="input-section">
-            <div class="file-upload-container">
-                <label for="fileInput" class="file-upload-label">
-                    📁 Upload .js or .txt file or drag & drop here
-                </label>
-                <input type="file" id="fileInput" accept=".js,.txt">
-                <div class="file-name" id="fileName"></div>
-            </div>
-            
-            <textarea id="scriptInput" placeholder="Or paste your Tampermonkey script here for analysis..."></textarea>
-            <button id="analyzeBtn">Analyze Script</button>
-        </div>
-        
-        <div class="results" id="resultsSection">
-            <h2>Security Analysis Results</h2>
-            
-            <div class="risk-meter">
-                <div class="risk-level" id="riskLevel"></div>
-                <div class="risk-text" id="riskText">Low Risk</div>
-            </div>
-            
-            <div class="results-grid">
-                <div class="result-card">
-                    <h3><span>🔍</span> Detected Patterns</h3>
-                    <div class="risk-item low-risk">
-                        <div class="risk-count" id="lowRiskCount">0</div>
-                        <div class="risk-label">Low Risk Patterns</div>
-                    </div>
-                    <div class="risk-item medium-risk">
-                        <div class="risk-count" id="mediumRiskCount">0</div>
-                        <div class="risk-label">Medium Risk Patterns</div>
-                    </div>
-                    <div class="risk-item high-risk">
-                        <div class="risk-count" id="highRiskCount">0</div>
-                        <div class="risk-label">High Risk Patterns</div>
-                    </div>
-                </div>
-                
-                <div class="result-card">
-                    <h3><span>⚠️</span> Risk Summary</h3>
-                    <div id="riskSummary">
-                        No significant risks detected.
-                    </div>
-                </div>
-                
-                <div class="result-card">
-                    <h3><span>📋</span> Detected Items</h3>
-                    <div class="detected-items" id="detectedItems">
-                        No suspicious patterns detected.
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <footer>
-            <p>This tool analyzes Tampermonkey scripts for potentially dangerous patterns.</p>
-            <p>It is not a complete security solution - always review scripts manually.</p>
-            <p>Risks may not be completely accurate, only analyzes items that may cause security problems.</p>
-            <div class="credits">
-                This project has been made by Liyaa Aka Ilyax
-            </div>
-        </footer>
+
+<div class="app">
+  <header>
+    <h1>SandScript Analyzer</h1>
+    <p>Execute suspicious scripts in an isolated sandbox and observe their real behavior — no regex, no guessing.</p>
+  </header>
+
+  <div class="input-area">
+    <textarea id="scriptInput" placeholder="Paste a Tampermonkey / userscript here…"></textarea>
+
+    <div class="url-fetch-row">
+      <input type="url" id="fetchUrlInput" placeholder="Paste script URL (.user.js, GitHub raw, etc.)" value="">
+      <button class="fetch-btn" id="fetchBtn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        Fetch
+      </button>
+    </div>
+    <div class="fetch-error" id="fetchError"></div>
+
+    <div class="fake-url-row" style="display:flex;align-items:center;gap:10px;margin-bottom:12px;padding:8px 12px;border-radius:6px;font-size:0.8125rem;color:#374151;background:#f0fdf4;border:1px solid #bbf7d0">
+      <span style="font-size:0.875rem">🌐</span>
+      <span style="font-weight:500;color:#166534">Auto-detected URL:</span>
+      <code id="detectedUrl" style="flex:1;padding:4px 8px;border-radius:4px;font-family:'SF Mono','JetBrains Mono',monospace;font-size:0.75rem;color:#166534;background:#dcfce7;">https://discord.com/channels/@me</code>
+      <span style="color:#6b7280;font-size:0.7rem">(auto-detected from script)</span>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            createStars();
-            
-            const analyzeBtn = document.getElementById('analyzeBtn');
-            const fileInput = document.getElementById('fileInput');
-            const fileName = document.getElementById('fileName');
-            const scriptInput = document.getElementById('scriptInput');
-            
-            analyzeBtn.addEventListener('click', analyzeScript);
-            
-            fileInput.addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    fileName.textContent = `Selected file: ${file.name}`;
-                    
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        scriptInput.value = e.target.result;
-                    };
-                    reader.readAsText(file);
-                }
-            });
-            
-            const dropZone = document.querySelector('.file-upload-label');
-            dropZone.addEventListener('dragover', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                this.style.borderColor = '#ff7e5f';
-                this.style.background = 'rgba(255, 126, 95, 0.2)';
-            });
-            
-            dropZone.addEventListener('dragleave', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                this.style.borderColor = 'rgba(255, 255, 255, 0.3)';
-                this.style.background = 'rgba(20, 30, 48, 0.6)';
-            });
-            
-            dropZone.addEventListener('drop', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                this.style.borderColor = 'rgba(255, 255, 255, 0.3)';
-                this.style.background = 'rgba(20, 30, 48, 0.6)';
-                
-                const files = e.dataTransfer.files;
-                if (files.length) {
-                    fileInput.files = files;
-                    const event = new Event('change', { bubbles: true });
-                    fileInput.dispatchEvent(event);
-                }
-            });
-            
-            function createStars() {
-                const starsContainer = document.getElementById('stars');
-                const starsCount = 150;
-                
-                for (let i = 0; i < starsCount; i++) {
-                    const star = document.createElement('div');
-                    star.classList.add('star');
-                    
-                    const size = Math.random() * 3;
-                    star.style.width = `${size}px`;
-                    star.style.height = `${size}px`;
-                    
-                    star.style.left = `${Math.random() * 100}%`;
-                    star.style.top = `${Math.random() * 100}%`;
-                    
-                    star.style.animationDuration = `${Math.random() * 3 + 2}s`;
-                    star.style.animationDelay = `${Math.random() * 2}s`;
-                    
-                    starsContainer.appendChild(star);
-                }
+    <div class="input-actions">
+      <label for="fileInput" class="file-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Upload file
+      </label>
+      <input type="file" id="fileInput" accept=".js,.txt,.user.js">
+      <span class="file-name" id="fileName"></span>
+      <div class="spacer"></div>
+      <button class="analyze-btn" id="analyzeBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Run in Sandbox
+      </button>
+      <button id="debugToggleBtn" style="display:inline-flex;align-items:center;gap:4px;padding:8px 12px;border:1px solid #d1d5db;border-radius:6px;background:#fff;color:#6b7280;font-size:0.75rem;cursor:pointer;transition:all 0.15s" title="Toggle debug panel">
+        🐛
+      </button>
+    </div>
+  </div>
+
+  <div class="status-bar" id="statusBar">
+    <div class="status-spinner" id="statusSpinner"></div>
+    <span class="status-text" id="statusText">Preparing sandbox…</span>
+    <span class="finding-count" id="findingCount">0 findings</span>
+    <div class="progress-track" id="progressTrack" style="display:none">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+  </div>
+
+  <div class="debug-bar" id="debugBar" style="display:none;margin-bottom:12px;padding:8px 12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;font-family:'SF Mono','JetBrains Mono',monospace;font-size:0.6875rem;color:#475569;max-height:200px;overflow-y:auto">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+      <span style="font-weight:600;color:#334155;font-size:0.75rem">🐛 Debug Log</span>
+      <span style="flex:1"></span>
+      <span id="debugCount" style="font-size:0.625rem;color:#94a3b8">0 entries</span>
+      <button id="debugClearBtn" style="padding:2px 6px;border:1px solid #cbd5e1;border-radius:4px;background:#fff;font-size:0.625rem;cursor:pointer">Clear</button>
+    </div>
+    <div id="debugContent"></div>
+  </div>
+
+    <div class="results" id="resultsSection">
+    <div class="risk-summary" id="riskSummary"></div>
+
+    <div class="source-url-row" id="sourceUrlRow" style="display:none;align-items:center;gap:8px;padding:8px 14px;margin-bottom:12px;border-radius:8px;font-size:0.75rem;color:#374151;background:#eff6ff;border:1px solid #bfdbfe">
+      <span style="font-size:0.875rem">📦</span>
+      <span style="font-weight:500;color:#1e40af">Source:</span>
+      <code id="sourceUrlDisplay" style="flex:1;padding:3px 8px;border-radius:4px;font-family:'SF Mono','JetBrains Mono',monospace;font-size:0.6875rem;color:#1e40af;background:#dbeafe;word-break:break-all"></code>
+      <span style="color:#6b7280;font-size:0.65rem">(fetched from URL)</span>
+    </div>
+
+    <div class="findings-section">
+      <div class="findings-header">
+        <h3>Runtime Behavior Log</h3>
+        <span class="count" id="logCount">0 events</span>
+      </div>
+      <div class="findings-log" id="findingsLog">
+        <div class="empty-state"><p>Waiting for execution results…</p></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>Scripts run inside a sandboxed iframe with <code>allow-scripts</code> only — no network, no storage, no parent access.</p>
+    <p>All observed API calls are intercepted and reported. Nothing actually executes outside the sandbox.</p>
+    <div class="credit">Built by Liyaa Aka Ilyax</div>
+  </footer>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const scriptInput = document.getElementById('scriptInput');
+  const fileInput = document.getElementById('fileInput');
+  const fileName = document.getElementById('fileName');
+  const analyzeBtn = document.getElementById('analyzeBtn');
+  const statusBar = document.getElementById('statusBar');
+  const statusText = document.getElementById('statusText');
+  const statusSpinner = document.getElementById('statusSpinner');
+  const findingCount = document.getElementById('findingCount');
+  const resultsSection = document.getElementById('resultsSection');
+  const riskSummary = document.getElementById('riskSummary');
+  const findingsLog = document.getElementById('findingsLog');
+  const logCount = document.getElementById('logCount');
+  const detectedUrl = document.getElementById('detectedUrl');
+  const fetchUrlInput = document.getElementById('fetchUrlInput');
+  const fetchBtn = document.getElementById('fetchBtn');
+  const fetchError = document.getElementById('fetchError');
+
+  let findings = [];
+  let sandboxIframe = null;
+  let allTargetUrls = [];
+  let _progressTimer = null;
+  let _currentFetchUrl = '';
+
+
+  let _multiUrlIndex = 0;
+  let _multiUrlTotal = 0;
+  let _multiUrlRunning = false;
+  let _urlCompleted = false;
+
+
+  var _debugMode = true;
+  var _debugLogs = [];
+  var _debugContentEl = null;
+  var _debugCountEl = null;
+
+  function debug(msg, data) {
+    if (!_debugMode) return;
+    var timestamp = new Date().toISOString().slice(11, 23);
+    var prefix = '[SandScript]';
+    var logMsg;
+    if (data !== undefined) {
+      console.log(prefix, msg, data);
+      logMsg = msg + ' ' + JSON.stringify(data).slice(0, 200);
+    } else {
+      console.log(prefix, msg);
+      logMsg = msg;
+    }
+    _debugLogs.push({ t: timestamp, m: logMsg });
+    if (_debugLogs.length > 200) _debugLogs.splice(0, _debugLogs.length - 200);
+
+    if (!_debugContentEl) _debugContentEl = document.getElementById('debugContent');
+    if (!_debugCountEl) _debugCountEl = document.getElementById('debugCount');
+    if (_debugContentEl && _debugCountEl) {
+      var entry = document.createElement('div');
+      entry.style.cssText = 'padding:1px 0;line-height:1.4;border-bottom:1px solid #f1f5f9';
+      entry.innerHTML = '<span style="color:#94a3b8">' + timestamp + '</span> <span style="color:#334155">' + escapeHtml(logMsg).slice(0, 300) + '</span>';
+      _debugContentEl.appendChild(entry);
+      _debugContentEl.scrollTop = _debugContentEl.scrollHeight;
+      _debugCountEl.textContent = _debugLogs.length + ' entries';
+    }
+  }
+
+
+  function setProgress(pct, label) {
+    var fill = document.getElementById('progressFill');
+    var track = document.getElementById('progressTrack');
+    if (!fill) return;
+    if (pct === -1) {
+
+      fill.className = 'progress-fill indeterminate';
+      fill.style.width = '';
+    } else {
+      fill.className = 'progress-fill';
+      fill.style.width = Math.min(100, Math.max(0, pct)) + '%';
+    }
+    if (label) { statusText.textContent = label; }
+  }
+
+
+
+  scriptInput.addEventListener('input', function() {
+    var code = this.value.trim();
+    if (code) {
+      var url = autoDetectFakeUrl(code);
+      if (url) detectedUrl.textContent = url;
+    } else {
+      detectedUrl.textContent = 'https://discord.com/channels/@me';
+    }
+
+    if (_currentFetchUrl) {
+      _currentFetchUrl = '';
+      document.getElementById('sourceUrlRow').style.display = 'none';
+    }
+  });
+
+
+
+  var CORS_PROXIES = [
+    { url: 'https://corsproxy.io/?url=', json: false },
+    { url: 'https://api.allorigins.win/raw?url=', json: false },
+    { url: 'https://api.codetabs.com/v1/proxy?quest=', json: false }
+  ];
+  function fetchScriptFromUrl(url) {
+    if (!url) {
+      fetchError.textContent = 'Please enter a URL.';
+      fetchError.classList.add('visible');
+      return Promise.reject('No URL');
+    }
+
+    try {
+      var u = new URL(url);
+      if (!u.protocol.startsWith('http')) throw new Error('Only http/https URLs');
+
+      if (u.hostname === 'greasyfork.org' && !url.endsWith('.user.js') && !url.endsWith('.js')) {
+
+        var cleanUrl = url.split('?')[0].split('#')[0].replace(/\/code$/, '').replace(/\/$/, '');
+        url = cleanUrl + '.user.js';
+        u = new URL(url);
+      }
+      if (u.hostname === 'github.com' && u.pathname.indexOf('/raw/') === -1) {
+
+        url = url.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
+        u = new URL(url);
+      }
+      if (u.hostname === 'gist.github.com') {
+
+        url = url.replace('gist.github.com', 'gist.githubusercontent.com') + '/raw';
+        u = new URL(url);
+      }
+    } catch(e) {
+      fetchError.textContent = 'Invalid URL: ' + e.message;
+      fetchError.classList.add('visible');
+      return Promise.reject(e);
+    }
+
+    fetchError.classList.remove('visible');
+    fetchBtn.disabled = true;
+    fetchBtn.textContent = 'Fetching…';
+
+    function attemptFetch(proxies) {
+      var proxy = proxies[0];
+      var fetchUrl = proxy ? (proxy.url + encodeURIComponent(url)) : url;
+
+      return fetch(fetchUrl, { mode: 'cors' }).then(function(resp) {
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        return resp.text().then(function(text) {
+
+          if (proxy && proxy.json) {
+            try {
+              var parsed = JSON.parse(text);
+              return parsed.contents || parsed.body || parsed.data || text;
+            } catch(e) {
+              return text;
             }
-            
-            function analyzeScript() {
-                const scriptCode = document.getElementById('scriptInput').value;
-                if (!scriptCode.trim()) {
-                    alert('Please paste a script or upload a file to analyze');
-                    return;
-                }
-                
-                const results = {
-                    lowRisk: 0,
-                    mediumRisk: 0,
-                    highRisk: 0,
-                    detectedItems: []
-                };
-                
-                const patterns = [
-                    { pattern: /\/\/\s*include\s+\*/g, risk: 'high', description: 'Wildcard include pattern' },
-                    { pattern: /api\./gi, risk: 'medium', description: 'API call detected' },
-                    { pattern: /eval\(/gi, risk: 'high', description: 'eval() function usage' },
-                    { pattern: /document\.cookie/gi, risk: 'medium', description: 'Cookie access' },
-                    { pattern: /localStorage/gi, risk: 'medium', description: 'LocalStorage access' },
-                    { pattern: /XMLHttpRequest/gi, risk: 'medium', description: 'XMLHttpRequest usage' },
-                    { pattern: /fetch\(/gi, risk: 'medium', description: 'Fetch API usage' },
-                    { pattern: /\.innerHTML\s*=/gi, risk: 'medium', description: 'innerHTML manipulation' },
-                    { pattern: /script\.src\s*=/gi, risk: 'high', description: 'External script injection' },
-                    { pattern: /atob\(/gi, risk: 'low', description: 'Base64 decoding' },
-                    { pattern: /btoa\(/gi, risk: 'low', description: 'Base64 encoding' },
-                    { pattern: /setTimeout\(/gi, risk: 'low', description: 'setTimeout usage' },
-                    { pattern: /setInterval\(/gi, risk: 'low', description: 'setInterval usage' },
-                    { pattern: /new Function\(/gi, risk: 'high', description: 'Dynamic function creation' },
-                    { pattern: /\.replace\(.*\/.*\/.*\)/gi, risk: 'medium', description: 'Regex replacement' },
-                    { pattern: /window\.open\(/gi, risk: 'medium', description: 'Window popup' },
-                    { pattern: /\.onload\s*=/gi, risk: 'low', description: 'Onload event handler' },
-                    { pattern: /\.onerror\s*=/gi, risk: 'low', description: 'Onerror event handler' },
-                    { pattern: /\.addEventListener\(.*message/gi, risk: 'medium', description: 'Message event listener' },
-                    { pattern: /postMessage\(/gi, risk: 'medium', description: 'Post message usage' }
-                ];
-                
-                patterns.forEach(item => {
-                    const matches = scriptCode.match(item.pattern);
-                    if (matches) {
-                        results.detectedItems.push({
-                            pattern: item.description,
-                            count: matches.length,
-                            risk: item.risk
-                        });
-                        
-                        if (item.risk === 'low') results.lowRisk += matches.length;
-                        else if (item.risk === 'medium') results.mediumRisk += matches.length;
-                        else if (item.risk === 'high') results.highRisk += matches.length;
-                    }
-                });
-                
-                const obfuscationPatterns = [
-                    { pattern: /\\x[0-9a-f]{2}/gi, risk: 'high', description: 'Hex escape sequences' },
-                    { pattern: /\\u[0-9a-f]{4}/gi, risk: 'high', description: 'Unicode escape sequences' },
-                    { pattern: /\[.*\].*\[.*\].*\(/gi, risk: 'high', description: 'Complex obfuscation pattern' },
-                    { pattern: /\(function\(.*\).*\(.*\)\)/gi, risk: 'medium', description: 'IIFE pattern' }
-                ];
-                
-                obfuscationPatterns.forEach(item => {
-                    const matches = scriptCode.match(item.pattern);
-                    if (matches) {
-                        results.detectedItems.push({
-                            pattern: item.description,
-                            count: matches.length,
-                            risk: item.risk
-                        });
-                        
-                        if (item.risk === 'low') results.lowRisk += matches.length;
-                        else if (item.risk === 'medium') results.mediumRisk += matches.length;
-                        else if (item.risk === 'high') results.highRisk += matches.length;
-                    }
-                });
-                
-                displayResults(results);
-            }
-            
-            function displayResults(results) {
-                document.getElementById('lowRiskCount').textContent = results.lowRisk;
-                document.getElementById('mediumRiskCount').textContent = results.mediumRisk;
-                document.getElementById('highRiskCount').textContent = results.highRisk;
-                
-                const totalRisks = results.lowRisk + results.mediumRisk + results.highRisk;
-                const riskLevel = document.getElementById('riskLevel');
-                const riskText = document.getElementById('riskText');
-                
-                if (totalRisks === 0) {
-                    riskLevel.className = 'risk-level risk-low';
-                    riskLevel.style.width = '10%';
-                    riskText.textContent = 'No Risks';
-                } else {
-                    const highRiskPercent = (results.highRisk / totalRisks) * 100;
-                    const mediumRiskPercent = (results.mediumRisk / totalRisks) * 100;
-                    const lowRiskPercent = (results.lowRisk / totalRisks) * 100;
-                    
-                    if (results.highRisk > 0) {
-                        riskLevel.className = 'risk-level risk-high';
-                        riskLevel.style.width = `${Math.min(highRiskPercent * 2, 100)}%`;
-                        riskText.textContent = 'High Risk';
-                    } else if (results.mediumRisk > 0) {
-                        riskLevel.className = 'risk-level risk-medium';
-                        riskLevel.style.width = `${Math.min(mediumRiskPercent * 2, 100)}%`;
-                        riskText.textContent = 'Medium Risk';
-                    } else {
-                        riskLevel.className = 'risk-level risk-low';
-                        riskLevel.style.width = `${Math.min(lowRiskPercent * 2, 100)}%`;
-                        riskText.textContent = 'Low Risk';
-                    }
-                }
-                
-                const detectedItemsContainer = document.getElementById('detectedItems');
-                detectedItemsContainer.innerHTML = '';
-                
-                if (results.detectedItems.length === 0) {
-                    detectedItemsContainer.textContent = 'No suspicious patterns detected.';
-                } else {
-                    results.detectedItems.forEach(item => {
-                        const div = document.createElement('div');
-                        div.className = 'detected-item';
-                        div.innerHTML = `<strong>${item.pattern}</strong>: ${item.count} instances (${item.risk} risk)`;
-                        detectedItemsContainer.appendChild(div);
-                    });
-                }
-                
-                const riskSummary = document.getElementById('riskSummary');
-                if (totalRisks === 0) {
-                    riskSummary.textContent = 'No significant risks detected in the script.';
-                } else {
-                    let summaryText = '';
-                    if (results.highRisk > 0) {
-                        summaryText += `Found ${results.highRisk} high-risk patterns. `;
-                    }
-                    if (results.mediumRisk > 0) {
-                        summaryText += `Found ${results.mediumRisk} medium-risk patterns. `;
-                    }
-                    if (results.lowRisk > 0) {
-                        summaryText += `Found ${results.lowRisk} low-risk patterns. `;
-                    }
-                    
-                    if (results.highRisk > 5) {
-                        summaryText += 'This script appears to be highly suspicious.';
-                    } else if (results.highRisk > 0) {
-                        summaryText += 'This script contains potentially dangerous code.';
-                    } else if (results.mediumRisk > 5) {
-                        summaryText += 'This script contains several medium-risk patterns.';
-                    } else {
-                        summaryText += 'This script appears to be relatively safe.';
-                    }
-                    
-                    riskSummary.textContent = summaryText;
-                }
-                
-                document.getElementById('resultsSection').style.display = 'block';
-            }
+          }
+          return text;
         });
-    </script>
+      }).catch(function(err) {
+        if (proxies.length > 1) {
+          return attemptFetch(proxies.slice(1));
+        }
+        throw err;
+      });
+    }
+
+    return attemptFetch([null].concat(CORS_PROXIES)).then(function(content) {
+      fetchBtn.disabled = false;
+      fetchBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> Fetch';
+
+      if (!content || content.length < 10) {
+        fetchError.textContent = 'Fetched content is too short or empty.';
+        fetchError.classList.add('visible');
+        return;
+      }
+
+      scriptInput.value = content;
+      _currentFetchUrl = url;
+      fileName.textContent = url.split('/').pop().split('?')[0].split('#')[0];
+
+      var detected = autoDetectFakeUrl(content);
+      if (detected) detectedUrl.textContent = detected;
+
+      runAnalysis();
+    }).catch(function(err) {
+      fetchBtn.disabled = false;
+      fetchBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> Fetch';
+      fetchError.textContent = 'Failed to fetch: ' + err.message + '. Try pasting the script manually, or use a CORS browser extension to enable cross-origin fetches.';
+      fetchError.classList.add('visible');
+    });
+  }
+
+  fetchBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    fetchScriptFromUrl(fetchUrlInput.value.trim());
+  });
+
+  fetchUrlInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      fetchBtn.click();
+    }
+  });
+
+
+
+  fileInput.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    fileName.textContent = file.name;
+    _currentFetchUrl = '';
+    document.getElementById('sourceUrlRow').style.display = 'none';
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      scriptInput.value = e.target.result;
+    };
+    reader.readAsText(file);
+  });
+
+
+
+  const inputArea = document.querySelector('.input-area');
+  inputArea.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    this.style.borderColor = '#2563eb';
+  });
+  inputArea.addEventListener('dragleave', function(e) {
+    e.preventDefault();
+    this.style.borderColor = '#e5e7eb';
+  });
+  inputArea.addEventListener('drop', function(e) {
+    e.preventDefault();
+    this.style.borderColor = '#e5e7eb';
+    const files = e.dataTransfer.files;
+    if (files.length) {
+      fileInput.files = files;
+      fileInput.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+  });
+
+
+
+
+
+
+  function GM_convert2RegExp(pattern, forceGlob) {
+    var s = String(pattern);
+    if (!forceGlob && s.length >= 2 && s[0] === '/' && s[s.length - 1] === '/') {
+      return new RegExp(s.substring(1, s.length - 1), 'i');
+    }
+    var res = '^';
+    for (var i = 0; i < s.length; i++) {
+      switch (s[i]) {
+        case '*': res += '.*'; break;
+        case '.': case '?': case '^': case '$': case '+':
+        case '{': case '}': case '[': case ']': case '|':
+        case '(': case ')': case '\\': res += '\\' + s[i]; break;
+        case ' ': break;
+        default: res += s[i]; break;
+      }
+    }
+    return new RegExp(res + '$', 'i');
+  }
+
+
+  var _validProtocols = ['http:', 'https:', 'ftp:', 'file:'];
+  var _REG_HOST = /^(?:\*\.)?[^*\/]+$|^\*$|^$/;
+  var _REG_PARTS = new RegExp('^([a-z*]+:|\\*:)
+
+  function greasemonkeyMatchPattern(pattern) {
+    if (pattern === '<all_urls>') {
+      return { _all: true, doMatch: function() { return true; } };
+    }
+
+    var m = pattern.match(_REG_PARTS);
+    if (!m) return null;
+
+    var protocol = m[1], host = m[2], path = m[3];
+    if (protocol !== '*:' && _validProtocols.indexOf(protocol) === -1) return null;
+    if (!host && protocol !== 'file:') return null;
+    if (host && protocol === 'file:') return null;
+    if (!_REG_HOST.test(host || '')) return null;
+    if (path[0] !== '/') return null;
+
+    var hostExpr;
+    if (host) {
+      hostExpr = new RegExp('^' +
+        host.replace(/\./g, '\\.').replace(/^\*$/, '.*')
+            .replace('*\\.', '(.*\\.)?') + '$', 'i');
+    } else {
+      hostExpr = /^$/;
+    }
+
+    var pathExpr = GM_convert2RegExp(path, true);
+
+    return {
+      _all: false, _protocol: protocol,
+      doMatch: function(url) {
+        if (_validProtocols.indexOf(url.protocol) === -1) return false;
+        if (this._all) return true;
+        if (this._protocol !== '*:' && this._protocol !== url.protocol) return false;
+        var p = url.pathname + url.search;
+        return hostExpr.test(url.hostname) && pathExpr.test(p);
+      }
+    };
+  }
+
+
+  function testClude(glob, url) {
+    if (glob === '*') return true;
+    return GM_convert2RegExp(glob, false).test(url.href);
+  }
+
+
+  function testMatch(matchPattern, url) {
+    var mp = (typeof matchPattern === 'string') ? greasemonkeyMatchPattern(matchPattern) : matchPattern;
+    if (!mp) return false;
+    return mp.doMatch(url);
+  }
+
+
+  function runsOn(url, includes, matches, excludes) {
+    try {
+      if (typeof url === 'string') url = new URL(url);
+    } catch(e) { return false; }
+    if (url.protocol !== 'http:' && url.protocol !== 'https:' &&
+        url.protocol !== 'file:' && !url.href.startsWith('about:blank')) return false;
+
+    excludes = excludes || [];
+    for (var i = 0; i < excludes.length; i++) {
+      if (testClude(excludes[i], url)) return false;
+    }
+
+    includes = includes || [];
+    for (var j = 0; j < includes.length; j++) {
+      if (testClude(includes[j], url)) return true;
+    }
+
+    matches = matches || [];
+    for (var k = 0; k < matches.length; k++) {
+      if (testMatch(matches[k], url)) return true;
+    }
+
+    return false;
+  }
+
+
+
+  function patternToTestUrl(pattern) {
+
+    if (pattern === '<all_urls>') return 'https://example.com/test';
+
+    if (pattern === '*') return 'https://example.com/';
+
+    var mp = greasemonkeyMatchPattern(pattern);
+    if (mp) {
+      var scheme = mp._protocol.replace('*', 'https');
+
+      var parts = pattern.match(_REG_PARTS);
+      if (parts) {
+        var host = parts[2] || 'example.com';
+        var path = parts[3] || '/';
+        if (host === '*') host = 'example.com';
+        if (host && host.indexOf('*.') === 0) host = 'sub.' + host.slice(2);
+        path = path.replace(/\/\*/g, '/test').replace(/\.\*/g, '.test');
+        if (path.indexOf('*') >= 0) path = path.replace(/\*/g, 'test');
+        if (path === '/') path = '/';
+        return scheme + '
+      }
+    }
+
+    var parts = pattern.match(/^([a-z*]+:)\/\/([^/]+)?(\/.*)?$/i);
+    if (!parts) return null;
+
+    var scheme = parts[1].replace('*', 'https');
+    var host = parts[2] || 'example.com';
+    var path = parts[3] || '/';
+
+    if (host === '*') host = 'example.com';
+    if (host && host.indexOf('*.') === 0) host = 'sub.' + host.slice(2);
+
+    path = path.replace(/\/\*/g, '/test').replace(/\.\*/g, '.test');
+    if (path.indexOf('*') >= 0) path = path.replace(/\*/g, 'test');
+    if (path === '/') path = '/';
+
+    return scheme + '
+  }
+
+
+
+  function getScriptTargetUrls(script) {
+    var includePatterns = [];
+    var matchPatterns = [];
+
+    var lines = script.split('\n');
+    debug('Parsing ' + lines.length + ' lines for @include/@match patterns');
+    for (var li = 0; li < lines.length; li++) {
+      var l = lines[li].replace(/^[\t\s]*\/\
+
+      var incMatch = l.match(/^@include[\t\s]+(.*)/i);
+      if (incMatch) {
+        var val = incMatch[1].trim();
+        if (val) {
+          includePatterns.push(val);
+          debug('Found @include pattern: "' + val + '" (line ' + (li+1) + ')');
+        }
+      }
+
+      var matchMatch2 = l.match(/^@match[\t\s]+(.*)/i);
+      if (matchMatch2) {
+        var val2 = matchMatch2[1].trim();
+        if (val2) {
+          matchPatterns.push(val2);
+          debug('Found @match pattern: "' + val2 + '" (line ' + (li+1) + ')');
+        }
+      }
+    }
+
+    var specificUrls = [];
+    var hasProtocolWildcard = false;
+
+    function addPattern(p) {
+      var url = patternToTestUrl(p);
+      debug('  Converting pattern "' + p + '" → URL: ' + (url || 'null'));
+      if (url) {
+        var isWildcard = (url === 'https://example.com/' || url === 'http://example.com/');
+        if (!isWildcard) {
+          specificUrls.push(url);
+        } else {
+          hasProtocolWildcard = true;
+        }
+      }
+    }
+
+    includePatterns.forEach(addPattern);
+    matchPatterns.forEach(addPattern);
+
+
+    if (includePatterns.length === 0 && matchPatterns.length === 0 &&
+        script.indexOf('==UserScript==') !== -1) {
+      debug('No @include/@match found but script has ==UserScript== header (defaults to @include *)');
+    }
+
+    debug('URL extraction complete — ' + specificUrls.length + ' specific URL(s), ' + includePatterns.length + ' include(s), ' + matchPatterns.length + ' match(es), protocolWildcard=' + hasProtocolWildcard);
+    if (specificUrls.length > 0) {
+      debug('  Test URLs: ' + specificUrls.join(', '));
+    }
+
+    return {
+      urls: specificUrls,
+      includes: includePatterns,
+      matches: matchPatterns,
+      hasProtocolWildcard: hasProtocolWildcard
+    };
+  }
+
+
+
+  function autoDetectFakeUrl(script) {
+
+    var patterns = getScriptTargetUrls(script);
+    if (patterns.urls.length > 0) {
+
+      return patterns.urls[0];
+    }
+    if (patterns.hasProtocolWildcard) {
+
+    }
+
+    var locMatch = script.match(/location\.href\s*===\s*['"]([^'"]+)['"]/);
+    if (locMatch) return locMatch[1];
+    var locMatch2 = script.match(/location\.href\s*\.startsWith\s*\(\s*['"]([^'"]+)['"]/);
+    if (locMatch2) return locMatch2[1];
+
+    var urlPatterns = script.match(/https?:\/\/[a-zA-Z0-9.-]+\/[a-zA-Z0-9._~:/?#@!$&'()*+,;%=-]+/g);
+    var priorityDomains = ['discord.com', 'youtube.com', 'google.com', 'github.com',
+      'twitter.com', 'x.com', 'reddit.com', 'facebook.com', 'instagram.com',
+      'tiktok.com', 'netflix.com', 'spotify.com', 'twitch.tv'];
+
+    if (urlPatterns) {
+      for (var d = 0; d < priorityDomains.length; d++) {
+        for (var u = 0; u < urlPatterns.length; u++) {
+          if (urlPatterns[u].indexOf(priorityDomains[d]) !== -1) {
+            var best = '';
+            for (var v = 0; v < urlPatterns.length; v++) {
+              if (urlPatterns[v].indexOf(priorityDomains[d]) !== -1 &&
+                  urlPatterns[v].length > best.length) {
+                best = urlPatterns[v];
+              }
+            }
+            return best;
+          }
+        }
+      }
+      var longest = '';
+      for (var w = 0; w < urlPatterns.length; w++) {
+        if (urlPatterns[w].length > longest.length) {
+          longest = urlPatterns[w];
+        }
+      }
+      if (longest) return longest;
+    }
+
+    if (patterns.hasProtocolWildcard) return 'https://example.com/';
+
+    return 'https://discord.com/channels/@me';
+  }
+
+
+  function detectStorageKeys(script) {
+    var keys = [];
+
+    var dotAccess = script.match(/localStorage\.(\w+)/g);
+
+    var bracketAccess = script.match(/localStorage\[\s*['"]([^'"]+)['"]\s*\]/g);
+
+    var getItemAccess = script.match(/localStorage\.getItem\s*\(\s*['"]([^'"]+)['"]\s*\)/g);
+
+    if (dotAccess) {
+      for (var i = 0; i < dotAccess.length; i++) {
+        var m = dotAccess[i].match(/\.(\w+)/);
+        if (m && ['length', 'key', 'getItem', 'setItem', 'removeItem', 'clear'].indexOf(m[1]) === -1) {
+          if (keys.indexOf(m[1]) === -1) keys.push(m[1]);
+        }
+      }
+    }
+    if (bracketAccess) {
+      for (var j = 0; j < bracketAccess.length; j++) {
+        var m2 = bracketAccess[j].match(/['"]([^'"]+)['"]/);
+        if (m2 && keys.indexOf(m2[1]) === -1) keys.push(m2[1]);
+      }
+    }
+    if (getItemAccess) {
+      for (var k = 0; k < getItemAccess.length; k++) {
+        var m3 = getItemAccess[k].match(/['"]([^'"]+)['"]/);
+        if (m3 && keys.indexOf(m3[1]) === -1) keys.push(m3[1]);
+      }
+    }
+    return keys;
+  }
+
+
+
+  function buildSandboxHtml(userScript, fakeUrl, storageSeeds) {
+
+    var storageSeedsEscaped = JSON.stringify(storageSeeds || []);
+    const escaped = JSON.stringify(userScript);
+    const fakeUrlEscaped = JSON.stringify(fakeUrl || 'https://discord.com/channels/@me');
+
+    return `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"></head><body>
+<script>
+
+
+var _findings = [];
+function _log(cat, data) {
+  var f = { cat: cat, time: Date.now(), data: data };
+  _findings.push(f);
+  try { window.parent.postMessage({ t: 'f', f: f }, '*'); } catch(e) {}
+}
+
+
+var _seedData = {
+  token: 'mfa.YOUR_FAKE_DISCORD_TOKEN_FOR_TESTING.abc123def456',
+  access_token: 'fake_access_token_for_testing_12345',
+  session: 'fake-session-id-12345',
+  user: '{"id":"12345","username":"TestUser","email":"test@example.com"}',
+  api_key: 'sk-test-fake-api-key-12345'
+};
+
+var _extraKeys = ${storageSeedsEscaped};
+for (var _i = 0; _i < _extraKeys.length; _i++) {
+  if (!_seedData[_extraKeys[_i]]) {
+    _seedData[_extraKeys[_i]] = 'fake_' + _extraKeys[_i] + '_value_for_testing';
+  }
+}
+
+
+window.alert = function(msg) {
+  _log('exec', { api:'alert', message:(''+msg).slice(0,200) });
+};
+window.confirm = function(msg) {
+  _log('exec', { api:'confirm', message:(''+msg).slice(0,200) });
+  return true;
+};
+window.prompt = function(msg, def) {
+  _log('exec', { api:'prompt', message:(''+msg).slice(0,200) });
+  return def || '';
+};
+
+
+
+(function() {
+
+  var _fetch = window.fetch;
+  window.fetch = function(url, opts) {
+    opts = opts || {};
+    var detail = { api:'fetch', url:''+url, method:opts.method||'GET' };
+
+    if (typeof url === 'object' && url !== null) {
+      detail.url = ''+(url.url || url.href || '[Request]');
+      detail.method = url.method || detail.method;
+      if (url.credentials && url.credentials !== 'omit') detail.credentials = url.credentials;
+      if (url.mode) detail.mode = url.mode;
+      if (url.cache && url.cache !== 'default') detail.cache = url.cache;
+      if (url.referrer) detail.referrer = ''+url.referrer;
+      if (url.integrity) detail.integrity = url.integrity.slice(0,50);
+    }
+
+    if (opts.credentials && opts.credentials !== 'omit') {
+      detail.credentials = opts.credentials;
+    }
+
+    if (opts.keepalive) {
+      detail.keepalive = true;
+    }
+
+    if (opts.mode) {
+      detail.mode = opts.mode;
+    }
+
+    if (opts.referrer) {
+      detail.referrer = ''+opts.referrer;
+    }
+    if (opts.referrerPolicy) {
+      detail.referrerPolicy = opts.referrerPolicy;
+    }
+
+    if (opts.cache && opts.cache !== 'default') {
+      detail.cache = opts.cache;
+    }
+
+    if (opts.redirect && opts.redirect !== 'follow') {
+      detail.redirect = opts.redirect;
+    }
+
+    if (opts.integrity) {
+      detail.integrity = opts.integrity.slice(0,50);
+    }
+
+    if (opts.signal && typeof opts.signal === 'object') {
+      detail.signal = true;
+    }
+
+    if (opts.body) {
+      var bodyStr = ''+opts.body;
+      detail.body = bodyStr.slice(0,300);
+      if (typeof opts.body === 'string') {
+        detail.bodyType = 'string';
+      } else if (typeof FormData !== 'undefined' && opts.body instanceof FormData) {
+        detail.bodyType = 'FormData';
+      } else if (typeof URLSearchParams !== 'undefined' && opts.body instanceof URLSearchParams) {
+        detail.bodyType = 'URLSearchParams';
+      } else if (typeof Blob !== 'undefined' && opts.body instanceof Blob) {
+        detail.bodyType = 'Blob';
+      } else if (typeof ArrayBuffer !== 'undefined' && (opts.body instanceof ArrayBuffer || opts.body instanceof Uint8Array)) {
+        detail.bodyType = 'Binary';
+      } else {
+        detail.bodyType = 'object';
+      }
+    }
+    _log('network', detail);
+
+
+    var mockPromise = Promise.reject(new Error('blocked'));
+    mockPromise.catch(function(){});
+    return mockPromise;
+  };
+
+  if (typeof window.Request !== 'undefined') {
+    var _Request = window.Request;
+    window.Request = new Proxy(_Request, {
+      construct: function(t, a) {
+        var url = ''+(a[0]||'');
+        var opts = a[1] || {};
+        _log('network', { api:'Request', url:url, method:opts.method||'GET',
+          credentials:opts.credentials, mode:opts.mode });
+        return new (t.bind.apply(t, [null].concat(a)))();
+      }
+    });
+  }
+
+  if (typeof window.Headers !== 'undefined') {
+    var _Headers = window.Headers;
+    window.Headers = new Proxy(_Headers, {
+      construct: function(t, a) {
+        var headers = new (t.bind.apply(t, [null].concat(a)))();
+        var _origAppend = headers.append.bind(headers);
+        headers.append = function(name, val) {
+          _log('network', { api:'Headers.append', name:''+name, value:(''+val).slice(0,300) });
+          return _origAppend(name, val);
+        };
+        var _origSet = headers.set.bind(headers);
+        headers.set = function(name, val) {
+          _log('network', { api:'Headers.set', name:''+name, value:(''+val).slice(0,300) });
+          return _origSet(name, val);
+        };
+        return headers;
+      }
+    });
+  }
+
+  if (typeof window.AbortController !== 'undefined') {
+    var _AbortController = window.AbortController;
+    window.AbortController = new Proxy(_AbortController, {
+      construct: function(t, a) {
+        _log('network', { api:'AbortController' });
+        return new (t.bind.apply(t, [null].concat(a)))();
+      }
+    });
+  }
+
+  var _XHR = XMLHttpRequest;
+  window.XMLHttpRequest = function() {
+    var xhr = new _XHR();
+    var _open = xhr.open.bind(xhr);
+    xhr.open = function(m, u, a) {
+      xhr.__method = m; xhr.__url = ''+u;
+      _log('network', { api:'xhr', method:m, url:''+u });
+    };
+    var _send = xhr.send.bind(xhr);
+    xhr.send = function(d) {
+      _log('network', { api:'xhr_send', method:xhr.__method, url:xhr.__url,
+        body:d ? (''+d).slice(0,300) : void 0 });
+    };
+    return xhr;
+  };
+
+  var _beacon = navigator.sendBeacon.bind(navigator);
+  navigator.sendBeacon = function(url, data) {
+    _log('network', { api:'beacon', url:''+url,
+      body:data ? (''+data).slice(0,300) : void 0 });
+    return false;
+  };
+
+  var _Image = window.Image;
+  window.Image = new Proxy(_Image, {
+    construct: function(t, a) {
+      var img = new (t.bind.apply(t, [null].concat(a)))();
+      return new Proxy(img, {
+        set: function(o, p, v) {
+          if (p === 'src' && v) _log('network', { api:'image_src', url:''+v });
+          o[p] = v; return true;
+        }
+      });
+    }
+  });
+
+  var _WS = window.WebSocket;
+  window.WebSocket = new Proxy(_WS, {
+    construct: function(t, a) {
+      _log('network', { api:'websocket', url:''+(a[0]||'') });
+      return { readyState:3, close:function(){}, send:function(){},
+        addEventListener:function(){}, removeEventListener:function(){} };
+    }
+  });
+
+  var _ES = window.EventSource;
+  window.EventSource = new Proxy(_ES, {
+    construct: function(t, a) {
+      _log('network', { api:'eventsource', url:''+(a[0]||'') });
+      return { readyState:2, close:function(){}, addEventListener:function(){} };
+    }
+  });
+
+  if (typeof window.RTCPeerConnection !== 'undefined') {
+    var _RTC = window.RTCPeerConnection;
+    window.RTCPeerConnection = new Proxy(_RTC, {
+      construct: function(t, a) {
+        _log('network', { api:'RTCPeerConnection', config:JSON.stringify(a[0]).slice(0,200) });
+        var pc = new (t.bind.apply(t, [null].concat(a)))();
+        var _createOffer = pc.createOffer.bind(pc);
+        pc.createOffer = function() {
+          _log('network', { api:'RTCPeerConnection_createOffer' });
+          return _createOffer();
+        };
+        return pc;
+      }
+    });
+  }
+
+  if (typeof window.BroadcastChannel !== 'undefined') {
+    var _BC = window.BroadcastChannel;
+    window.BroadcastChannel = new Proxy(_BC, {
+      construct: function(t, a) {
+        _log('network', { api:'BroadcastChannel', name:''+(a[0]||'') });
+        return new (t.bind.apply(t, [null].concat(a)))();
+      }
+    });
+  }
+
+  if (typeof window.Worker !== 'undefined') {
+    var _Worker = window.Worker;
+    window.Worker = new Proxy(_Worker, {
+      construct: function(t, a) {
+        _log('network', { api:'Worker', url:''+(a[0]||'') });
+        return { postMessage:function(){}, terminate:function(){},
+          addEventListener:function(){}, removeEventListener:function(){} };
+      }
+    });
+  }
+
+  if (typeof window.SharedWorker !== 'undefined') {
+    var _SW = window.SharedWorker;
+    window.SharedWorker = new Proxy(_SW, {
+      construct: function(t, a) {
+        _log('network', { api:'SharedWorker', url:''+(a[0]||'') });
+        return { port:{ postMessage:function(){}, close:function(){},
+          addEventListener:function(){}, removeEventListener:function(){} } };
+      }
+    });
+  }
+
+  try {
+    if (navigator.serviceWorker) {
+      var _register = navigator.serviceWorker.register.bind(navigator.serviceWorker);
+      navigator.serviceWorker.register = function(url, opts) {
+        _log('network', { api:'ServiceWorker_register', url:''+url });
+        return Promise.reject(new Error('blocked'));
+      };
+    }
+  } catch(e) {}
+})();
+
+
+
+(function() {
+
+  var _cookieVal = '';
+  try {
+    var _desc = Object.getOwnPropertyDescriptor(Document.prototype, 'cookie') ||
+                Object.getOwnPropertyDescriptor(HTMLDocument.prototype, 'cookie');
+    if (_desc && _desc.configurable) {
+      Object.defineProperty(document, 'cookie', {
+        get: function() {
+          _log('storage', { api:'cookie_read', value:_cookieVal||'(empty)' });
+          return _cookieVal;
+        },
+        set: function(v) {
+          _log('storage', { api:'cookie_write', value:v.slice(0,300) });
+          _cookieVal = v;
+        },
+        configurable: true
+      });
+    }
+  } catch(e) {}
+
+  function makeMock(name, seedData) {
+    var _data = seedData || {};
+    var mock = {
+      getItem: function(k) {
+        _log('storage', { api:name+'_get', key:k });
+        return _data[k] || null;
+      },
+      setItem: function(k, v) {
+        _log('storage', { api:name+'_set', key:k, value:(''+v).slice(0,300) });
+        _data[k] = ''+v;
+      },
+      removeItem: function(k) {
+        _log('storage', { api:name+'_remove', key:k });
+        delete _data[k];
+      },
+      clear: function() {
+        _log('storage', { api:name+'_clear' });
+        _data = {};
+      },
+      get length() { return Object.keys(_data).length; },
+      key: function(i) { return Object.keys(_data)[i] || null; }
+    };
+    return mock;
+  }
+
+
+  try { Object.defineProperty(window, 'localStorage', { value: makeMock('localStorage', _seedData), configurable: true }); }
+  catch(e) { try { window.__defineGetter__('localStorage', function() { return makeMock('localStorage', _seedData); }); } catch(e2) {} }
+  try { Object.defineProperty(window, 'sessionStorage', { value: makeMock('sessionStorage', {}), configurable: true }); }
+  catch(e) { try { window.__defineGetter__('sessionStorage', function() { return makeMock('sessionStorage', {}); }); } catch(e2) {} }
+
+  var _idb = window.indexedDB;
+  window.indexedDB = new Proxy(_idb || {}, {
+    get: function(t, p) {
+      if (p === 'open') {
+        return function(name, ver) {
+          _log('storage', { api:'indexedDB_open', db:''+name, version:ver });
+          return { result:null, error:null, onupgradeneeded:null,
+            onsuccess:null, onerror:null, readyState:'done' };
+        };
+      }
+      return t[p];
+    }
+  });
+})();
+
+
+
+(function() {
+  var _eval = window.eval;
+  window.eval = function(code) {
+    _log('exec', { api:'eval', code:(''+code).slice(0,200) });
+    return _eval(code);
+  };
+
+  var _Function = window.Function;
+  window.Function = function() {
+    var args = [].slice.call(arguments);
+    _log('exec', { api:'Function', body:((args[args.length-1])||'').slice(0,200) });
+    return _Function.call(null, ...args);
+  };
+
+  var _st = window.setTimeout;
+  window.setTimeout = function(fn, ms) {
+    if (typeof fn === 'string') {
+      _log('exec', { api:'setTimeout_str', code:fn.slice(0,200) });
+    } else {
+      _log('exec', { api:'setTimeout_fn', delay:ms });
+    }
+    return _st.call(window, fn, ms);
+  };
+
+  var _si = window.setInterval;
+  window.setInterval = function(fn, ms) {
+    if (typeof fn === 'string') {
+      _log('exec', { api:'setInterval_str', code:fn.slice(0,200) });
+    } else {
+      _log('exec', { api:'setInterval_fn', delay:ms });
+    }
+    return _si.call(window, fn, ms);
+  };
+
+  var _is = window.importScripts;
+  window.importScripts = function() {
+    var urls = [].slice.call(arguments);
+    urls.forEach(function(u) { _log('network', { api:'importScripts', url:''+u }); });
+  };
+
+  window.__origFunction = _Function;
+})();
+
+
+
+(function() {
+  var _innerHTML = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML');
+  if (_innerHTML && _innerHTML.configurable) {
+    Object.defineProperty(Element.prototype, 'innerHTML', {
+      get: _innerHTML.get,
+      set: function(v) {
+        _log('dom', { api:'innerHTML', snippet:(''+v).slice(0,200) });
+        return _innerHTML.set.call(this, v);
+      },
+      configurable: true
+    });
+  }
+
+  var _write = document.write.bind(document);
+  document.write = function(html) {
+    _log('dom', { api:'document_write', snippet:(''+html).slice(0,200) });
+  };
+
+  var _writeln = document.writeln.bind(document);
+  document.writeln = function(html) {
+    _log('dom', { api:'document_writeln', snippet:(''+html).slice(0,200) });
+  };
+
+  var _scriptProto = HTMLScriptElement.prototype;
+  var _srcDesc = Object.getOwnPropertyDescriptor(_scriptProto, 'src');
+  if (_srcDesc && _srcDesc.configurable) {
+    Object.defineProperty(_scriptProto, 'src', {
+      get: _srcDesc.get,
+      set: function(v) {
+        _log('network', { api:'script_src', url:''+v });
+        return _srcDesc.set.call(this, v);
+      },
+      configurable: true
+    });
+  }
+})();
+
+
+
+(function() {
+
+  var _geo = navigator.geolocation;
+  if (_geo) {
+    _geo.getCurrentPosition = function(s, e, o) {
+      _log('privacy', { api:'geolocation' });
+      e && e({ code:1, message:'blocked' });
+    };
+    _geo.watchPosition = function(s, e, o) {
+      _log('privacy', { api:'geolocation_watch' });
+      e && e({ code:1, message:'blocked' });
+    };
+  }
+
+  var _media = navigator.mediaDevices;
+  if (_media && _media.getUserMedia) {
+    _media.getUserMedia = function(c) {
+      _log('privacy', { api:'getUserMedia', constraints:JSON.stringify(c).slice(0,200) });
+      return Promise.reject(new Error('blocked'));
+    };
+  }
+
+  var _clip = navigator.clipboard;
+  if (_clip) {
+    ['read','readText','write','writeText'].forEach(function(m) {
+      if (_clip[m]) {
+        var orig = _clip[m].bind(_clip);
+        _clip[m] = function() {
+          _log('privacy', { api:'clipboard_'+m });
+          return Promise.reject(new Error('blocked'));
+        };
+      }
+    });
+  }
+
+
+
+  var _origGetContext = HTMLCanvasElement.prototype.getContext;
+  HTMLCanvasElement.prototype.getContext = function(type, attrs) {
+    var ctx = _origGetContext.call(this, type, attrs);
+    if (!ctx) return ctx;
+
+    if (type === '2d') {
+      var _gID = ctx.getImageData.bind(ctx);
+      ctx.getImageData = function(x, y, w, h) {
+        _log('privacy', { api:'canvas_getImageData', x:x, y:y, w:w, h:h });
+        return _gID(x, y, w, h);
+      };
+      var _tDU = ctx.toDataURL.bind(ctx);
+      ctx.toDataURL = function() {
+        _log('privacy', { api:'canvas_toDataURL' });
+        return _tDU.apply(this, arguments);
+      };
+    }
+
+    if (type && (type.indexOf('webgl') === 0 || type.indexOf('experimental-webgl') === 0)) {
+
+      var _origGetParam = ctx.getParameter.bind(ctx);
+      ctx.getParameter = function(pname) {
+        _log('privacy', { api:'WebGL_getParameter', pname:pname });
+        return _origGetParam(pname);
+      };
+
+      var _origGetExt = ctx.getExtension.bind(ctx);
+      ctx.getExtension = function(name) {
+        _log('privacy', { api:'WebGL_getExtension', name:''+name });
+        return _origGetExt(name);
+      };
+
+      var _origGetSuppExt = ctx.getSupportedExtensions.bind(ctx);
+      ctx.getSupportedExtensions = function() {
+        _log('privacy', { api:'WebGL_getSupportedExtensions' });
+        return _origGetSuppExt();
+      };
+
+      var _origReadPixels = ctx.readPixels.bind(ctx);
+      ctx.readPixels = function(x, y, w, h, fmt, type, pixels) {
+        _log('privacy', { api:'WebGL_readPixels', width:w, height:h });
+        return _origReadPixels(x, y, w, h, fmt, type, pixels);
+      };
+
+      var _origGetPrec = ctx.getShaderPrecisionFormat.bind(ctx);
+      ctx.getShaderPrecisionFormat = function(stype, ptype) {
+        _log('privacy', { api:'WebGL_getShaderPrecision' });
+        return _origGetPrec(stype, ptype);
+      };
+
+      var _origTexImage = ctx.texImage2D.bind(ctx);
+      ctx.texImage2D = function() {
+        _log('privacy', { api:'WebGL_texImage2D' });
+        return _origTexImage.apply(ctx, arguments);
+      };
+
+      var _origGetUniform = ctx.getUniformLocation.bind(ctx);
+      ctx.getUniformLocation = function(prog, name) {
+        _log('privacy', { api:'WebGL_getUniformLocation', name:''+name });
+        return _origGetUniform(prog, name);
+      };
+      var _origGetAttrib = ctx.getAttribLocation.bind(ctx);
+      ctx.getAttribLocation = function(prog, name) {
+        _log('privacy', { api:'WebGL_getAttribLocation', name:''+name });
+        return _origGetAttrib(prog, name);
+      };
+
+      var _origCompileShader = ctx.compileShader.bind(ctx);
+      ctx.compileShader = function(shader) {
+        _log('privacy', { api:'WebGL_compileShader' });
+        return _origCompileShader(shader);
+      };
+
+      var _origCreateShader = ctx.createShader.bind(ctx);
+      ctx.createShader = function(type) {
+        _log('privacy', { api:'WebGL_createShader', type:type === 0x8B31 ? 'fragment' : type === 0x8B30 ? 'vertex' : ''+type });
+        return _origCreateShader(type);
+      };
+    }
+
+    return ctx;
+  };
+
+  var _screenProps = ['width','height','availWidth','availHeight','colorDepth','pixelDepth'];
+  _screenProps.forEach(function(p) {
+    var _desc = Object.getOwnPropertyDescriptor(Screen.prototype, p);
+    if (_desc && _desc.configurable) {
+      try {
+        Object.defineProperty(Screen.prototype, p, {
+          get: function() {
+            _log('privacy', { api:'screen_'+p, value:_desc.get.call(this) });
+            return _desc.get.call(this);
+          },
+          configurable: true
+        });
+      } catch(e) {}
+    }
+  });
+
+  var _navProps = ['deviceMemory','hardwareConcurrency','platform','userAgent','language',
+    'languages','cookieEnabled','doNotTrack','maxTouchPoints','vendor','vendorSub',
+    'productSub','appName','appVersion','appCodeName','oscpu','buildID'];
+  _navProps.forEach(function(p) {
+    var _desc = Object.getOwnPropertyDescriptor(Navigator.prototype, p) ||
+                Object.getOwnPropertyDescriptor(window.navigator, p);
+    if (_desc && _desc.configurable) {
+      try {
+        Object.defineProperty(Navigator.prototype, p, {
+          get: function() {
+            _log('privacy', { api:'navigator_'+p, value:(''+_desc.get.call(this)).slice(0,200) });
+            return _desc.get.call(this);
+          },
+          configurable: true
+        });
+      } catch(e) {}
+    }
+  });
+
+  if (navigator.connection) {
+    var _connProps = ['effectiveType','downlink','rtt','saveData'];
+    _connProps.forEach(function(p) {
+      var _desc = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(navigator.connection), p);
+      if (_desc && _desc.configurable) {
+        try {
+          Object.defineProperty(Object.getPrototypeOf(navigator.connection), p, {
+            get: function() {
+              _log('privacy', { api:'connection_'+p, value:(''+_desc.get.call(this)).slice(0,100) });
+              return _desc.get.call(this);
+            },
+            configurable: true
+          });
+        } catch(e) {}
+      }
+    });
+  }
+
+  var _matchMedia = window.matchMedia.bind(window);
+  window.matchMedia = function(query) {
+    _log('privacy', { api:'matchMedia', query:''+query });
+    return _matchMedia(query);
+  };
+
+  if (window.performance && window.performance.now) {
+    var _now = window.performance.now.bind(window.performance);
+    window.performance.now = function() {
+      _log('privacy', { api:'performance_now' });
+      return _now();
+    };
+  }
+
+  var _rAF = window.requestAnimationFrame.bind(window);
+  window.requestAnimationFrame = function(cb) {
+    _log('privacy', { api:'requestAnimationFrame' });
+    return _rAF(cb);
+  };
+
+  if (navigator.storage && navigator.storage.estimate) {
+    var _est = navigator.storage.estimate.bind(navigator.storage);
+    navigator.storage.estimate = function() {
+      _log('privacy', { api:'storage_estimate' });
+      return _est();
+    };
+  }
+
+  if (navigator.getBattery) {
+    var _getBattery = navigator.getBattery.bind(navigator);
+    navigator.getBattery = function() {
+      _log('privacy', { api:'getBattery' });
+      return _getBattery();
+    };
+  }
+
+  if (typeof window.AudioContext !== 'undefined') {
+    var _AC = window.AudioContext;
+    window.AudioContext = new Proxy(_AC, {
+      construct: function(t, a) {
+        _log('privacy', { api:'AudioContext', sampleRate: a[0] ? a[0].sampleRate : 'default' });
+        var ctx = new (t.bind.apply(t, [null].concat(a)))();
+
+        var _origCreateOsc = ctx.createOscillator.bind(ctx);
+        ctx.createOscillator = function() {
+          _log('privacy', { api:'AudioContext_createOscillator' });
+          var osc = _origCreateOsc();
+
+          if (osc.frequency && osc.frequency.setValueAtTime) {
+            var _origSetFreq = osc.frequency.setValueAtTime.bind(osc.frequency);
+            osc.frequency.setValueAtTime = function(val, time) {
+              _log('privacy', { api:'AudioContext_setFrequency', value:val });
+              return _origSetFreq(val, time);
+            };
+          }
+          return osc;
+        };
+
+        var _origCreateAnalyser = ctx.createAnalyser.bind(ctx);
+        ctx.createAnalyser = function() {
+          _log('privacy', { api:'AudioContext_createAnalyser' });
+          var analyser = _origCreateAnalyser();
+
+          var _origGetFreq = analyser.getFloatFrequencyData.bind(analyser);
+          analyser.getFloatFrequencyData = function(arr) {
+            _log('privacy', { api:'AudioContext_getFrequencyData', type:'float' });
+            return _origGetFreq(arr);
+          };
+          return analyser;
+        };
+
+        var _origCreateScript = ctx.createScriptProcessor.bind(ctx);
+        ctx.createScriptProcessor = function() {
+          _log('privacy', { api:'AudioContext_createScriptProcessor' });
+          return _origCreateScript.apply(ctx, arguments);
+        };
+        return ctx;
+      }
+    });
+  }
+
+  if (typeof window.OfflineAudioContext !== 'undefined') {
+    var _OAC = window.OfflineAudioContext;
+    window.OfflineAudioContext = new Proxy(_OAC, {
+      construct: function(t, a) {
+        _log('privacy', { api:'OfflineAudioContext', channels:a[0], length:a[1], rate:a[2] });
+        return new (t.bind.apply(t, [null].concat(a)))();
+      }
+    });
+  }
+
+  try {
+    var _domainDesc = Object.getOwnPropertyDescriptor(Document.prototype, 'domain') ||
+                       Object.getOwnPropertyDescriptor(HTMLDocument.prototype, 'domain');
+    if (_domainDesc && _domainDesc.configurable) {
+      var _currDomain = document.domain || '';
+      Object.defineProperty(document, 'domain', {
+        get: function() {
+          _log('window', { api:'domain_read', value:_currDomain });
+          return _currDomain;
+        },
+        set: function(v) {
+          _log('window', { api:'domain_set', value:(''+v).slice(0,200), previous:_currDomain });
+          _currDomain = (''+v).slice(0,200);
+          return true;
+        },
+        configurable: true
+      });
+    }
+  } catch(e) {}
+
+  try {
+    if (navigator.userAgentData) {
+
+      if (navigator.userAgentData.getHighEntropyValues) {
+        var _origGetHE = navigator.userAgentData.getHighEntropyValues.bind(navigator.userAgentData);
+        navigator.userAgentData.getHighEntropyValues = function(hints) {
+          _log('privacy', { api:'UAData_getHighEntropyValues', hints:JSON.stringify(hints).slice(0,200) });
+          return _origGetHE(hints);
+        };
+      }
+
+      navigator.userAgentData = new Proxy(navigator.userAgentData, {
+        get: function(target, prop) {
+          if (prop === 'brands' || prop === 'platform' || prop === 'mobile' || prop === 'architecture') {
+            _log('privacy', { api:'UAData_property', property:prop });
+          }
+          return target[prop];
+        }
+      });
+    }
+  } catch(e) {}
+
+  try {
+    if (navigator.plugins && navigator.plugins.length > 0) {
+      var _origPluginItem = navigator.plugins.item.bind(navigator.plugins);
+      navigator.plugins.item = function(idx) {
+        _log('privacy', { api:'plugins_enum', index:idx });
+        return _origPluginItem(idx);
+      };
+      var _origPluginNamedItem = navigator.plugins.namedItem.bind(navigator.plugins);
+      navigator.plugins.namedItem = function(name) {
+        _log('privacy', { api:'plugins_enum', name:''+name });
+        return _origPluginNamedItem(name);
+      };
+    }
+
+    if (navigator.mimeTypes && navigator.mimeTypes.length > 0) {
+      var _origMimeItem = navigator.mimeTypes.item.bind(navigator.mimeTypes);
+      navigator.mimeTypes.item = function(idx) {
+        _log('privacy', { api:'mimeTypes_enum', index:idx });
+        return _origMimeItem(idx);
+      };
+    }
+  } catch(e) {}
+
+})();
+
+
+
+(function() {
+  var _fakeHref = ${fakeUrlEscaped};
+
+  var _fakeLoc;
+  try {
+    _fakeLoc = Object.create(Location.prototype);
+
+    ['ancestorOrigins'].forEach(function(k) {
+      try { _fakeLoc[k] = window.location[k]; } catch(e) {}
+    });
+  } catch(e) {
+    _fakeLoc = {};
+  }
+
+  var _fakeUrlObj;
+  try { _fakeUrlObj = new URL(_fakeHref); } catch(e) {}
+
+  try {
+    Object.defineProperty(_fakeLoc, 'href', {
+      get: function() {
+        _log('window', { api:'location_href_read', value:_fakeHref });
+        return _fakeHref;
+      },
+      set: function(v) {
+        _log('window', { api:'location_href_set', value:''+v });
+        _fakeHref = ''+v;
+      },
+      configurable: true
+    });
+  } catch(e) {}
+
+  _fakeLoc.assign = function(u) {
+    _log('window', { api:'location_assign', url:''+u });
+    _fakeHref = ''+u;
+  };
+  _fakeLoc.replace = function(u) {
+    _log('window', { api:'location_replace', url:''+u });
+    _fakeHref = ''+u;
+  };
+  _fakeLoc.reload = function() {
+    _log('window', { api:'location_reload' });
+  };
+  _fakeLoc.toString = function() { return _fakeHref; };
+
+  if (_fakeUrlObj) {
+    var _props = ['origin','protocol','host','hostname','port','pathname','search','hash'];
+    _props.forEach(function(p) {
+      Object.defineProperty(_fakeLoc, p, {
+        get: function() { return _fakeUrlObj[p]; },
+        configurable: true
+      });
+    });
+  }
+
+  var _overridden = false;
+
+  try {
+    Object.defineProperty(window, 'location', {
+      get: function() { return _fakeLoc; },
+      set: function(v) {
+        _log('window', { api:'location_set', value:''+v });
+        _fakeHref = ''+v;
+        try { _fakeUrlObj = new URL(_fakeHref); } catch(e) {}
+      },
+      configurable: true
+    });
+    _overridden = true;
+  } catch(e) {
+
+    try {
+      window.__defineGetter__('location', function() { return _fakeLoc; });
+      window.__defineSetter__('location', function(v) {
+        _log('window', { api:'location_set', value:''+v });
+        _fakeHref = ''+v;
+      });
+      _overridden = true;
+    } catch(e2) {
+
+      window.__fakeLocation = _fakeLoc;
+    }
+  }
+
+  var _locStore = _fakeLoc;
+  try {
+    Object.defineProperty(window, '__fakeLocation', {
+      get: function() { return _locStore; },
+      set: function(v) {
+        _log('window', { api:'location_set', value:''+v });
+        _locStore.href = ''+v;
+        try { _fakeUrlObj = new URL(_fakeHref); } catch(e) {}
+      },
+      configurable: true
+    });
+  } catch(e) {
+    window.__fakeLocation = _locStore;
+  }
+
+
+
+  function makeStorageProxy(name, seedData) {
+    var t = { _data: seedData || {} };
+
+    t.getItem = function(k) {
+      _log('storage', { api:name+'_get', key:k });
+      return this._data[k] || null;
+    };
+    t.setItem = function(k, v) {
+      _log('storage', { api:name+'_set', key:k, value:(''+v).slice(0,300) });
+      this._data[k] = ''+v;
+    };
+    t.removeItem = function(k) {
+      _log('storage', { api:name+'_remove', key:k });
+      delete this._data[k];
+    };
+    t.clear = function() {
+      _log('storage', { api:name+'_clear' });
+      this._data = {};
+    };
+    t.key = function(i) {
+      return Object.keys(this._data)[i] || null;
+    };
+
+    return new Proxy(t, {
+      get: function(target, p) {
+        if (p === '_data') return target._data;
+        if (p === 'length') return Object.keys(target._data).length;
+        if (typeof p === 'string' && typeof target[p] === 'function') return target[p].bind(target);
+
+        if (typeof p === 'string') {
+          _log('storage', { api:name+'_get', key:p });
+          return target._data[p] || null;
+        }
+        return target[p];
+      },
+      set: function(target, p, v) {
+        if (p === '_data') { target._data = v; return true; }
+        if (typeof p === 'string' && typeof target[p] === 'function') { target[p] = v; return true; }
+
+        if (typeof p === 'string') {
+          _log('storage', { api:name+'_set', key:p, value:(''+v).slice(0,300) });
+          target._data[p] = ''+v; return true;
+        }
+        target[p] = v; return true;
+      }
+    });
+  }
+
+  var _fakeStorage = makeStorageProxy('localStorage', _seedData);
+  var _fakeSession = makeStorageProxy('sessionStorage', {});
+
+  try { Object.defineProperty(window, '__fakeStorage', { value: _fakeStorage, configurable:true, writable:true }); } catch(e) { window.__fakeStorage = _fakeStorage; }
+  try { Object.defineProperty(window, '__fakeSession', { value: _fakeSession, configurable:true, writable:true }); } catch(e) { window.__fakeSession = _fakeSession; }
+})();
+
+
+
+(function() {
+  var _atob = window.atob;
+  window.atob = function(str) {
+    _log('exec', { api:'atob', input:(''+str).slice(0,200) });
+    return _atob(str);
+  };
+  var _btoa = window.btoa;
+  window.btoa = function(str) {
+    _log('exec', { api:'btoa', input:(''+str).slice(0,200) });
+    return _btoa(str);
+  };
+})();
+
+
+
+(function() {
+  var _addEL = EventTarget.prototype.addEventListener;
+  EventTarget.prototype.addEventListener = function(type, handler, opts) {
+    if (typeof type === 'string') {
+      var lower = type.toLowerCase();
+      if (lower === 'keydown' || lower === 'keypress' || lower === 'keyup') {
+        _log('event', { api:'addEventListener', event:lower });
+      }
+      if (lower === 'message') {
+        _log('event', { api:'addEventListener', event:'message' });
+      }
+      if (lower === 'beforeunload' || lower === 'unload') {
+        _log('event', { api:'addEventListener', event:lower });
+      }
+    }
+    return _addEL.call(this, type, handler, opts);
+  };
+})();
+
+
+
+if (typeof WebAssembly !== 'undefined') {
+  var _wasm = WebAssembly;
+  WebAssembly = new Proxy(_wasm, {
+    get: function(t, p) {
+      if (p === 'instantiate' || p === 'instantiateStreaming' || p === 'compile' || p === 'compileStreaming') {
+        _log('wasm', { api:'WebAssembly.'+p });
+      }
+      return t[p];
+    }
+  });
+}
+
+
+
+(function() {
+
+  var _gmValues = {};
+
+  window.GM_getValue = function(key, def) {
+    _log('gm_api', { api:'GM_getValue', key:key });
+    return _gmValues.hasOwnProperty(key) ? _gmValues[key] : def;
+  };
+  window.GM_setValue = function(key, val) {
+    _log('gm_api', { api:'GM_setValue', key:key, value:(''+val).slice(0,300) });
+    _gmValues[key] = val;
+  };
+  window.GM_deleteValue = function(key) {
+    _log('gm_api', { api:'GM_deleteValue', key:key });
+    delete _gmValues[key];
+  };
+  window.GM_listValues = function() {
+    _log('gm_api', { api:'GM_listValues' });
+    return Object.keys(_gmValues);
+  };
+  window.GM_addValueChangeListener = function(name, cb) {
+    _log('gm_api', { api:'GM_addValueChangeListener', name:name });
+    return 0;
+  };
+  window.GM_removeValueChangeListener = function(id) {
+    _log('gm_api', { api:'GM_removeValueChangeListener', id:id });
+  };
+
+  window.GM_addStyle = function(css) {
+    _log('gm_api', { api:'GM_addStyle', css:(''+css).slice(0,200) });
+    var style = document.createElement('style');
+    style.textContent = css;
+    (document.head || document.documentElement).appendChild(style);
+    return style;
+  };
+
+  window.GM_log = function(msg) {
+    _log('gm_api', { api:'GM_log', message:(''+msg).slice(0,300) });
+  };
+
+  window.GM_openInTab = function(url, options) {
+    _log('gm_api', { api:'GM_openInTab', url:''+url, options:JSON.stringify(options) });
+    return { close: function() {} };
+  };
+
+  window.GM_registerMenuCommand = function(name, fn, accessKey) {
+    _log('gm_api', { api:'GM_registerMenuCommand', name:name });
+  };
+
+  window.GM_notification = function(details_or_text, title, image, onClick) {
+    var detail = { api:'GM_notification' };
+    if (typeof details_or_text === 'object' && details_or_text !== null) {
+      detail.text = details_or_text.text;
+      detail.title = details_or_text.title;
+      detail.image = details_or_text.image;
+      if (typeof details_or_text.onclick === 'function') {
+        window.setTimeout(details_or_text.onclick, 100);
+      }
+    } else {
+      detail.text = '' + details_or_text;
+      detail.title = title ? ''+title : '';
+      detail.image = image ? ''+image : '';
+    }
+    _log('gm_api', detail);
+  };
+
+  window.GM_setClipboard = function(data, info) {
+    _log('gm_api', { api:'GM_setClipboard', data:(''+data).slice(0,200) });
+  };
+
+  window.GM_download = function(details) {
+    _log('gm_api', { api:'GM_download',
+      url: (typeof details === 'object') ? ''+details.url : ''+details });
+    return Promise.reject(new Error('blocked'));
+  };
+
+  window.GM_getResourceText = function(name) {
+    _log('gm_api', { api:'GM_getResourceText', name:name });
+    return '';
+  };
+  window.GM_getResourceURL = function(name) {
+    _log('gm_api', { api:'GM_getResourceURL', name:name });
+    return '';
+  };
+  window.GM_getTab = function(cb) {
+    _log('gm_api', { api:'GM_getTab' });
+    if (cb) cb({});
+  };
+  window.GM_saveTab = function(tab) {
+    _log('gm_api', { api:'GM_saveTab' });
+  };
+  window.GM_getTabs = function(cb) {
+    _log('gm_api', { api:'GM_getTabs' });
+    if (cb) cb({});
+  };
+
+
+  window.GM_info = {
+    script: { name:'', namespace:'', version:'', description:'',
+      includes:[], matches:[], excludes:[], grants:[], runAt:'document-end' },
+    scriptMetaStr: '', scriptHandler: 'SandScript', version: '1.0'
+  };
+
+
+  window.GM_xmlhttpRequest = function(details) {
+    _log('gm_api', { api:'GM_xmlhttpRequest',
+      method:details.method || 'GET', url:''+details.url });
+    return { abort: function() {} };
+  };
+
+  window.GM = new Proxy({}, {
+    get: function(t, p) {
+      return function() {
+        var args = [].slice.call(arguments);
+        _log('gm_api', { api:'GM.'+String(p),
+          args:args.map(function(a){return(''+a).slice(0,100);}).join(', ') });
+      };
+    }
+  });
+
+  window.unsafeWindow = window;
+})();
+
+
+
+
+var USER_SCRIPT = ${escaped};
+var _fakeExecUrl = ${fakeUrlEscaped};
+
+try {
+  _log('exec', { api:'exec_start' });
+
+  eval(USER_SCRIPT);
+  _log('exec', { api:'exec_complete' });
+} catch(e) {
+  _log('error', { api:'execution_error', message:e.message, stack:(e.stack||'').slice(0,300) });
+}
+
+
+
+setTimeout(function() {
+  try {
+    window.parent.postMessage({ t:'done', findings:_findings }, '*');
+  } catch(e) {}
+}, 6000);
+
+<\/script>
+</body></html>`;
+  }
+
+
+
+
+
+  function runAnalysis() {
+    var code = scriptInput.value.trim();
+    if (!code) {
+      alert('Paste a script first.');
+      return;
+    }
+
+    if (sandboxIframe) {
+      sandboxIframe.remove();
+      sandboxIframe = null;
+    }
+
+    findings = [];
+    _multiUrlRunning = false;
+    findingsLog.innerHTML = '';
+    resultsSection.classList.remove('visible');
+    statusBar.classList.add('visible');
+    statusSpinner.style.display = 'block';
+    statusText.textContent = 'Preparing sandbox…';
+    findingCount.textContent = '0 findings';
+    analyzeBtn.disabled = true;
+
+    debug('═══ runAnalysis() started ═══');
+    debug('Script length: ' + code.length + ' chars');
+
+    var progressTrack = document.getElementById('progressTrack');
+    var progressFill = document.getElementById('progressFill');
+    progressTrack.style.display = 'block';
+    progressFill.className = 'progress-fill';
+    setProgress(8, 'Scanning @include/@match directives…');
+
+    var patterns = getScriptTargetUrls(code);
+    allTargetUrls = patterns.urls.slice();
+
+    debug('Initial URL count from patterns: ' + allTargetUrls.length);
+
+    if (allTargetUrls.length === 0) {
+      var singleUrl = autoDetectFakeUrl(code);
+      debug('No specific URLs from patterns, autoDetectFakeUrl returned: ' + singleUrl);
+      if (singleUrl) allTargetUrls.push(singleUrl);
+    }
+
+    var beforeDedup = allTargetUrls.length;
+    var seen = {};
+    allTargetUrls = allTargetUrls.filter(function(u) {
+      var key = u.toLowerCase();
+      if (seen[key]) return false;
+      seen[key] = true;
+      return true;
+    });
+    debug('Deduplication: ' + beforeDedup + ' → ' + allTargetUrls.length + ' unique URL(s)');
+    if (allTargetUrls.length > 0) {
+      debug('Final URL list: ' + allTargetUrls.join(', '));
+    }
+
+    _multiUrlTotal = allTargetUrls.length;
+    _multiUrlIndex = 0;
+    debug('Will test ' + _multiUrlTotal + ' URL(s) sequentially');
+
+    var storageKeys = detectStorageKeys(code);
+
+    window.__multiUrlCode = code;
+    window.__multiUrlStorageKeys = storageKeys;
+
+    document.getElementById('detectedUrl').textContent = allTargetUrls[0] || 'N/A';
+
+    runSandboxForUrl(0);
+  }
+
+
+
+  function runSandboxForUrl(idx) {
+    if (idx >= allTargetUrls.length) {
+      debug('═══ All ' + allTargetUrls.length + ' URLs completed — finalizing ═══');
+
+      onAllUrlsComplete();
+      return;
+    }
+
+    if (sandboxIframe) {
+      sandboxIframe.remove();
+      sandboxIframe = null;
+    }
+
+    var code = window.__multiUrlCode || scriptInput.value.trim();
+    var storageKeys = window.__multiUrlStorageKeys || [];
+    var fakeUrl = allTargetUrls[idx];
+    _multiUrlIndex = idx;
+    _multiUrlRunning = true;
+    _urlCompleted = false;
+
+    debug('▶ [' + (idx+1) + '/' + allTargetUrls.length + '] Testing URL: ' + fakeUrl);
+
+    var urlLabel = fakeUrl.replace(/^https?:\/\
+    var pctBase = Math.round((idx / allTargetUrls.length) * 70);
+    setProgress(pctBase + 5, 'Testing URL ' + (idx+1) + '/' + _multiUrlTotal + ': ' + urlLabel);
+
+    var html = buildSandboxHtml(code, fakeUrl, storageKeys);
+
+    sandboxIframe = document.createElement('iframe');
+    sandboxIframe.setAttribute('sandbox', 'allow-scripts');
+    var _sandboxBlob = new Blob([html], { type: 'text/html' });
+    sandboxIframe.src = URL.createObjectURL(_sandboxBlob);
+    sandboxIframe.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;';
+    document.body.appendChild(sandboxIframe);
+
+    var msgHandler = function(event) {
+      if (event.source !== sandboxIframe.contentWindow) return;
+      var msg = event.data;
+      if (!msg || !msg.t) return;
+
+      if (msg.t === 'f' && msg.f) {
+
+        msg.f._url = fakeUrl;
+        findings.push(msg.f);
+        addFinding(msg.f);
+        debug('  ⚡ Finding from URL [' + (idx+1) + '/' + _multiUrlTotal + ']: ' + fakeUrl + ' | ' + msg.f.cat + '/' + (msg.f.data ? msg.f.data.api : '?'));
+        findingCount.textContent = findings.length + ' finding' + (findings.length === 1 ? '' : 's') + ' (URL ' + (idx+1) + '/' + _multiUrlTotal + ')';
+      }
+
+      if (msg.t === 'done') {
+        _urlCompleted = true;
+        window.removeEventListener('message', msgHandler);
+        debug('  ✓ URL [' + (idx+1) + '/' + _multiUrlTotal + '] done — ' + fakeUrl);
+
+        setTimeout(function() {
+          runSandboxForUrl(idx + 1);
+        }, 100);
+      }
+    };
+
+    window.addEventListener('message', msgHandler);
+    debug('  Sandbox iframe created and listening for messages…');
+
+    setTimeout(function() {
+      window.removeEventListener('message', msgHandler);
+      if (_multiUrlRunning && _multiUrlIndex === idx && !_urlCompleted) {
+        debug('  ⚠ TIMEOUT for URL [' + (idx+1) + '/' + _multiUrlTotal + ']: ' + fakeUrl + ' — moving to next');
+
+        setTimeout(function() {
+          runSandboxForUrl(idx + 1);
+        }, 100);
+      }
+    }, 10000);
+  }
+
+
+
+  function onAllUrlsComplete() {
+    _multiUrlRunning = false;
+    debug('═══ onAllUrlsComplete() — finalizing results ═══');
+    debug('Total findings: ' + findings.length + ', URLs tested: ' + _multiUrlTotal);
+
+    var scriptCode = scriptInput.value.trim();
+    var obfSigs = detectObfuscation(scriptCode);
+    var dangerPatterns = detectDangerousPatterns(scriptCode);
+
+    debug('Obfuscation detection: ' + obfSigs.length + ' signature(s) found');
+    debug('Dangerous pattern detection: ' + dangerPatterns.length + ' pattern(s) found');
+
+    obfSigs.forEach(function(sig) {
+      findings.push({ cat: 'static', time: Date.now(), data: { api: 'obfuscation', detail: sig } });
+      debug('  [OBF] ' + sig);
+    });
+
+    dangerPatterns.forEach(function(dp) {
+      findings.push({ cat: 'static', time: Date.now(), data: { api: 'dangerous_pattern', detail: dp.data.detail } });
+      debug('  [DANGER] ' + dp.data.detail);
+    });
+
+    var byUrl = {};
+    findings.forEach(function(f) {
+      var key = f._url || '(unknown)';
+      if (!byUrl[key]) byUrl[key] = 0;
+      byUrl[key]++;
+    });
+    debug('Findings per URL:');
+    for (var u in byUrl) {
+      debug('  ' + u + ': ' + byUrl[u] + ' finding(s)');
+    }
+
+    var sourceUrlRow = document.getElementById('sourceUrlRow');
+    var sourceUrlDisplay = document.getElementById('sourceUrlDisplay');
+    if (_currentFetchUrl && sourceUrlRow && sourceUrlDisplay) {
+      sourceUrlDisplay.textContent = _currentFetchUrl;
+      sourceUrlRow.style.display = 'flex';
+    }
+
+    setProgress(92, 'Running static analysis…');
+
+    var totalStatic = obfSigs.length + dangerPatterns.length;
+    var obsText = totalStatic > 0 ? ' + ' + totalStatic + ' static warning' + (totalStatic === 1 ? '' : 's') : '';
+
+    setTimeout(function() {
+      var urlCount = _multiUrlTotal > 1 ? ' across ' + _multiUrlTotal + ' URLs' : '';
+      setProgress(100, '✓ Analysis complete — ' + findings.length + ' runtime event' + (findings.length === 1 ? '' : 's') + urlCount + obsText);
+
+      statusSpinner.style.display = 'none';
+      analyzeBtn.disabled = false;
+
+      setTimeout(function() {
+        var pt = document.getElementById('progressTrack');
+        if (pt) pt.style.display = 'none';
+      }, 2500);
+    }, 300);
+
+    if (sandboxIframe) {
+      sandboxIframe.remove();
+      sandboxIframe = null;
+    }
+
+    var threat = analyzeThreats(findings);
+
+    renderRiskSummary(threat, findings.length);
+    resultsSection.classList.add('visible');
+
+    var hasStaticFindings = findings.some(function(f) { return f.cat === 'static'; });
+    if (findings.length === 0) {
+      findingsLog.innerHTML = '<div class="empty-state"><p>No API calls were made across ' + _multiUrlTotal + ' tested URL' + (_multiUrlTotal === 1 ? '' : 's') + '. The script appears to be benign or did not execute anything observable.</p></div>';
+    } else if (findings.length > 0 && hasStaticFindings && findings.every(function(f) { return f.cat === 'static' || f.cat === 'exec'; })) {
+
+
+    }
+  }
+
+
+
+
+
+  function addFinding(f) {
+    var empty = findingsLog.querySelector('.empty-state');
+    if (empty) empty.remove();
+
+    var el = document.createElement('div');
+    el.className = 'finding-item';
+
+    var icon = getIcon(f.cat);
+    var label = getLabel(f.cat, f.data);
+
+    var urlTag = '';
+    if (f._url && _multiUrlTotal > 1) {
+      var shortUrl = f._url.replace(/^https?:\/\
+      urlTag = '<span style="display:inline-block;font-size:0.6rem;padding:1px 6px;border-radius:4px;background:#e0f2fe;color:#0369a1;margin-left:4px;font-weight:500">' + escapeHtml(shortUrl) + '</span>';
+    }
+
+    el.innerHTML = '<span class="finding-icon">' + icon + '</span>' +
+      '<div class="finding-body">' +
+      '<span class="finding-type">' + escapeHtml(label.type) + '</span>' +
+      '<span class="finding-tag tag-' + label.risk + '">' + label.risk + '</span>' +
+      urlTag +
+      '<div class="finding-detail">' + escapeHtml(label.detail) + '</div>' +
+      '</div>';
+
+    findingsLog.insertBefore(el, findingsLog.firstChild);
+    logCount.textContent = findings.length + ' event' + (findings.length === 1 ? '' : 's');
+  }
+
+
+
+  function getIcon(cat) {
+    switch (cat) {
+      case 'network': return '🌐';
+      case 'storage': return '💾';
+      case 'exec': return '⚡';
+      case 'dom': return '📄';
+      case 'privacy': return '👁';
+      case 'window': return '🪟';
+      case 'event': return '🔑';
+      case 'gm_api': return '🦍';
+      case 'wasm': return '⚙';
+      case 'static': return '🔍';
+      case 'error': return '❌';
+      default: return '•';
+    }
+  }
+
+
+
+  function getLabel(cat, data) {
+    if (!data) return { type: cat, detail: '', risk: 'low' };
+    var api = data.api || data.type || cat;
+    var detail = '';
+
+    switch (cat) {
+      case 'network':
+        detail = data.method ? data.method + ' ' : '';
+        detail += data.url || '';
+        if (data.body) detail += ' | body: ' + data.body.slice(0, 150);
+        return { type: api.toUpperCase(), detail: detail, risk: 'medium' };
+
+      case 'storage':
+        detail = api;
+        if (data.key) detail += ' key="' + data.key + '"';
+        if (data.value) detail += ' = "' + data.value.slice(0, 150) + '"';
+        return { type: 'STORAGE', detail: detail, risk: 'high' };
+
+      case 'exec':
+        detail = api;
+        if (data.code) detail += ': "' + data.code.slice(0, 150) + '"';
+        if (data.body) detail += ': "' + data.body.slice(0, 150) + '"';
+        return { type: 'CODE EXEC', detail: detail, risk: 'high' };
+
+      case 'dom':
+        detail = api;
+        if (data.snippet) detail += ': "' + data.snippet.slice(0, 150) + '"';
+        return { type: 'DOM', detail: detail, risk: 'medium' };
+
+      case 'privacy':
+        detail = api;
+        if (data.constraints) detail += ': ' + data.constraints;
+        return { type: 'PRIVACY', detail: detail, risk: 'medium' };
+
+      case 'window':
+        detail = api;
+        if (data.url) detail += ' → ' + data.url;
+        if (data.msg) detail += ': "' + data.msg.slice(0, 150) + '"';
+        return { type: 'WINDOW', detail: detail, risk: 'low' };
+
+      case 'event':
+        detail = api;
+        if (data.event) detail += ' (' + data.event + ')';
+        return { type: 'EVENT', detail: detail, risk: 'medium' };
+
+      case 'gm_api':
+        detail = api;
+        if (data.args) detail += '(' + data.args + ')';
+        return { type: 'GM API', detail: detail, risk: 'medium' };
+
+      case 'wasm':
+        detail = api;
+        return { type: 'WASM', detail: detail, risk: 'medium' };
+
+      case 'static':
+        detail = data.detail || api;
+        return { type: 'STATIC ANALYSIS', detail: detail, risk: 'medium' };
+
+      case 'error':
+        detail = data.message || '';
+        return { type: 'ERROR', detail: detail, risk: 'low' };
+
+      default:
+        return { type: api, detail: JSON.stringify(data).slice(0, 200), risk: 'low' };
+    }
+  }
+
+
+
+
+
+  function detectObfuscation(script) {
+    var sigs = [];
+    var varNames = script.match(/[a-zA-Z_$][a-zA-Z0-9_$]*/g) || [];
+    var totalLen = script.length;
+
+    if (/\[\s*(['"])(?:[^'"]{1,10})\1\s*(?:,\s*(['"])(?:[^'"]{1,10})\2\s*){30,}\]/.test(script)) {
+      sigs.push('Large encoded string array detected (30+ short string literals)');
+    }
+
+    var bracketBuiltin = script.match(/\b(?:Object|Function|String|Array|Number|RegExp|Error|Symbol)\s*\[\s*['"]/g);
+    if (bracketBuiltin && bracketBuiltin.length >= 3) {
+      sigs.push('Bracket notation on built-in constructors (' + bracketBuiltin.length + ' occurrences)');
+    }
+
+    var charCodeCalls = (script.match(/\.(?:charCodeAt|fromCharCode|charAt)\s*\(/g) || []).length;
+    if (charCodeCalls >= 5) {
+      sigs.push('Heavy use of charCodeAt/fromCharCode string encoding (' + charCodeCalls + ' calls)');
+    }
+
+    var highEntropy = 0;
+    varNames.forEach(function(v) {
+      if (v.length >= 8) {
+        var unique = v.split('').filter(function(c, i, a) { return a.indexOf(c) === i; }).length;
+        if ((unique / v.length) > 0.7 && /[A-Z]/.test(v) && /[a-z]/.test(v) && /[0-9]/.test(v)) highEntropy++;
+      }
+    });
+    if (highEntropy >= 5) {
+      sigs.push('High-entropy variable names detected (' + highEntropy + ' variables — obfuscation pattern)');
+    }
+
+    var b64Strings = (script.match(/['"][A-Za-z0-9+/]{40,}={0,2}['"]/g) || []).length;
+    if (b64Strings >= 3) {
+      sigs.push('Base64-encoded literals detected (' + b64Strings + ' long base64 strings)');
+    }
+
+    var hexEscapes = (script.match(/\\x[0-9a-fA-F]{2}/g) || []).length;
+    if (hexEscapes >= 20) {
+      sigs.push('Hex escape sequences detected (' + hexEscapes + ' \\xHH codes — packed script pattern)');
+    }
+
+    var radixCalls = (script.match(/\.toString\s*\(\s*3[2-6]\s*\)|parseInt\s*\([^)]+\s*,\s*3[2-6]\s*\)/g) || []).length;
+    if (radixCalls >= 3) {
+      sigs.push('Numeric radix encoding detected (' + radixCalls + ' toString(36)/parseInt calls — obfuscation)');
+    }
+
+    var onlyBracketsChars = script.replace(/[\s\r\n]/g, '');
+    var jsfuckRatio = onlyBracketsChars.replace(/[^\[\]\(\)\!\+]/g, '').length / (onlyBracketsChars.length || 1);
+    if (onlyBracketsChars.length > 500 && jsfuckRatio > 0.85) {
+      sigs.push('JSFuck-style obfuscation detected (' + Math.round(jsfuckRatio * 100) + '% bracket/!+ chars)');
+    }
+
+    var hexKeyAccess = (script.match(/0x[a-fA-F0-9]{2,8}\s*\[\s*['"]/g) || []).length;
+    if (hexKeyAccess >= 5) {
+      sigs.push('Hex-numbered variable pattern detected (' + hexKeyAccess + ' hex-keyed accesses — obfuscation)');
+    }
+
+    var protoAccess = (script.match(/\.(?:prototype|__proto__|constructor)\s*\[\s*['"]/g) || []).length;
+    if (protoAccess >= 2) {
+      sigs.push('Prototype/constructor manipulation detected (' + protoAccess + ' accesses)');
+    }
+
+    var proxyReflect = (script.match(/\b(?:new\s+Proxy|Proxy\.|Reflect\.)/g) || []).length;
+    if (proxyReflect >= 1) {
+      sigs.push('Proxy/Reflect API usage detected — possible API interception');
+    }
+
+    var scriptInjection = (script.match(/(?:createElement\s*\(\s*['"]script['"]|importScripts\s*\()/g) || []).length;
+    if (scriptInjection >= 1) {
+      sigs.push('Dynamic script injection detected (createElement/importScripts)');
+    }
+
+    var evalWithExpr = (script.match(/(?:eval|Function)\s*\(\s*(?:[^)]*\+[^)]*|[A-Za-z_$][A-Za-z0-9_$]*\[)/g) || []).length;
+    if (evalWithExpr >= 2) {
+      sigs.push('eval/Function called with constructed argument (' + evalWithExpr + ' occurrences)');
+    }
+
+    var switchCases = (script.match(/case\s+['"0-9]/g) || []).length;
+    if (switchCases >= 30) {
+      sigs.push('Large switch statement detected (' + switchCases + ' cases — obfuscated control flow)');
+    }
+
+    var iifeCount = (script.match(/\)\s*\)\s*\(/g) || []).length;
+    if (iifeCount >= 3) {
+      sigs.push('Multiple nested IIFE wrappers (' + iifeCount + ' — common obfuscation pattern)');
+    }
+
+    var comments = (script.match(/\/\/[^\r\n]*|\/\*[\s\S]*?\*\
+    var commentRatio = comments.length / (totalLen || 1);
+    if (totalLen > 2000 && commentRatio < 0.01) {
+      sigs.push('Minimal comments in large script (' + totalLen + ' bytes, ~' + Math.round(commentRatio * 100) + '% comments — obfuscated/minified)');
+    }
+
+    var evalCalls = (script.match(/\beval\s*\(/g) || []).length;
+    var functionCalls = (script.match(/new\s+Function\s*\(/g) || []).length;
+    if (evalCalls + functionCalls >= 2) {
+      sigs.push('Dynamic code execution via eval/new Function (' + (evalCalls+functionCalls) + ' calls)');
+    }
+
+    if (/(?:setTimeout|setInterval)\s*\(\s*['"]/.test(script)) {
+      sigs.push('setTimeout/setInterval with string argument — dynamic code execution');
+    }
+
+    if (hexEscapes >= 50) {
+      sigs.push('Extensive hex encoding (' + hexEscapes + ' \\x escapes — heavily packed)');
+    }
+
+    if (/@include\s+\*\s*$/m.test(script)) {
+      sigs.push('@include * (bare wildcard) — script runs on ALL websites');
+    }
+
+    return sigs;
+  }
+
+
+
+  function detectDangerousPatterns(script) {
+    var findings = [];
+
+    var webhooks = script.match(/discord(?:app)?\.com\/api\/webhooks\/[A-Za-z0-9]+\/[A-Za-z0-9_-]+/g);
+    if (webhooks && webhooks.length > 0) {
+      findings.push({ cat:'static', data:{ api:'dangerous_pattern', detail:'Discord webhook URL found — data exfiltration target: ' + webhooks[0].slice(0, 60) + '...' }});
+    }
+
+    var telegrams = script.match(/api\.telegram\.org\/bot[A-Za-z0-9:_-]+/g);
+    if (telegrams && telegrams.length > 0) {
+      findings.push({ cat:'static', data:{ api:'dangerous_pattern', detail:'Telegram bot API token found — data exfiltration channel' }});
+    }
+
+    if (/eval\s*\(\s*['"][A-Za-z0-9+/=]{50,}['"]/.test(script)) {
+      findings.push({ cat:'static', data:{ api:'dangerous_pattern', detail:'eval() called with large base64 string — obfuscated code execution' }});
+    }
+
+    if (/document\.write\s*\(/.test(script)) {
+      findings.push({ cat:'static', data:{ api:'dangerous_pattern', detail:'document.write() used — possible DOM injection/phishing' }});
+    }
+
+    if (/\.innerHTML\s*=\s*[A-Za-z_$]/.test(script)) {
+      findings.push({ cat:'static', data:{ api:'dangerous_pattern', detail:'innerHTML assignment with variable — possible DOM injection' }});
+    }
+
+    if (/Object\.defineProperty\s*\(\s*(?:Document|HTMLDocument|Window|Element)\.prototype/.test(script)) {
+      findings.push({ cat:'static', data:{ api:'dangerous_pattern', detail:'defineProperty on built-in prototype — API interception' }});
+    }
+
+    if (/sendBeacon\s*\(/.test(script)) {
+      findings.push({ cat:'static', data:{ api:'dangerous_pattern', detail:'navigator.sendBeacon() — background data exfiltration' }});
+    }
+
+    if (/serviceWorker\.register/.test(script)) {
+      findings.push({ cat:'static', data:{ api:'dangerous_pattern', detail:'Service Worker registration — background persistence' }});
+    }
+
+    if (/(?:createElement|document\.write)\s*\(.*['"]iframe['"].*\)/.test(script) ||
+        (/iframe/i.test(script) && /src\s*=/.test(script) && script.match(/iframe/gi).length >= 2)) {
+      findings.push({ cat:'static', data:{ api:'dangerous_pattern', detail:'Multiple iframe references — possible clickjacking/phishing' }});
+    }
+
+    if (/window\.open\s*\(/.test(script)) {
+      findings.push({ cat:'static', data:{ api:'dangerous_pattern', detail:'window.open() — popup/redirect to external site' }});
+    }
+
+    if (/credentials\s*:\s*['"]include['"]/.test(script)) {
+      findings.push({ cat:'static', data:{ api:'dangerous_pattern', detail:'fetch() with credentials:include — sends cookies cross-origin' }});
+    }
+
+    if (/atob\s*\(\s*['"][A-Za-z0-9+/]{30,}['"]\s*\)/.test(script)) {
+      findings.push({ cat:'static', data:{ api:'dangerous_pattern', detail:'atob() decoding large base64 literal — runtime code deobfuscation' }});
+    }
+
+    if (/clipboard/gi.test(script) && /readText|writeText|read|write/.test(script)) {
+      findings.push({ cat:'static', data:{ api:'dangerous_pattern', detail:'Clipboard API access — possible credential stealing' }});
+    }
+
+    if (/postMessage\s*\(\s*['"]/.test(script) || /contentWindow\.postMessage/.test(script)) {
+      findings.push({ cat:'static', data:{ api:'dangerous_pattern', detail:'window.postMessage() — cross-origin messaging' }});
+    }
+
+    var storageClears = (script.match(/\.(?:clear|removeItem)\s*\(/g) || []).length;
+    if (storageClears >= 3) {
+      findings.push({ cat:'static', data:{ api:'dangerous_pattern', detail:'Multiple storage clear/remove calls (' + storageClears + ') — data destruction' }});
+    }
+
+    if (/new\s+WebSocket\s*\(/.test(script)) {
+      findings.push({ cat:'static', data:{ api:'dangerous_pattern', detail:'WebSocket connection — persistent data channel' }});
+    }
+
+    if (/crypto\.subtle|crypto\.getRandomValues/.test(script)) {
+      findings.push({ cat:'static', data:{ api:'dangerous_pattern', detail:'Web Crypto API used — possible encrypted exfiltration' }});
+    }
+
+    if (/new\s+MutationObserver/.test(script)) {
+      findings.push({ cat:'static', data:{ api:'dangerous_pattern', detail:'MutationObserver — persistent DOM monitoring' }});
+    }
+
+    if (/document\.cookie/.test(script)) {
+      findings.push({ cat:'static', data:{ api:'dangerous_pattern', detail:'Document cookie access — session/token theft' }});
+    }
+
+    if (/location\.href\s*=\s*[A-Za-z_$]/.test(script)) {
+      findings.push({ cat:'static', data:{ api:'dangerous_pattern', detail:'location.href assignment with variable — dynamic redirect' }});
+    }
+
+    if (/document\.domain\s*=/.test(script)) {
+      findings.push({ cat:'static', data:{ api:'dangerous_pattern', detail:'document.domain assignment — same-origin bypass attempt' }});
+    }
+
+    if (/userAgentData/.test(script) && /getHighEntropyValues/.test(script)) {
+      findings.push({ cat:'static', data:{ api:'dangerous_pattern', detail:'navigator.userAgentData.getHighEntropyValues() — advanced browser fingerprinting' }});
+    }
+
+    if (/navigator\.plugins/.test(script) && /item|namedItem/.test(script)) {
+      findings.push({ cat:'static', data:{ api:'dangerous_pattern', detail:'navigator.plugins enumeration — plugin fingerprinting' }});
+    }
+
+    if (/new\s+(?:Offline)?AudioContext\s*\(/.test(script)) {
+      findings.push({ cat:'static', data:{ api:'dangerous_pattern', detail:'AudioContext/OfflineAudioContext — audio signal fingerprinting' }});
+    }
+    if (/(?:createOscillator|createAnalyser|getFloatFrequencyData)/.test(script)) {
+      findings.push({ cat:'static', data:{ api:'dangerous_pattern', detail:'AudioContext oscillator/analyser — audio fingerprinting components' }});
+    }
+
+    if (/WebGLRenderingContext|getParameter\s*\(\s*0x/.test(script)) {
+      findings.push({ cat:'static', data:{ api:'dangerous_pattern', detail:'WebGL getParameter with GL constants — GPU fingerprinting' }});
+    }
+    if (/getSupportedExtensions|getExtension\s*\(/.test(script)) {
+      findings.push({ cat:'static', data:{ api:'dangerous_pattern', detail:'WebGL extension enumeration — GPU capability fingerprinting' }});
+    }
+    if (/readPixels/.test(script)) {
+      findings.push({ cat:'static', data:{ api:'dangerous_pattern', detail:'WebGL readPixels — pixel/framebuffer fingerprinting' }});
+    }
+
+    return findings;
+  }
+
+
+
+  function analyzeThreats(fs) {
+    var categories = {
+      token_theft: { count: 0, label: 'Token / Credential Theft', severity: 'critical', desc: 'Reading auth tokens, cookies, or credentials and sending them externally' },
+      data_exfil: { count: 0, label: 'Data Exfiltration', severity: 'high', desc: 'Reading stored data and transmitting it over the network' },
+      nav_redirect: { count: 0, label: 'Forced Navigation / Redirect', severity: 'high', desc: 'Script changes the page location or redirects the browser' },
+      keylogger: { count: 0, label: 'Keystroke Capture', severity: 'high', desc: 'Listening to keyboard events' },
+      code_injection: { count: 0, label: 'Code Injection', severity: 'high', desc: 'Dynamic code execution via eval, Function, atob/btoa obfuscation' },
+      fingerprinting: { count: 0, label: 'Device Fingerprinting', severity: 'medium', desc: 'Collecting browser / device / canvas fingerprints' },
+      network_beacon: { count: 0, label: 'Data Beaconing', severity: 'high', desc: 'Sending data to external servers' },
+      phishing: { count: 0, label: 'Phishing / DOM Tampering', severity: 'high', desc: 'Modifying page content or writing HTML' },
+      storage_access: { count: 0, label: 'Storage Access', severity: 'medium', desc: 'Reading cookies, localStorage, or sessionStorage' },
+      cryptomining: { count: 0, label: 'Cryptomining', severity: 'high', desc: 'WebAssembly compilation or instantiation' },
+      gm_usage: { count: 0, label: 'GM API Usage', severity: 'low', desc: 'Greasemonkey / Tampermonkey API calls' },
+      obfuscation: { count: 0, label: 'Code Obfuscation', severity: 'high', desc: 'Script is heavily obfuscated — hides its true behavior' },
+    };
+
+    var hasCookieRead = false;
+    var hasCookieWrite = false;
+    var hasNetworkSend = false;
+    var hasStorageRead = false;
+    var hasTokenRead = false;
+    var hasNavRedirect = false;
+    var hasKeyEvent = false;
+    var hasCanvas = false;
+    var hasEval = false;
+    var hasFunction = false;
+    var hasWasm = false;
+    var hasGeo = false;
+    var hasDomWrite = false;
+    var hasPostMessage = false;
+    var hasBtoaLong = false;
+    var hasAtobLong = false;
+
+    var externalUrls = [];
+    var keysRead = [];
+
+    var sensitiveKeys = ['token', 'access_token', 'refresh_token', 'secret', 'jwt',
+      'session', 'auth', 'password', 'pass', 'key', 'api_key', 'apikey',
+      'credentials', 'discord', 'telegram', 'webhook'];
+
+    fs.forEach(function(f) {
+      var d = f.data || {};
+
+      if (f.cat === 'network') {
+        hasNetworkSend = true;
+        if (d.url) {
+          externalUrls.push({ url: d.url, method: d.method || 'GET', api: d.api });
+        }
+        categories.network_beacon.count++;
+      }
+
+      if (f.cat === 'storage') {
+        if (d.api === 'cookie_read') { hasCookieRead = true; categories.token_theft.count++; }
+        if (d.api === 'cookie_write') { hasCookieWrite = true; categories.storage_access.count++; }
+        if (d.api && d.api.indexOf('localStorage') >= 0) {
+          if (d.api.indexOf('_get') >= 0) {
+            hasStorageRead = true;
+            if (d.key) {
+              keysRead.push(d.key);
+
+              var lowerKey = d.key.toLowerCase();
+              for (var sk = 0; sk < sensitiveKeys.length; sk++) {
+                if (lowerKey.indexOf(sensitiveKeys[sk]) >= 0) {
+                  hasTokenRead = true;
+                  categories.token_theft.count += 2;
+                  break;
+                }
+              }
+            }
+          }
+          categories.storage_access.count++;
+        }
+      }
+
+      if (f.cat === 'window' && d.api) {
+        if (d.api === 'loc_href_set' || d.api === 'loc_assign' || d.api === 'loc_replace' ||
+            d.api === 'location_href_set' || d.api === 'location_assign' || d.api === 'location_replace') {
+          hasNavRedirect = true;
+          categories.nav_redirect.count++;
+        }
+        if (d.api === 'credentials_get' || d.api === 'credentials_store') {
+          categories.token_theft.count += 2;
+        }
+      }
+
+      if (f.cat === 'exec') {
+        if (d.api === 'eval' && d.code && d.code.length > 10) {
+          hasEval = true;
+          categories.code_injection.count += 2;
+        } else if (d.api === 'eval') {
+          categories.code_injection.count++;
+        }
+        if (d.api === 'Function') { hasFunction = true; categories.code_injection.count += 2; }
+        if (d.api === 'setTimeout_str' || d.api === 'setInterval_str') {
+          categories.code_injection.count++;
+        }
+
+        if (d.api === 'atob' && d.input && d.input.length > 8) {
+          hasAtobLong = true;
+          categories.code_injection.count++;
+        }
+        if (d.api === 'btoa' && d.input && d.input.length > 8) {
+          hasBtoaLong = true;
+          categories.code_injection.count++;
+
+          if (hasNetworkSend) {
+            categories.data_exfil.count += 2;
+          }
+        }
+      }
+
+      if (f.cat === 'window' && d.api && d.api.indexOf('history_') >= 0) {
+        categories.fingerprinting.count++;
+      }
+
+      if (f.cat === 'network' && d.api && d.api.indexOf('RTCPeerConnection') >= 0) {
+        categories.fingerprinting.count += 2;
+      }
+
+      if (f.cat === 'window' && d.api && d.api.indexOf('Notification') >= 0) {
+        categories.phishing.count++;
+      }
+
+      if (f.cat === 'network' && d.api && (d.api.indexOf('Worker') >= 0 || d.api.indexOf('ServiceWorker') >= 0)) {
+        categories.network_beacon.count++;
+      }
+
+      if (f.cat === 'network' && d.api && d.api.indexOf('BroadcastChannel') >= 0) {
+        categories.network_beacon.count++;
+      }
+
+      if (f.cat === 'privacy') {
+        if (d.api === 'performance_now' || d.api === 'requestAnimationFrame' || d.api === 'matchMedia') {
+          categories.fingerprinting.count++;
+        }
+        if (d.api && (d.api.indexOf('navigator_') >= 0 || d.api.indexOf('screen_') >= 0 ||
+            d.api.indexOf('connection_') >= 0 || d.api === 'getBattery' || d.api === 'storage_estimate')) {
+          categories.fingerprinting.count++;
+        }
+      }
+
+      if (f.cat === 'window' && d.api && d.api.indexOf('credentials_') >= 0) {
+        categories.token_theft.count++;
+      }
+
+      if (f.cat === 'static' && d.api === 'obfuscation') {
+        categories.obfuscation.count++;
+      }
+
+      if (f.cat === 'event' && d.event && (d.event.indexOf('key') >= 0)) {
+        hasKeyEvent = true;
+        categories.keylogger.count++;
+      }
+
+      if (f.cat === 'privacy') {
+        if (d.api === 'canvas_getImageData' || d.api === 'canvas_toDataURL') {
+          hasCanvas = true;
+          categories.fingerprinting.count += 2;
+        }
+        if (d.api === 'geolocation') { hasGeo = true; categories.fingerprinting.count++; }
+        if (d.api === 'getUserMedia') { categories.fingerprinting.count += 2; }
+
+        if (d.api && d.api.indexOf('UAData_') >= 0) {
+          categories.fingerprinting.count += 2;
+        }
+
+        if (d.api && (d.api === 'plugins_enum' || d.api === 'mimeTypes_enum')) {
+          categories.fingerprinting.count++;
+        }
+
+        if (d.api && d.api.indexOf('AudioContext') >= 0) {
+          categories.fingerprinting.count += 3;
+        }
+
+        if (d.api && d.api.indexOf('WebGL_') >= 0) {
+          categories.fingerprinting.count += 3;
+        }
+
+        if (d.api && d.api.indexOf('clipboard_') >= 0) {
+          categories.phishing.count++;
+          categories.fingerprinting.count++;
+        }
+      }
+
+      if (f.cat === 'window' && d.api && d.api === 'domain_set') {
+        categories.phishing.count += 2;
+        categories.fingerprinting.count++;
+      }
+
+      if (f.cat === 'dom') {
+        hasDomWrite = true;
+        categories.phishing.count++;
+      }
+
+      if (f.cat === 'wasm') {
+        hasWasm = true;
+        categories.cryptomining.count++;
+      }
+
+      if (f.cat === 'window' && d.api === 'postMessage') {
+        hasPostMessage = true;
+      }
+
+      if (f.cat === 'gm_api') {
+        categories.gm_usage.count++;
+      }
+    });
+
+    var hasWebhookUrl = fs.some(function(f) {
+      return f.cat === 'static' && f.data && f.data.detail &&
+        (f.data.detail.indexOf('webhook') >= 0 || f.data.detail.indexOf('exfiltration') >= 0);
+    });
+
+    var hasDangerousCodeInjection = fs.some(function(f) {
+      return f.cat === 'static' && f.data && f.data.detail &&
+        (f.data.detail.indexOf('eval') >= 0 || f.data.detail.indexOf('innerHTML') >= 0 ||
+         f.data.detail.indexOf('DOM injection') >= 0 || f.data.detail.indexOf('document.write') >= 0);
+    });
+
+    var hasTokenExfilChain = hasTokenRead && hasBtoaLong && hasNavRedirect;
+    var hasStorageAndNetwork = hasStorageRead && hasNetworkSend;
+    var hasCookieAndNetwork = hasCookieRead && hasNetworkSend;
+    var hasTokenAndNetwork = hasTokenRead && hasNetworkSend;
+
+    if (hasCookieAndNetwork) {
+      categories.token_theft.count += 3;
+    }
+    if (hasStorageAndNetwork) {
+      categories.data_exfil.count += 3;
+    }
+
+    if (hasTokenAndNetwork) {
+      categories.token_theft.count += 4;
+    }
+
+    if (hasTokenExfilChain) {
+      categories.token_theft.count += 3;
+      categories.data_exfil.count += 2;
+    }
+
+    if (hasWebhookUrl) {
+      categories.data_exfil.count += 5;
+      categories.token_theft.count += 3;
+    }
+
+    if (hasDangerousCodeInjection) {
+      categories.code_injection.count += 2;
+    }
+
+    if (categories.obfuscation.count > 0 && hasNetworkSend) {
+      categories.token_theft.count += 2;
+      categories.data_exfil.count += 2;
+    }
+
+    if (categories.obfuscation.count > 0 && hasStorageRead) {
+      categories.token_theft.count += 2;
+    }
+
+    if (keysRead.length >= 3 && hasNetworkSend) {
+      categories.data_exfil.count += 2;
+    }
+
+    if (categories.nav_redirect.count >= 2) {
+      categories.nav_redirect.count += 2;
+    }
+
+    if (hasEval && hasNetworkSend) {
+      categories.code_injection.count += 3;
+    }
+
+    var highCount = 0;
+    if (categories.token_theft.count > 0) highCount++;
+    if (categories.data_exfil.count > 0) highCount++;
+    if (categories.network_beacon.count >= 2) highCount++;
+    if (hasStorageAndNetwork) highCount++;
+    if (hasNavRedirect && hasStorageRead) highCount++;
+    if (hasWebhookUrl) highCount++;
+    if (hasTokenExfilChain) highCount++;
+    if (highCount >= 3) {
+      categories.token_theft.count += 2;
+    }
+
+
+    var severities = { low: 1, medium: 2, high: 3, critical: 4 };
+    var active = [];
+    var maxSeverity = 0;
+    var score = 0;
+
+    Object.keys(categories).forEach(function(k) {
+      var cat = categories[k];
+      if (cat.count > 0) {
+        active.push(cat);
+        var weight = severities[cat.severity] || 1;
+        score += cat.count * weight;
+        var s = severities[cat.severity] || 1;
+        if (s > maxSeverity) maxSeverity = s;
+      }
+    });
+
+    if (hasWebhookUrl && (hasTokenRead || hasStorageRead)) {
+      maxSeverity = Math.max(maxSeverity, 4);
+    }
+    if (hasTokenExfilChain) {
+      maxSeverity = Math.max(maxSeverity, 4);
+    }
+    if (categories.obfuscation.count > 0 && hasNetworkSend) {
+
+      maxSeverity = Math.max(maxSeverity, 3);
+    }
+    if (hasStorageAndNetwork && hasCookieRead) {
+      maxSeverity = Math.max(maxSeverity, 3);
+    }
+    if (categories.obfuscation.count > 0 && categories.keylogger.count > 0) {
+      maxSeverity = Math.max(maxSeverity, 3);
+    }
+
+    var mediumCount = 0;
+    Object.keys(categories).forEach(function(k) {
+      if (categories[k].count > 0 && categories[k].severity === 'medium') mediumCount++;
+    });
+    if (mediumCount >= 3 && maxSeverity < 3 && score >= 8) {
+      maxSeverity = 3;
+    }
+
+    var lowCount = 0;
+    Object.keys(categories).forEach(function(k) {
+      if (categories[k].count > 0 && (categories[k].severity === 'low' || categories[k].severity === 'medium')) lowCount++;
+    });
+    if (lowCount >= 4 && maxSeverity < 2 && score >= 5) {
+      maxSeverity = 2;
+    }
+
+    var overallRisk = Object.keys(severities).find(function(k) { return severities[k] === maxSeverity; }) || 'low';
+
+    return {
+      overall: overallRisk,
+      categories: active,
+      all: categories,
+      stats: {
+        totalFindings: fs.length,
+        networkCalls: categories.network_beacon.count,
+        storageAccesses: categories.storage_access.count,
+        codeInjection: categories.code_injection.count,
+        fingerprintAttempts: categories.fingerprinting.count,
+        weightedScore: score
+      },
+      urls: externalUrls.slice(0, 15),
+      keysRead: keysRead.slice(0, 10)
+    };
+  }
+
+
+
+  function renderRiskSummary(threat, total) {
+    var riskColors = { low: '#22c55e', medium: '#eab308', high: '#ef4444', critical: '#dc2626' };
+    var riskLabels = { low: 'Low Risk', medium: 'Medium Risk', high: 'High Risk', critical: 'Critical Risk' };
+
+    var scoreDisplay = threat.stats.weightedScore !== undefined ? threat.stats.weightedScore : '—';
+    var html = '<div class="risk-badge">' +
+      '<span class="risk-dot ' + threat.overall + '"></span>' +
+      '<div><div class="risk-label">' + riskLabels[threat.overall] + '</div>' +
+      '<div class="risk-detail">' + total + ' runtime event' + (total === 1 ? '' : 's') + ' observed &middot; Score: ' + scoreDisplay + '</div></div></div>';
+
+    html += '<div class="stat-cards">' +
+      '<div class="stat-card"><div class="stat-num">' + threat.stats.networkCalls + '</div><div class="stat-label">Network</div></div>' +
+      '<div class="stat-card"><div class="stat-num">' + threat.stats.storageAccesses + '</div><div class="stat-label">Storage</div></div>' +
+      '<div class="stat-card"><div class="stat-num">' + threat.stats.codeInjection + '</div><div class="stat-label">Code Exec</div></div>' +
+      '<div class="stat-card"><div class="stat-num">' + threat.stats.fingerprintAttempts + '</div><div class="stat-label">Fingerprint</div></div>' +
+      '</div>';
+
+    riskSummary.innerHTML = html;
+
+    var prevThreat = document.getElementById('threatCards');
+    if (prevThreat) prevThreat.remove();
+
+    if (threat.categories.length > 0) {
+      var threatHtml = '<div id="threatCards" class="findings-section" style="margin-top:16px"><div class="findings-header"><h3>Detected Threats</h3><span class="count">' + threat.categories.length + '</span></div><div class="findings-log" style="max-height:none">';
+      threat.categories.forEach(function(c) {
+        threatHtml += '<div class="finding-item threat-' + c.severity + '" style="border-left:3px solid ' + (riskColors[c.severity] || '#6b7280') + ';margin-bottom:4px">' +
+          '<div class="finding-body"><div class="finding-type">' + escapeHtml(c.label) + '</div>' +
+          '<div class="finding-detail" style="font-family:inherit;color:#6b7280">' + escapeHtml(c.desc) + '</div></div>' +
+          '<span class="finding-tag tag-' + c.severity + '">' + c.severity + '</span></div>';
+      });
+      threatHtml += '</div></div>';
+      riskSummary.insertAdjacentHTML('afterend', threatHtml);
+    }
+  }
+
+
+
+  function escapeHtml(s) {
+    if (!s) return '';
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+
+
+  analyzeBtn.addEventListener('click', runAnalysis);
+
+  scriptInput.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault();
+      runAnalysis();
+    }
+  });
+
+
+  var debugToggleBtn = document.getElementById('debugToggleBtn');
+  var debugBar = document.getElementById('debugBar');
+  debugToggleBtn.addEventListener('click', function() {
+    var isVisible = debugBar.style.display === 'block';
+    debugBar.style.display = isVisible ? 'none' : 'block';
+    this.classList.toggle('active');
+    if (!isVisible) {
+
+      var debugContent = document.getElementById('debugContent');
+      debugContent.innerHTML = '';
+      _debugLogs.forEach(function(log) {
+        var entry = document.createElement('div');
+        entry.style.cssText = 'padding:1px 0;line-height:1.4;border-bottom:1px solid #f1f5f9';
+        entry.innerHTML = '<span style="color:#94a3b8">' + log.t + '</span> <span style="color:#334155">' + escapeHtml(log.m).slice(0, 300) + '</span>';
+        debugContent.appendChild(entry);
+      });
+      debugContent.scrollTop = debugContent.scrollHeight;
+    }
+  });
+
+
+  document.getElementById('debugClearBtn').addEventListener('click', function() {
+    document.getElementById('debugContent').innerHTML = '';
+    document.getElementById('debugCount').textContent = '0 entries';
+    _debugLogs = [];
+  });
+});
+</script>
 </body>
 </html>
